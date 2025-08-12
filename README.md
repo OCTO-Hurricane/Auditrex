@@ -1,35 +1,10 @@
-<<<<<<< HEAD
 <p align="center">
 Star the project 🌟 to get releases notification and help growing the community!
 </p>
 
 <p align="center">
-    <a href="https://trendshift.io/repositories/9343" target="_blank"><img src="https://trendshift.io/api/badge/repositories/9343" alt="intuitem%2Fciso-assistant-community | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-    <br />
-    <a href="https://intuitem.com">intuitem.com</a>
-    ·
-    <a href="https://intuitem.com/trial">SaaS Free trial</a>
-    ·
-    <a href="https://roadmap.productboard.com/c483ebdf-87df-4dc2-96dc-a2e8c66aac63">Roadmap</a>
-    ·
-    <a href="https://intuitem.gitbook.io/ciso-assistant" target="_blank">Docs</a>
-    ·
-    <a href="#supported-languages-">Languages</a>
-    ·
-    <a href="https://discord.gg/qvkaMdQ8da">Discord</a>
-    ·
-    <a href="#supported-frameworks-">Frameworks</a>
-    <br />
+<img src="https://i.postimg.cc/pXYL24YJ/Screenshot-2025-08-12-164109.png" alt="Auditrex Logo" width="200"/>
 
-</p>
-
-![](gh_banner.png)
-
-[![CodeFactor](https://www.codefactor.io/repository/github/intuitem/ciso-assistant-community/badge)](https://www.codefactor.io/repository/github/intuitem/ciso-assistant-community)
-[![API Tests](https://github.com/intuitem/ciso-assistant-community/actions/workflows/backend-api-tests.yml/badge.svg)](https://github.com/intuitem/ciso-assistant-community/actions/workflows/backend-api-tests.yml)
-[![Functional Tests](https://github.com/intuitem/ciso-assistant-community/actions/workflows/functional-tests.yml/badge.svg?branch=main)](https://github.com/intuitem/ciso-assistant-community/actions/workflows/functional-tests.yml)
-![GitHub Release](https://img.shields.io/github/v/release/intuitem/ciso-assistant-community)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fab-smith%2Fciso-assistant-community.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fab-smith%2Fciso-assistant-community?ref=badge_small)
 
 Auditrex brings a different take to **GRC** and Cyber Security Posture Management:
 
@@ -40,6 +15,13 @@ Auditrex brings a different take to **GRC** and Cyber Security Posture Managemen
 - you can bring your own framework as well using a simple syntax
 - manage audit, evidences collection and report generation
 
+![](https://i.postimg.cc/V6pdCtd9/Screenshot-2025-08-12-163613.png)
+[![CodeFactor](https://www.codefactor.io/repository/github/intuitem/ciso-assistant-community/badge)](https://www.codefactor.io/repository/github/intuitem/ciso-assistant-community)
+[![API Tests](https://github.com/intuitem/ciso-assistant-community/actions/workflows/backend-api-tests.yml/badge.svg)](https://github.com/intuitem/ciso-assistant-community/actions/workflows/backend-api-tests.yml)
+[![Functional Tests](https://github.com/intuitem/ciso-assistant-community/actions/workflows/functional-tests.yml/badge.svg?branch=main)](https://github.com/intuitem/ciso-assistant-community/actions/workflows/functional-tests.yml)
+![GitHub Release](https://img.shields.io/github/v/release/intuitem/ciso-assistant-community)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fab-smith%2Fciso-assistant-community.svg?type=small)](https://app.fossa.com/projects/git%2Bgithub.com%2Fab-smith%2Fciso-assistant-community?ref=badge_small)
+
 Our vision is to provide a one stop shop for cyber security posture management and cover the layers of **GRC** (Governance, Risk and Compliance). As practitioners interacting with multiple cybersecurity and IT professionals, we have struggled with fragmentation and lack of efficient tooling. We keep improving Auditrex with anything that could bring clarity and productivity to cybersecurity teams and reduce the effort of research, audit management and paperwork.
 
 CyberSecurity teams need to use GRC as a foundation to structure their program and implement the right tools and processes to mitigate the risks, and leave the rest to Auditrex 🐙
@@ -48,7 +30,7 @@ The vision of the tool is based on these fundamental objects:
 
 ![](core_objects.png)
 
-There are other concepts and models to provide other features. The full details are available in the [data model](documentation/architecture/data-model.md).
+There are other concepts and models to provide other features.
 
 The decoupling concept is a pillar of the app and allows you to save a considerable amount of time:
 
@@ -57,11 +39,6 @@ The decoupling concept is a pillar of the app and allows you to save a considera
 - leave the reporting formatting and sanity check to Auditrex and focus on your fixes,
 - balance controls implementation and compliance follow-up
 
-## Decoupling concept
-
-Here is an illustration of the **decoupling** principle and its advantages:
-
-https://github.com/user-attachments/assets/87bd4497-5cc2-4221-aeff-396f6b6ebe62
 
 ## System architecture
 
@@ -73,19 +50,15 @@ Here is an overview of Auditrex features and capabilities:
 
 ![overview](features.png)
 
-Auditrex is developed and maintained by [intuitem](https://intuitem.com/), a French 🇫🇷 company specialized in Cyber Security, Cloud and Data/AI.
 
 ## Quick Start 🚀
 
-> [!TIP]
-> The easiest way to get started is through the [free trial of cloud instance available here](https://intuitem.com/trial).
-
-Alternatively, once you have _Docker_ and _Docker-compose_ installed, on your workstation or server:
+once you have _Docker_ and _Docker-compose_ installed, on your workstation or server:
 
 clone the repo:
 
 ```
-git clone https://github.com/intuitem/ciso-assistant-community.git
+git clone https://github.com/OCTO-Hurricane/Auditrex.git
 ```
 
 and run the starter script
@@ -93,8 +66,6 @@ and run the starter script
 ```sh
 ./docker-compose.sh
 ```
-
-If you are looking for other installation options, you might want to check the [config builder](./config/) and the [docs](https://intuitem.gitbook.io/ciso-assistant).
 
 > [!NOTE]
 > The docker-compose script uses prebuilt Docker images supporting most of the standard hardware architecture.
@@ -107,10 +78,6 @@ The docker compose file can be adjusted to pass extra parameters to suit your se
 
 > [!CAUTION]
 > Don't use the `main` branch code directly for production as it's the merge upstream and can have breaking changes during our development. Either use the `tags` for stable versions or prebuilt images.
-
-## End-user Documentation
-
-Check out the online documentation on <https://intuitem.gitbook.io/ciso-assistant>.
 
 ## Supported frameworks 🐙
 
@@ -185,60 +152,7 @@ Check out the online documentation on <https://intuitem.gitbook.io/ciso-assistan
 69. OWASP's checklist for LLM governance and security 🌐
 70. Recommandations pour les architectures des systèmes d’information sensibles ou à diffusion restreinte (ANSSI) 🇫🇷
 
-### Community contributions
-
-1. PGSSI-S (Politique Générale de Sécurité des Systèmes d'Information de Santé) 🇫🇷
-2. ANSSI : Recommandations de configuration d'un système GNU/Linux 🇫🇷
-3. PSSI-MCAS (Politique de sécurité des systèmes d’information pour les ministères chargés des affaires sociales) 🇫🇷
-4. ANSSI : Recommandations pour la protection des systèmes d'information essentiels 🇫🇷
-5. ANSSI : Recommandations de sécurité pour l'architecture d'un système de journalisation 🇫🇷
-6. ANSSI : Recommandations de sécurité relatives à TLS 🇫🇷
-7. New Zealand Information Security Manual (NZISM) 🇳🇿
-8. Clausier de sécurité numérique du Club RSSI Santé 🇫🇷
-9. Référentiel National de Sécurité de l’Information (RNSI), MPT Algérie 🇩🇿
-10. Misure minime di sicurezza ICT per le pubbliche amministrazioni, AGID Italia 🇮🇹
-11. Framework Nazionale CyberSecurity v2, FNCS Italia 🇮🇹
-
-<br/>
-
-> [!NOTE]
-> `*` These frameworks require an extra manual step of getting the latest Excel sheet through their website as their license prevent direct usage.
-
-<br/>
-
-Checkout the [library](/backend/library/libraries/) and [tools](/tools/) for the Domain Specific Language used and how you can define your own.
-
-### Coming soon
-
-- Indonesia PDP 🇮🇩
-- COBAC R-2024/01
-- ICO Data protection self-assessment 🇬🇧
-- NIST 800-82
-- ASD ISM 🇦🇺
-- Baseline informatiebeveiliging Overheid (BIO) 🇳🇱
-
-
-- and much more: just ask on [Discord](https://discord.gg/qvkaMdQ8da). If it's an open standard, we'll do it for you, _free of charge_ 😉
-
-## Add your own library
-
-A library can be a framework, a catalog of threats or reference controls, and even a custom risk matrix.
-
-Take a look at the `tools` directory and its [dedicated README](tools/README.md). The `convert_library.py` script will help you create your library from a simple Excel file. Once you have structured your items in that format, just run the script and use the resulting yaml file.
-
-You can also find some specific converters in the tools directory (e.g. for CIS or CCM Controls).
-
-There is also a tool to facilitate the creation of mappings, called `prepare_mapping.py` that will create an Excel file based on two framework libraries in yaml. Once properly filled, this Excel file can be processed by the `convert_library.py` tool to get the resulting mapping library.
-
-## Community
-
-Join our [open Discord community](https://discord.gg/qvkaMdQ8da) to interact with the team and other GRC experts.
-
 ## Testing the cloud version
-
-> The fastest and easiest way to get started is through the [free trial of cloud instance available here](https://intuitem.com/trial).
-
-## Testing locally 🚀
 
 To run Auditrex locally in a straightforward way, you can use Docker compose.
 
@@ -249,8 +163,8 @@ Make sure you have a recent version of docker (>= 25.0).
 1. Clone the repository
 
 ```sh
-git clone https://github.com/intuitem/ciso-assistant-community.git
-cd ciso-assistant-community
+git clone https://github.com/OCTO-Hurricane/Auditrex.git
+cd Auditrex
 ```
 
 2. Launch docker-compose script for prebuilt images:
@@ -274,10 +188,6 @@ For the following executions, use "docker compose up" directly.
 > [!TIP]
 > If you want a fresh install, simply delete the `db` directory, (default: backend/db) where the database is stored.
 
-## Docker-compose on remote
-
-For docker setup on a remote server or hypervisor, checkout the [specific instructions here](https://intuitem.gitbook.io/ciso-assistant/deployment/remote-virtualization)
-
 ## Setting up Auditrex for development
 
 ### Requirements
@@ -295,8 +205,8 @@ For docker setup on a remote server or hypervisor, checkout the [specific instru
 1. Clone the repository.
 
 ```sh
-git clone git@github.com:intuitem/ciso-assistant-community.git
-cd ciso-assistant-community
+git clone https://github.com/OCTO-Hurricane/Auditrex.git
+cd Auditrex
 ```
 
 2. Create a file in the parent folder (e.g. ../myvars) and store your environment variables within it by copying and modifying the following code and replace `"<XXX>"` by your private values. Take care not to commit this file in your git repo.
@@ -311,12 +221,12 @@ All variables in the backend have handy default values.
 export DJANGO_DEBUG=True
 
 # Default url is set to http://localhost:5173 but you can change it, e.g. to use https with a caddy proxy
-export CISO_ASSISTANT_URL=https://localhost:8443
+export AUDITREX_URL=https://localhost:8443
 
 # Setup a development mailer with Mailhog for example
 export EMAIL_HOST_USER=''
 export EMAIL_HOST_PASSWORD=''
-export DEFAULT_FROM_EMAIL=ciso-assistant@ciso-assistantcloud.com
+export DEFAULT_FROM_EMAIL=auditrex@auditrexcloud.com
 export EMAIL_HOST=localhost
 export EMAIL_PORT=1025
 export EMAIL_USE_TLS=True
@@ -326,8 +236,8 @@ export EMAIL_USE_TLS=True
 
 ```sh
 # Auditrex will use SQLite by default, but you can setup PostgreSQL by declaring these variables
-export POSTGRES_NAME=ciso-assistant
-export POSTGRES_USER=ciso-assistantuser
+export POSTGRES_NAME=audittex
+export POSTGRES_USER=auditrexuser
 export POSTGRES_PASSWORD=<XXX>
 export POSTGRES_PASSWORD_FILE=<XXX>  # alternative way to specify password
 export DB_HOST=localhost
@@ -341,7 +251,7 @@ export EMAIL_HOST_PASSWORD_RESCUE=<XXX>
 export EMAIL_USE_TLS_RESCUE=True
 
 # You can define the email of the first superuser, useful for automation. A mail is sent to the superuser for password initialization
-export CISO_SUPERUSER_EMAIL=<XXX>
+export AUDITREX_SUPERUSER_EMAIL=<XXX>
 
 # By default, Django secret key is generated randomly at each start of Auditrex. This is convenient for quick test,
 # but not recommended for production, as it can break the sessions (see
@@ -380,11 +290,11 @@ pre-commit install
   - `psql as superadmin`
   - `sudo su postgres`
   - `psql`
-- Create the database "ciso-assistant"
+- Create the database "auditrex"
   - `create database ciso-assistant;`
-- Create user "ciso-assistantuser" and grant it access
-  - `create user ciso-assistantuser with password '<POSTGRES_PASSWORD>';`
-  - `grant all privileges on database ciso-assistant to ciso-assistantuser;`
+- Create user "auditrexuser" and grant it access
+  - `create user auditrexuser with password '<POSTGRES_PASSWORD>';`
+  - `grant all privileges on database ciso-assistant to auditrexuser;`
 
 7. Apply migrations.
 
@@ -394,7 +304,7 @@ poetry run python manage.py migrate
 
 8. Create a Django superuser, that will be Auditrex administrator.
 
-> If you have set a mailer and CISO_SUPERUSER_EMAIL variable, there's no need to create a Django superuser with `createsuperuser`, as it will be created automatically on first start. You should receive an email with a link to setup your password.
+> If you have set a mailer and AUDITREX_SUPERUSER_EMAIL variable, there's no need to create a Django superuser with `createsuperuser`, as it will be created automatically on first start. You should receive an email with a link to setup your password.
 
 ```sh
 poetry run python manage.py createsuperuser
@@ -436,7 +346,7 @@ pnpm run dev
 4. Reach the frontend on <http://localhost:5173>
 
 > [!NOTE]
-> Safari will not properly work in this setup, as it requires https for secure cookies. The simplest solution is to use Chrome or Firefox. An alternative is to use a caddy proxy. Please see the [readme file](frontend/README.md) in frontend directory for more information on this.
+> Safari will not properly work in this setup, as it requires https for secure cookies. The simplest solution is to use Chrome or Firefox. 
 
 5. Environment variables
 
@@ -444,7 +354,7 @@ All variables in the frontend have handy default values.
 
 If you move the frontend on another host, you should set the following variable: PUBLIC_BACKEND_API_URL. Its default value is <http://localhost:8000/api>.
 
-The PUBLIC_BACKEND_API_EXPOSED_URL is necessary for proper functioning of the SSO. It points to the URL of the API as seen from the browser. It should be equal to the concatenation of CISO_ASSISTANT_URL (in the backend) with "/api".
+The PUBLIC_BACKEND_API_EXPOSED_URL is necessary for proper functioning of the SSO. It points to the URL of the API as seen from the browser. It should be equal to the concatenation of AUDITREX_URL (in the backend) with "/api".
 
 When you launch "node server" instead of "pnpm run dev", you need to set the ORIGIN variable to the same value as CISO_ASSISTANT_URL in the backend (e.g. <http://localhost:3000>).
 
@@ -504,7 +414,7 @@ Set DJANGO_DEBUG=False for security reason.
 > The frontend cannot infer the host automatically, so you need to either set the ORIGIN variable, or the HOST_HEADER and PROTOCOL_HEADER variables. Please see [the sveltekit doc](https://kit.svelte.dev/docs/adapter-node#environment-variables-origin-protocolheader-hostheader-and-port-header) on this tricky issue. Beware that this approach does not work with "pnpm run dev", which should not be a worry for production.
 
 > [!NOTE]
-> Caddy needs to receive a SNI header. Therefore, for your public URL (the one declared in CISO_ASSISTANT_URL), you need to use a FQDN, not an IP address, as the SNI is not transmitted by a browser if the host is an IP address. Another tricky issue!
+> Caddy needs to receive a SNI header. Therefore, for your public URL, you need to use a FQDN, not an IP address, as the SNI is not transmitted by a browser if the host is an IP address. Another tricky issue!
 
 ## Supported languages 🌐
 
@@ -523,13 +433,6 @@ Set DJANGO_DEBUG=False for security reason.
 - CS: Czech
 - SV: Swedish
 - ID: Indonesian
-
-## Contributors 🤝
-
-<a href="https://github.com/intuitem/ciso-assistant-community/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=intuitem/ciso-assistant-community&columns=9" />
-</a>
-
 ## Built With 💜
 
 - [Django](https://www.djangoproject.com/) - Python Web Development Framework
@@ -545,19 +448,11 @@ Set DJANGO_DEBUG=False for security reason.
 
 ## Security
 
-Great care has been taken to follow security best practices. Please report any issue to <security@intuitem.com>.
+Great care has been taken to follow security best practices.
 
 ## License
 
-This repository contains the source code for both the Open Source edition of Auditrex (Community Edition), released under the AGPL v3, as well as the commercial edition of Auditrex (Pro and Enterprise Editions), released under the intuitem Commercial Software License. This mono-repository approach is adopted for simplicity.
-
-All the files within the top-level "enterprise" directory are released under the intuitem Commercial Software License.
-
-All the files outside the top-level "enterprise" directory are released under the [AGPLv3](https://choosealicense.com/licenses/agpl-3.0/).
-
-See [LICENSE.md](./LICENSE.md) for details. For more details about the commercial editions, you can reach us on <contact@intuitem.com>.
-
-Unless otherwise noted, all files are © intuitem.
+This repository contains the source code for both the Open Source edition of Auditrex (Community Edition), released under the AGPL v3.
 
 ## Activity
 
