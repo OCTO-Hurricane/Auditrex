@@ -1,4 +1,4 @@
-## CISO Assistant configuration
+## Auditrex configuration
 ## Ref: https://github.com/intuitem/ciso-assistant-community
 ##
 
@@ -12,57 +12,48 @@ global:
   # -- Default domain used by all components
   ## Used for ingresses, certificates, environnement vars, etc.
   domain: octopus.foo.bar
-  # -- Globally enable TLS (URLs, etc.)
+  # -- Globally enable TLS (Ingress, URLs, etc.)
   tls: false
-
-  # -- Extra allowed hosts (comma separated, without spaces)
-  extraAllowedHosts: ""
 
   # Default image used by all components
   image:
-    # -- If defined, a registry applied to all CISO Assistant deployments
+    # -- If defined, a registry applied to all Auditrex deployments
     registry: ghcr.io
-    # -- Overrides the global CISO Assistant image tag whose default is the chart appVersion
+    # -- Overrides the global Auditrex image tag whose default is the chart appVersion
     tag: ""
-    # -- If defined, a imagePullPolicy applied to all CISO Assistant deployments
+    # -- If defined, a imagePullPolicy applied to all Auditrex deployments
     imagePullPolicy: IfNotPresent
 
   # -- Secrets with credentials to pull images from a private registry
   imagePullSecrets: []
 
   # -- Labels to add to all deployed objects
-  commonLabels: {} # @schema additionalProperties: true
+  commonLabels: {}
 
   # -- Kubernetes cluster domain name
   clusterDomain: cluster.local
 
   # -- Toggle and define pod-level security context
   # @default -- `{}`
-  securityContext: {} # @schema additionalProperties: true
+  securityContext: {}
   #  fsGroupChangePolicy: Always
   #  sysctls: []
   #  supplementalGroups: []
   #  fsGroup: 1001
 
   # -- Default node selector for all components
-  nodeSelector: {} # @schema additionalProperties: true
+  nodeSelector: {}
 
   # -- Default tolerations for all components
   tolerations: []
 
-## CISO Assistant backend
+## Auditrex backend
 backend:
-  # -- Backend container name
+  # -- Backend name
   name: backend
 
   # -- The number of backend pods to run
   replicas: 1
-
-  # -- Backend deployment annotations
-  annotations: {} # @schema additionalProperties: true
-
-  # -- Backend pod annotations
-  podAnnotations: {} # @schema additionalProperties: true
 
   ## Backend specific config
   config:
@@ -73,18 +64,33 @@ backend:
     smtp:
       # -- Default from email address
       defaultFrom: no-reply@ciso-assistant.net
-      # -- Name of an existing secret resource containing the SMTP password in a 'email-primary-password' key
+      # -- Name of an existing secret resource containing the primary SMTP password in a 'email-primary-password' key
+      # -- and the rescue SMTP username in a 'email-rescue-username' key
       existingSecret: ""
-      # -- SMTP hostname
-      host: smtp.server.local
-      # -- SMTP post
-      port: 25
-      # -- Enable TLS for SMTP
-      useTls: false
-      # -- SMTP username
-      username: ""
-      # -- SMTP password
-      password: ""
+      primary:
+        # -- Primary SMTP hostname
+        host: primary.cool-mailer.net
+        # -- Primary SMTP post
+        port: 587
+        # -- Enable TLS for primary SMTP
+        useTls: true
+        # -- Primary SMTP username
+        username: apikey
+        # -- Primary SMTP password
+        password: "primary_password_here"
+      rescue:
+        # -- Rescue SMTP hostname
+        enabled: true
+        # -- Rescue SMTP hostname
+        host: smtp.secondary.mailer.cloud
+        # -- Rescue SMTP hostname
+        port: 587
+        # -- Enable TLS for rescue SMTP
+        useTls: true
+        # -- Rescue SMTP hostname
+        username: username
+        # -- Rescue SMTP hostname
+        password: "rescue_password_here"
 
     # -- Set the database type (sqlite, pgsql or externalPgsql)
     ## Note : PostgreSQL database configuration at `postgresql` or `externalPgsql` section
@@ -98,48 +104,27 @@ backend:
     # -- Enable Django debug mode
     djangoDebug: false
 
-  ## Huey config
-  huey:
-    # -- Huey container name
-    name: huey
-
-    # -- Environment variables to pass to Huey
-    env: []
-
-    # -- Resources for Huey
-    resources: {} # @schema additionalProperties: true
-      #   requests:
-      #     cpu: 100m
-      #     memory: 512Mi
-      #   limits:
-      #     cpu: 256m
-      #     memory: 1024Mi
-
-  ## Backend persistence configuration (used for sqlite DBs and local storage)
+  ## Backend persistence configuration (used for sqlitedb and local storage)
   persistence:
     sqlite:
-      # -- Enable SQLite persistence (for backend and/or Huey)
-      ## Note: Needed for Huey, also when `backend.config.databaseType` is not set to `sqlite`
-      enabled: false
+      # -- Enable SQLite persistence
+      # Note: only when `backend.config.databaseType` use `sqlite` value
+      enabled: true
       # -- SQLite persistant volume size
       size: 5Gi
       # -- SQLite persistant volume storageClass
       storageClass: ""
       # -- SQLite persistant volume accessMode
       accessMode: ReadWriteOnce
-      # -- Name of an existing PersistentVolumeClaim for sqlite
-      existingClaim: ""
     localStorage:
       # -- Enable Local Storage persistence
-      enabled: false
+      enabled: true
       # -- Local Storage persistant volume size
       size: 5Gi
       # -- Local Storage persistant volume storageClass
       storageClass: ""
       # -- Local Storage persistant volume accessMode
       accessMode: ReadWriteOnce
-      # -- Name of an existing PersistentVolumeClaim for local storage. Must be different from sqlite PVC
-      existingClaim: ""
 
   ## Backend image
   image:
@@ -160,7 +145,7 @@ backend:
   imagePullSecrets: []
 
   # -- Resources for the backend
-  resources: {} # @schema additionalProperties: true
+  resources: {}
     #   requests:
     #     cpu: 100m
     #     memory: 512Mi
@@ -173,8 +158,8 @@ backend:
 
   # -- Toggle and define container-level security context
   # @default -- `{}`
-  containerSecurityContext: {} # @schema additionalProperties: true
-  #  seLinuxOptions: {} # @schema additionalProperties: true
+  containerSecurityContext: {}
+  #  seLinuxOptions: {}
   #  runAsUser: 1001
   #  runAsGroup: 1001
   #  runAsNonRoot: true
@@ -189,27 +174,22 @@ backend:
   ## Backend service configuration
   service:
     # -- Backend service annotations
-    annotations: {} # @schema additionalProperties: true
+    annotations: {}
     # -- Backend service labels
-    labels: {} # @schema additionalProperties: true
+    labels: {}
     # -- Backend service http port
     port: 80
     # -- Backend service port name
     portName: http
 
-## CISO Assistant frontend
+
+## Auditrex frontend
 frontend:
-  # -- Frontend container name
+  # -- Frontend name
   name: frontend
 
   # -- The number of frontend pods to run
   replicas: 1
-
-  # -- Frontend deployment annotations
-  annotations: {} # @schema additionalProperties: true
-
-  # -- Frontend pod annotations
-  podAnnotations: {} # @schema additionalProperties: true
 
   ## Frontend specific config
   config:
@@ -235,7 +215,7 @@ frontend:
   imagePullSecrets: []
 
   # -- Resources for the frontend
-  resources: {} # @schema additionalProperties: true
+  resources: {}
     #   requests:
     #     cpu: 100m
     #     memory: 512Mi
@@ -248,8 +228,8 @@ frontend:
 
   # -- Toggle and define container-level security context
   # @default -- `{}`
-  containerSecurityContext: {} # @schema additionalProperties: true
-  #  seLinuxOptions: {} # @schema additionalProperties: true
+  containerSecurityContext: {}
+  #  seLinuxOptions: {}
   #  runAsUser: 1001
   #  runAsGroup: 1001
   #  runAsNonRoot: true
@@ -264,57 +244,52 @@ frontend:
   ## Frontend service configuration
   service:
     # -- Frontend service annotations
-    annotations: {} # @schema additionalProperties: true
+    annotations: {}
     # -- Frontend service labels
-    labels: {} # @schema additionalProperties: true
+    labels: {}
     # -- Frontend service http port
     port: 80
     # -- Frontend service port name
     portName: http
 
-# CISO Assistant ingress configuration
-# Note: host value is inherited from global.domain
+# Auditrex ingress configuration
+# Note: host and tls values are inherited from global.domain and global.tls
 ingress:
-  # -- Enable an ingress resource for the CISO Assistant
-  enabled: false
+  # -- Enable an ingress resource for the Auditrex
+  enabled: true
   # -- Additional ingress labels
-  labels: {} # @schema additionalProperties: true
+  labels: {}
   # -- Additional ingress annotations
-  annotations: {} # @schema additionalProperties: true
+  annotations: {}
     # nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     # cert-manager.io/cluster-issuer: letsencrypt
   # -- Defines which ingress controller will implement the resource
   ingressClassName: ""
-  # -- The path to CISO Assistant
+  # -- The path to Auditrex
   path: /
   # -- Ingress path type. One of `Exact`, `Prefix` or `ImplementationSpecific`
   pathType: Prefix
-  tls:
-    # -- Enable TLS for the ingress
-    enabled: false
-    # -- Use existing TLS secret
-    existingSecret: ""
-    # -- Custom TLS certificate as secret
-    ## Note: 'key' and 'certificate' are expected in PEM format
-    certificateSecret: {} # @schema additionalProperties: true
-      # key: |-
-      #   -----BEGIN RSA PRIVATE KEY-----
-      #   ...
-      #   -----END RSA PRIVATE KEY-----
-      # certificate: |-
-      #   -----BEGIN CERTIFICATE-----
-      #   ...
-      #   -----END CERTIFICATE-----
+  # -- Custom TLS certificate as secret
+  ## Note: 'key' and 'certificate' are expected in PEM format
+  certificateSecret: {}
+    # key: |-
+    #   -----BEGIN RSA PRIVATE KEY-----
+    #   ...
+    #   -----END RSA PRIVATE KEY-----
+    # certificate: |-
+    #   -----BEGIN CERTIFICATE-----
+    #   ...
+    #   -----END CERTIFICATE-----
 
 ## Bundeled PostgreSQL database configuration (Bitnami chart)
 ## Ref: https://artifacthub.io/packages/helm/bitnami/postgresql
 ## Note: Don't enable if you use SQLite mode or external PgSQL database
-postgresql: # @schema additionalProperties: true
+postgresql:
   # -- Enable to deploy PostgreSQL.
   enabled: false
-  global: # @schema additionalProperties: true
-    postgresql: # @schema additionalProperties: true
-      auth: # @schema additionalProperties: true
+  global:
+    postgresql:
+      auth:
         # -- Super-user postgres account password
         ## Note: if not set, it will be dynamically generated
         postgresPassword: ""
@@ -325,8 +300,8 @@ postgresql: # @schema additionalProperties: true
         # -- Database user account password
         ## Note: if not set, it will be dynamically generated
         password: ""
-  primary: # @schema additionalProperties: true
-    persistence: # @schema additionalProperties: true
+  primary:
+    persistence:
       # -- PostgreSQL persistant volume size (default 8Gi).
       size: 5Gi
 

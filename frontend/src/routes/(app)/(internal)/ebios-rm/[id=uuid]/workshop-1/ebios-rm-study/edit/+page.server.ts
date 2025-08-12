@@ -21,7 +21,7 @@ export const load: PageServerLoad = async (event) => {
 
 	if (selectFields) {
 		for (const selectField of selectFields) {
-			const url = `${BASE_API_URL}/${model.endpointUrl ? model.endpointUrl : URLModel}/${
+			const url = `${BASE_API_URL}/${URLModel}/${
 				selectField.detail ? event.params.id + '/' : ''
 			}${selectField.field}/`;
 			const response = await event.fetch(url);

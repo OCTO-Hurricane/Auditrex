@@ -80,11 +80,7 @@ export class PageDetail extends BasePage {
 					} else if (key === 'ref_id') {
 						await expect
 							.soft(this.page.getByTestId(key.replaceAll('_', '-') + '-field-title'))
-							.toHaveText('ID');
-					} else if (key === 'owners') {
-						await expect
-							.soft(this.page.getByTestId(key.replaceAll('_', '-') + '-field-title'))
-							.toHaveText('Assigned to');
+							.toHaveText('Reference ID');
 					} else {
 						await expect
 							.soft(this.page.getByTestId(key.replaceAll('_', '-') + '-field-title'))
@@ -173,7 +169,7 @@ export class PageDetail extends BasePage {
 				.getByTestId('tree-item')
 				.filter({ has: content, hasNotText: path.length != 0 ? path.at(-1) : undefined })
 				.getByTestId('tree-item-lead')
-				.getByTestId('progress-ring-svg'),
+				.getByTestId('progress-radial'),
 			default: this.page.getByTestId('tree-item').filter({ hasText: new RegExp(`^${value}\n*.*`) })
 		};
 	}

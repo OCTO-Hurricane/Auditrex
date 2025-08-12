@@ -36,7 +36,6 @@ router.register(
     r"reference-controls", ReferenceControlViewSet, basename="reference-controls"
 )
 router.register(r"assets", AssetViewSet, basename="assets")
-router.register(r"asset-class", AssetClassViewSet, basename="asset-class")
 
 router.register(r"users", UserViewSet, basename="users")
 router.register(r"user-groups", UserGroupViewSet, basename="user-groups")
@@ -48,11 +47,6 @@ router.register(
     r"compliance-assessments",
     ComplianceAssessmentViewSet,
     basename="compliance-assessments",
-)
-router.register(
-    r"campaigns",
-    CampaignViewSet,
-    basename="campaigns",
 )
 router.register(r"requirement-nodes", RequirementViewSet, basename="requirement-nodes")
 router.register(
@@ -86,10 +80,6 @@ router.register(
     r"findings-assessments", FindingsAssessmentViewSet, basename="findings-assessments"
 )
 router.register(r"findings", FindingViewSet, basename="findings")
-router.register(r"incidents", IncidentViewSet, basename="incidents")
-router.register(r"timeline-entries", TimelineEntryViewSet, basename="timeline-entries")
-router.register(r"task-templates", TaskTemplateViewSet, basename="task-templates")
-router.register(r"task-nodes", TaskNodeViewSet, basename="task-nodes")
 
 ROUTES = settings.ROUTES
 MODULES = settings.MODULES.values()
@@ -102,17 +92,13 @@ for route in ROUTES:
         basename=ROUTES[route].get("basename"),
     )
 
-
 urlpatterns = [
     path("", include(router.urls)),
     path("iam/", include("iam.urls")),
     path("serdes/", include("serdes.urls")),
-    path("data-wizard/", include("data_wizard.urls")),
     path("settings/", include("global_settings.urls")),
     path("user-preferences/", UserPreferencesView.as_view(), name="user-preferences"),
     path("ebios-rm/", include("ebios_rm.urls")),
-    path("privacy/", include("privacy.urls")),
-    path("resilience/", include("resilience.urls")),
     path("csrf/", get_csrf_token, name="get_csrf_token"),
     path("build/", get_build, name="get_build"),
     path("evidences/<uuid:pk>/upload/", UploadAttachmentView.as_view(), name="upload"),
@@ -121,9 +107,6 @@ urlpatterns = [
     path("agg_data/", get_agg_data, name="get_agg_data"),
     path("composer_data/", get_composer_data, name="get_composer_data"),
     path("i18n/", include("django.conf.urls.i18n")),
-    path(
-        "accounts/oidc/", include("iam.sso.oidc.urls")
-    ),  # NOTE: This has to be placed before the allauth urls, otherwise our OIDC login implementation will not be used
     path(
         "accounts/saml/", include("iam.sso.saml.urls")
     ),  # NOTE: This has to be placed before the allauth urls, otherwise our ACS implementation will not be used
@@ -137,15 +120,6 @@ urlpatterns = [
         "compliance-assessments/<uuid:pk>/suggestions/applied-controls/",
         ComplianceAssessmentViewSet.create_suggested_applied_controls,
     ),
-    path(
-        "compliance-assessments/<uuid:pk>/action-plan/",
-        ComplianceAssessmentActionPlanList.as_view(),
-    ),
-    path(
-        "risk-assessments/<uuid:pk>/action-plan/",
-        RiskAssessmentActionPlanList.as_view(),
-    ),
-    path("quick-start/", QuickStartView.as_view(), name="quick-start"),
 ]
 
 # Additional modules take precedence over the default modules

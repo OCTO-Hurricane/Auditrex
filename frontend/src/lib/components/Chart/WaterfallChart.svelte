@@ -1,15 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	interface Props {
-		width?: string;
-		height?: string;
-		classesContainer?: string;
-		// export let title = '';
-		name?: string;
-	}
-
-	let { width = 'w-auto', height = 'h-full', classesContainer = '', name = '' }: Props = $props();
+	export let width = 'w-auto';
+	export let height = 'h-full';
+	export let classesContainer = '';
+	// export let title = '';
+	export let name = '';
 
 	// interface waterfallData {
 	// 	placeholder: number[];
@@ -28,7 +24,7 @@
 			tooltip: {
 				trigger: 'axis',
 				axisPointer: {
-					type: 'shadow-sm'
+					type: 'shadow'
 				},
 				formatter: function (params) {
 					var tar = params[1];
@@ -91,4 +87,4 @@
 	});
 </script>
 
-<div id={chart_id} class="{width} {height} {classesContainer}"></div>
+<div id={chart_id} class="{width} {height} {classesContainer}" />

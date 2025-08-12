@@ -4,7 +4,7 @@ import { getModelInfo } from '$lib/utils/crud';
 import { modelSchema } from '$lib/utils/schemas';
 import { listViewFields } from '$lib/utils/table';
 import type { ModelInfo, urlModel } from '$lib/utils/types';
-import { type TableSource } from '@skeletonlabs/skeleton-svelte';
+import { type TableSource } from '@skeletonlabs/skeleton';
 import { type Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -16,17 +16,8 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	const deleteForm = await superValidate(zod(schema));
 	const URLModel = 'strategic-scenarios';
 	const createSchema = modelSchema(URLModel);
-	const objectEndpoint = `${BASE_API_URL}/ebios-rm/studies/${params.id}/object/`;
-	const objectResponse = await fetch(objectEndpoint);
-	let object: any = {};
-	if (objectResponse.ok) {
-		object = await objectResponse.json();
-	} else {
-		console.error(`Failed to fetch study object: ${objectResponse.statusText}`);
-	}
 	const initialData = {
-		ebios_rm_study: params.id,
-		folder: object.folder
+		ebios_rm_study: params.id
 	};
 	const createForm = await superValidate(initialData, zod(createSchema), { errors: false });
 	const model: ModelInfo = getModelInfo(URLModel);
@@ -55,13 +46,6 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	}
 	model.selectOptions = selectOptions;
 
-	const missingAttackPathResponse = await fetch(
-		`${BASE_API_URL}/ebios-rm/strategic-scenarios?ebios_rm_study=${params.id}&attack_paths__isnull=true`
-	);
-	const scenariosWithoutAttackPath = missingAttackPathResponse.ok
-		? await missingAttackPathResponse.json()
-		: [];
-
 	const headData: Record<string, string> = listViewFields[URLModel as urlModel].body.reduce(
 		(obj, key, index) => {
 			obj[key] = listViewFields[URLModel as urlModel].head[index];
@@ -76,7 +60,7 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		meta: []
 	};
 
-	return { createForm, deleteForm, model, URLModel, table, scenariosWithoutAttackPath };
+	return { createForm, deleteForm, model, URLModel, table };
 };
 
 export const actions: Actions = {

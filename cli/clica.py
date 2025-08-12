@@ -25,7 +25,7 @@ CLICA_CONFG_PATH = ".clica_config.yaml"
 
 @click.group()
 def cli():
-    """CLICA is the CLI tool to interact with CISO Assistant REST API."""
+    """CLICA is the CLI tool to interact with Auditrex REST API."""
     pass
 
 
@@ -291,7 +291,6 @@ def import_risk_assessment(file, folder, perimeter, name, matrix, create_all):
             "ref_id": scenario.ref_id,
             "name": scenario.name,
             "risk_assessment": ra_id,
-            "treatment": str(scenario.treatment).lower(),
         }
         if None in [
             impact_map.get(scenario.current_impact),

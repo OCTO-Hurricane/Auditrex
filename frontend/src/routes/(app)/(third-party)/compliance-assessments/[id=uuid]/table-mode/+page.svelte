@@ -1,50 +1,43 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 	import Checkbox from '$lib/components/Forms/Checkbox.svelte';
-	import Question from '$lib/components/Forms/Question.svelte';
-	import RadioGroup from '$lib/components/Forms/RadioGroup.svelte';
 	import Score from '$lib/components/Forms/Score.svelte';
 	import CreateModal from '$lib/components/Modals/CreateModal.svelte';
-	import {
-		getModalStore,
-		type ModalComponent,
-		type ModalSettings,
-		type ModalStore
-	} from '$lib/components/Modals/stores';
 	import UpdateModal from '$lib/components/Modals/UpdateModal.svelte';
+	import DeleteConfirmModal from '$lib/components/Modals/DeleteConfirmModal.svelte';
 	import {
-		complianceResultColorMap,
 		complianceResultTailwindColorMap,
 		complianceStatusTailwindColorMap
 	} from '$lib/utils/constants';
-	import { displayScoreColor } from '$lib/utils/helpers';
+	import { getModelInfo } from '$lib/utils/crud';
 	import { safeTranslate } from '$lib/utils/i18n';
-	import { m } from '$paraglide/messages';
-	import { Accordion, ProgressRing, Switch } from '@skeletonlabs/skeleton-svelte';
-	import { superForm, type SuperForm } from 'sveltekit-superforms';
+	import * as m from '$paraglide/messages';
+	import {
+		Accordion,
+		AccordionItem,
+		getModalStore,
+		RadioGroup,
+		RadioItem,
+		SlideToggle,
+		type ModalComponent,
+		type ModalSettings,
+		type ModalStore
+	} from '@skeletonlabs/skeleton';
+	import { superForm } from 'sveltekit-superforms';
 	import type { Actions, PageData } from './$types';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
+	import { displayScoreColor } from '$lib/utils/helpers';
 
-	interface Props {
-		data: PageData;
-		form: Actions;
-		/** Is the page used for shallow routing? */
-		shallow?: boolean;
-		actionPath?: string;
-		questionnaireOnly?: boolean;
-		invalidateAll?: boolean;
-		[key: string]: any;
-	}
+	export let data: PageData;
+	export let form: Actions;
 
-	let {
-		data,
-		form,
-		shallow = false,
-		actionPath = '',
-		questionnaireOnly = false,
-		invalidateAll = true
-	}: Props = $props();
+	/** Is the page used for shallow routing? */
+	export let shallow = false;
+
+	export let actionPath: string = '';
+	export let questionnaireOnly: boolean = false;
+	export let assessmentOnly: boolean = false;
+	export let invalidateAll: boolean = true;
 
 	const result_options = [
 		{ id: 'not_assessed', label: m.notAssessed() },
@@ -61,47 +54,23 @@
 	];
 
 	const requirementHashmap = Object.fromEntries(
-		data.requirements.map((requirement: Record<string, any>) => [requirement.id, requirement])
+		data.requirements.map((requirement) => [requirement.id, requirement])
 	);
 
-	// Initialize hide suggestion state
-	let hideSuggestionHashmap: Record<string, boolean> = $state({});
-	const requirementAssessments = $state(data.requirement_assessments);
-	const complianceAssessment = $state(data.compliance_assessment);
-	const hasQuestions = $derived(
-		requirementAssessments.some(
-			(requirementAssessment) => requirementAssessment.requirement.questions
-		)
-	);
+	$: createdEvidence = form?.createdEvidence;
 
-	// svelte-ignore state_referenced_locally
-	requirementAssessments.forEach((ra) => {
-		hideSuggestionHashmap[ra.id] = false;
-	});
-
-	let createdEvidence = $derived(form?.createdEvidence);
-
-	// Memoized title function
-	const titleMap = new Map();
-	function getTitle(requirementAssessment: Record<string, any>) {
-		if (titleMap.has(requirementAssessment.id)) {
-			return titleMap.get(requirementAssessment.id);
-		}
+	function title(requirementAssessment) {
 		const requirement =
 			requirementHashmap[requirementAssessment.requirement] ?? requirementAssessment;
-		const result = requirement.display_short ? requirement.display_short : (requirement.name ?? '');
-		titleMap.set(requirementAssessment.id, result);
-		return result;
+		return requirement.display_short ? requirement.display_short : (requirement.name ?? '');
 	}
 
 	// Function to update requirement assessments, the data argument contain fields as keys and the associated values as values.
 	async function updateBulk(
-		requirementAssessment: Record<string, any>,
+		requirementAssessment,
 		data: { [key: string]: string | number | boolean | null }
 	) {
-		const form = document.getElementById(
-			`tableModeForm-${requirementAssessment.id}`
-		) as HTMLFormElement;
+		const form = document.getElementById(`tableModeForm-${requirementAssessment.id}`);
 		const formData = {
 			...data,
 			id: requirementAssessment.id
@@ -115,13 +84,20 @@
 
 	// Function to update requirement assessments
 	async function update(
-		requirementAssessment: Record<string, any>,
+		requirementAssessment,
 		field: string,
-		answers: {
-			urn: { value: string | string[] };
+		question: {
+			urn: string;
+			answer: string;
 		} | null = null
 	) {
-		const value = answers ? requirementAssessment.answers : requirementAssessment[field];
+		if (question) {
+			const questionIndex = requirementAssessment.answer.questions.findIndex(
+				(q) => q.urn === question.urn
+			);
+			requirementAssessment.answer.questions[questionIndex].answer = question.answer;
+		}
+		const value = question ? requirementAssessment.answer : requirementAssessment[field];
 		await updateBulk(requirementAssessment, {
 			[field]: value
 		});
@@ -132,26 +108,21 @@
 		}
 	}
 
-	// Memoized color function
-	const colorCache = new Map();
-
 	function addColor(result: string, map: Record<string, string>) {
-		const cacheKey = `${result}-${JSON.stringify(map)}`;
-		if (colorCache.has(cacheKey)) {
-			return colorCache.get(cacheKey);
-		}
-		const color = map[result];
-		colorCache.set(cacheKey, color);
-		return color;
+		return map[result];
 	}
 
-	let questionnaireMode = $state(
-		questionnaireOnly ? true : !hasQuestions ? false : page.data.user.is_third_party ? true : false
-	);
+	let questionnaireMode = questionnaireOnly
+		? true
+		: assessmentOnly
+			? false
+			: $page.data.user.is_third_party
+				? true
+				: false;
 
 	const modalStore: ModalStore = getModalStore();
 
-	function modalEvidenceCreateForm(createform: SuperForm<any>): void {
+	function modalEvidenceCreateForm(createform): void {
 		const modalComponent: ModalComponent = {
 			ref: CreateModal,
 			props: {
@@ -170,30 +141,26 @@
 		modalStore.trigger(modal);
 	}
 
-	let addedEvidence = $state(0);
+	let addedEvidence = 0;
 
-	run(() => {
-		if (createdEvidence && shallow) {
-			const requirement = data.requirements.find((ra) => ra.id === createdEvidence.requirements[0]);
-			if (requirement) {
-				requirement.evidences.push({
-					str: createdEvidence.name,
-					id: createdEvidence.id
-				});
-				createdEvidence = undefined;
-				addedEvidence += 1;
-			}
-		}
-	});
+	$: if (createdEvidence && shallow) {
+		data.requirements
+			.find((requirementAssessment) => requirementAssessment.id === createdEvidence.requirements[0])
+			.evidences.push({
+				str: createdEvidence.name,
+				id: createdEvidence.id
+			});
+		createdEvidence = undefined;
+		addedEvidence = +1;
+	}
 
 	const requirementAssessmentScores = Object.fromEntries(
-		// svelte-ignore state_referenced_locally
-		requirementAssessments.map((requirement) => {
+		data.requirement_assessments.map((requirement) => {
 			return [requirement.id, [requirement.is_scored, requirement.score]];
 		})
 	);
 
-	async function updateScore(requirementAssessment: Record<string, any>) {
+	async function updateScore(requirementAssessment) {
 		const isScored = requirementAssessment.is_scored;
 		const score = requirementAssessment.score;
 		const documentationScore = requirementAssessment.documentation_score;
@@ -214,8 +181,8 @@
 		}, 500); // There must be 500ms without a score change for a request to be sent and modify the score of the RequirementAsessment in the backend
 	}
 
-	function modalUpdateForm(requirementAssessment: Record<string, any>): void {
-		const modalComponent: ModalComponent = {
+	function modalUpdateForm(requirementAssessment): void {
+		let modalComponent: ModalComponent = {
 			ref: UpdateModal,
 			props: {
 				form: requirementAssessment.updateForm,
@@ -225,116 +192,68 @@
 				context: 'selectEvidences'
 			}
 		};
-		const modal: ModalSettings = {
+		let modal: ModalSettings = {
 			type: 'component',
 			component: modalComponent,
-			title: getTitle(requirementAssessment)
+			title: title(requirementAssessment)
 		};
 		modalStore.trigger(modal);
 	}
-
-	function toggleSuggestion(requirementAssessmentId: string) {
-		hideSuggestionHashmap[requirementAssessmentId] =
-			!hideSuggestionHashmap[requirementAssessmentId];
-	}
-
-	function getClassesText(mappingInferenceResult: string) {
-		return complianceResultColorMap[mappingInferenceResult] === '#000000' ? 'text-white' : '';
-	}
-	// Create separate superForm instances for each requirement assessment
-	let scoreForms = $state({});
-	let docScoreForms = $state({});
-	let isScoredForms = $state({});
-
-	run(() => {
-		// Initialize the form instances
-		requirementAssessments.forEach((requirementAssessment, index) => {
-			const id = requirementAssessment.id;
-			if (!scoreForms[id]) {
-				scoreForms[id] = superForm(requirementAssessment.scoreForm, {
-					id: `requirement-score-${id}-${index}`
-				});
-			}
-			if (!docScoreForms[id]) {
-				docScoreForms[id] = superForm(requirementAssessment.scoreForm, {
-					id: `requirement-documentation-score-${id}-${index}`
-				});
-			}
-			if (!isScoredForms[id]) {
-				isScoredForms[id] = superForm(requirementAssessment.scoreForm, {
-					id: `requirement-is-scored-${id}-${index}`
-				});
-			}
-		});
-	});
-
-	const accordionItems: Record<string, ['' | 'observation' | 'evidence']> = $state(
-		// svelte-ignore state_referenced_locally
-		requirementAssessments.reduce((acc, requirementAssessment) => {
-			const requirement =
-				requirementHashmap[requirementAssessment.requirement] ?? requirementAssessment;
-			return {
-				...acc,
-				[requirementAssessment.id]: ['']
-			};
-		})
-	);
 </script>
 
 <div class="flex flex-col space-y-4 whitespace-pre-line">
 	<div
 		class="card px-6 py-4 bg-white flex flex-col justify-evenly shadow-lg w-full h-full space-y-2"
 	>
-		<div
-			class="sticky top-0 p-2 z-10 card bg-white items-center justify-evenly flex flex-row w-full"
-		>
-			<a
-				href="/compliance-assessments/{complianceAssessment.id}"
-				class="flex items-center space-x-2 text-primary-800 hover:text-primary-600"
+		{#if !(questionnaireOnly ? !assessmentOnly : assessmentOnly)}
+			<div
+				class="sticky top-0 p-2 z-10 card bg-white items-center justify-evenly flex flex-row w-full"
 			>
-				<i class="fa-solid fa-arrow-left"></i>
-				<p class="">{m.goBackToAudit()} {complianceAssessment.name}</p>
-			</a>
-			{#if !(questionnaireOnly ? hasQuestions : !hasQuestions)}
+				<a
+					href="/compliance-assessments/{data.compliance_assessment.id}"
+					class="flex items-center space-x-2 text-primary-800 hover:text-primary-600"
+				>
+					<i class="fa-solid fa-arrow-left" />
+					<p class="">{m.goBackToAudit()} {data.compliance_assessment.name}</p>
+				</a>
 				<div class="flex items-center justify-center space-x-4">
 					{#if questionnaireMode}
 						<p class="font-bold text-sm">{m.assessmentMode()}</p>
 					{:else}
 						<p class="font-bold text-sm text-green-500">{m.assessmentMode()}</p>
 					{/if}
-					<Switch
+					<SlideToggle
 						name="questionnaireToggle"
-						classes="flex flex-row items-center justify-center"
-						controlActive="bg-primary-500"
-						controlInactive="bg-green-500"
-						onCheckedChange={(e) => {
-							questionnaireMode = e.checked;
-						}}
+						class="flex flex-row items-center justify-center"
+						active="bg-primary-500"
+						background="bg-green-500"
+						bind:checked={questionnaireMode}
+						on:click={() => (questionnaireMode = !questionnaireMode)}
 					>
 						{#if questionnaireMode}
 							<p class="font-bold text-sm text-primary-500">{m.questionnaireMode()}</p>
 						{:else}
 							<p class="font-bold text-sm">{m.questionnaireMode()}</p>
 						{/if}
-					</Switch>
+					</SlideToggle>
 				</div>
-			{/if}
-		</div>
-		{#each requirementAssessments as requirementAssessment, i}
+			</div>
+		{/if}
+		{#each data.requirement_assessments as requirementAssessment}
 			<div class="w-2"></div>
 
 			<span class="relative flex justify-center py-4">
 				<div
-					class="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-transparent bg-linear-to-r from-transparent via-gray-500 to-transparent opacity-75"
+					class="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-transparent bg-gradient-to-r from-transparent via-gray-500 to-transparent opacity-75"
 				></div>
 
-				<span class="relative z-10 bg-white px-6 text-orange-600 font-semibold text-xl">
-					{getTitle(requirementAssessment)}
+				<span class="relative z-10 bg-white px-6 text-orange-600 font-semibold text-xl z-auto">
+					{title(requirementAssessment)}
 				</span>
 			</span>
 			<div class="h-2"></div>
 			<div
-				class="flex flex-col items-center justify-center border px-4 py-2 shadow-sm rounded-xl space-y-2"
+				class="flex flex-col items-center justify-center border px-4 py-2 shadow rounded-xl space-y-2"
 			>
 				{#if requirementAssessment.description}
 					<div class="flex w-full font-semibold">
@@ -342,113 +261,6 @@
 					</div>
 				{/if}
 				{#if requirementAssessment.assessable}
-					{#if data.requirements[i].annotation || data.requirements[i].typical_evidence || requirementAssessment.mapping_inference.result}
-						<div
-							class="card p-4 preset-tonal-primary text-sm flex flex-col justify-evenly cursor-auto w-full"
-						>
-							<h2 class="font-semibold text-lg flex flex-row justify-between">
-								<div>
-									<i class="fa-solid fa-circle-info mr-2"></i>{m.additionalInformation()}
-								</div>
-								<button onclick={() => toggleSuggestion(requirementAssessment.id)}>
-									{#if !hideSuggestionHashmap[requirementAssessment.id]}
-										<i class="fa-solid fa-chevron-down"></i>
-									{:else}
-										<i class="fa-solid fa-chevron-right"></i>
-									{/if}
-								</button>
-							</h2>
-							{#if !hideSuggestionHashmap[requirementAssessment.id]}
-								{#if data.requirements[i].annotation}
-									<div class="my-2">
-										<p class="font-medium">
-											<i class="fa-solid fa-pencil"></i>
-											{m.annotation()}
-										</p>
-										<p class="whitespace-pre-line py-1">
-											{data.requirements[i].annotation}
-										</p>
-									</div>
-								{/if}
-								{#if data.requirements[i].typical_evidence}
-									<div class="my-2">
-										<p class="font-medium">
-											<i class="fa-solid fa-pencil"></i>
-											{m.typicalEvidence()}
-										</p>
-										<p class="whitespace-pre-line py-1">
-											{data.requirements[i].typical_evidence}
-										</p>
-									</div>
-								{/if}
-								{#if requirementAssessment.mapping_inference.result}
-									<div class="my-2">
-										<p class="font-medium">
-											<i class="fa-solid fa-link"></i>
-											{m.mappingInference()}
-										</p>
-										<span class="text-xs text-gray-500"
-											><i class="fa-solid fa-circle-info"></i> {m.mappingInferenceHelpText()}</span
-										>
-										<ul class="list-disc ml-4">
-											<li>
-												<p>
-													<a
-														class="anchor"
-														href="/requirement-assessments/{requirementAssessment.mapping_inference
-															.source_requirement_assessment.id}"
-													>
-														{requirementAssessment.mapping_inference.source_requirement_assessment
-															.str}
-													</a>
-												</p>
-												<p class="whitespace-pre-line py-1">
-													<span class="italic">{m.coverageColon()}</span>
-													<span class="badge h-fit">
-														{safeTranslate(
-															requirementAssessment.mapping_inference.source_requirement_assessment
-																.coverage
-														)}
-													</span>
-												</p>
-												{#if requirementAssessment.mapping_inference.source_requirement_assessment.is_scored}
-													<p class="whitespace-pre-line py-1">
-														<span class="italic">{m.scoreSemiColon()}</span>
-														<span class="badge h-fit">
-															{safeTranslate(
-																requirementAssessment.mapping_inference
-																	.source_requirement_assessment.score
-															)}
-														</span>
-													</p>
-												{/if}
-												<p class="whitespace-pre-line py-1">
-													<span class="italic">{m.suggestionColon()}</span>
-													<span
-														class="badge {getClassesText(
-															requirementAssessment.mapping_inference.result
-														)} h-fit"
-														style="background-color: {complianceResultColorMap[
-															requirementAssessment.mapping_inference.result
-														]};"
-													>
-														{safeTranslate(requirementAssessment.mapping_inference.result)}
-													</span>
-												</p>
-												{#if requirementAssessment.mapping_inference.annotation}
-													<p class="whitespace-pre-line py-1">
-														<span class="italic">{m.annotationColon()}</span>
-														{requirementAssessment.mapping_inference.annotation}
-													</p>
-												{/if}
-											</li>
-										</ul>
-									</div>
-								{/if}
-							{/if}
-						</div>
-					{/if}
-
 					<form
 						class="flex flex-col space-y-2 items-center justify-evenly w-full"
 						id="tableModeForm-{requirementAssessment.id}"
@@ -459,159 +271,217 @@
 							<div class="flex flex-row w-full space-x-2 my-4">
 								<div class="flex flex-col items-center w-1/2">
 									<p class="flex items-center font-semibold text-blue-600 italic">{m.status()}</p>
-									<RadioGroup
-										possibleOptions={status_options}
-										key="id"
-										labelKey="label"
-										field="status"
-										colorMap={complianceStatusTailwindColorMap}
-										initialValue={requirementAssessment.status}
-										onChange={(newValue) => {
-											const newStatus =
-												requirementAssessment.status === newValue ? 'to_do' : newValue;
-											requirementAssessment.status = newStatus;
-											update(requirementAssessment, 'status');
-										}}
-									/>
+									<RadioGroup class="w-full flex-wrap items-center">
+										{#each status_options as option}
+											<RadioItem
+												class="h-full"
+												id={option.id}
+												active={addColor(
+													requirementAssessment.status,
+													complianceStatusTailwindColorMap
+												)}
+												value={option.id}
+												bind:group={requirementAssessment.status}
+												name="status"
+												on:click={async () => {
+													const newStatus =
+														requirementAssessment.status === option.id ? 'to_do' : option.id;
+													requirementAssessment.status = newStatus;
+													await update(requirementAssessment, 'status');
+												}}>{option.label}</RadioItem
+											>
+										{/each}
+									</RadioGroup>
 								</div>
 								<div class="flex flex-col items-center w-1/2">
 									<p class="flex items-center font-semibold text-purple-600 italic">
 										{m.result()}
 									</p>
-									<RadioGroup
-										possibleOptions={result_options}
-										key="id"
-										labelKey="label"
-										field="result"
-										colorMap={complianceResultTailwindColorMap}
-										initialValue={requirementAssessment.result}
-										onChange={(newValue) => {
-											const newResult =
-												requirementAssessment.result === newValue ? 'to_do' : newValue;
-											requirementAssessment.result = newResult;
-											update(requirementAssessment, 'result');
-										}}
-									/>
+									<RadioGroup class="w-full flex-wrap items-center">
+										{#each result_options as option}
+											<RadioItem
+												class="h-full"
+												active={addColor(
+													requirementAssessment.result,
+													complianceResultTailwindColorMap
+												)}
+												id={option.id}
+												value={option.id}
+												bind:group={requirementAssessment.result}
+												name="result"
+												on:click={async () => {
+													const newResult =
+														requirementAssessment.result === option.id ? 'not_assessed' : option.id;
+													requirementAssessment.result = newResult;
+													await update(requirementAssessment, 'result'); // Update result for both select and deselect
+												}}
+												>{option.label}
+											</RadioItem>
+										{/each}
+									</RadioGroup>
 								</div>
 							</div>
 						{/if}
-						{#if requirementAssessment.requirement.questions != null && Object.keys(requirementAssessment.requirement.questions).length !== 0}
+						{#if requirementAssessment.answer != null && Object.keys(requirementAssessment.answer).length !== 0}
 							<div class="flex flex-col w-full space-y-2">
-								<Question
-									questions={requirementAssessment.requirement.questions}
-									initialValue={requirementAssessment.answers}
-									field="answers"
-									{shallow}
-									onChange={(urn, newAnswer) => {
-										requirementAssessment.answers[urn] = newAnswer;
-										update(requirementAssessment, 'answers', requirementAssessment.answers);
-									}}
-								/>
+								{#each requirementAssessment.answer.questions as question}
+									<li class="flex flex-col space-y-2 rounded-xl">
+										<p>{question.text}</p>
+										{#if shallow}
+											{#if question.answer}
+												<p class="text-primary-500 font-semibold">{question.answer}</p>
+											{:else}
+												<p class="text-gray-400 italic">{m.noAnswer()}</p>
+											{/if}
+										{:else if question.type === 'unique_choice'}
+											<RadioGroup
+												class="flex-col"
+												active="variant-filled-primary"
+												hover="hover:variant-soft-primary"
+											>
+												{#each question.options as option}
+													<RadioItem
+														class="shadow-md flex"
+														bind:group={question.answer}
+														name="question"
+														value={option}
+														on:click={async () => {
+															const newAnswer = question.answer === option ? null : option;
+															question.answer = newAnswer;
+															await update(requirementAssessment, 'answer', question);
+														}}
+														><span class="text-left">{option}</span>
+													</RadioItem>
+												{/each}
+											</RadioGroup>
+										{:else if question.type === 'date'}
+											<input
+												type="date"
+												placeholder=""
+												class="input w-fit"
+												bind:value={question.answer}
+												on:change={async () =>
+													await update(requirementAssessment, 'answer', question)}
+												{...$$restProps}
+											/>
+										{:else}
+											<textarea
+												placeholder=""
+												class="input w-full"
+												bind:value={question.answer}
+												on:keydown={(event) => event.key === 'Enter' && event.preventDefault()}
+												on:change={async () =>
+													await update(requirementAssessment, 'answer', question)}
+												{...$$restProps}
+											/>
+										{/if}
+									</li>
+								{/each}
 							</div>
 						{/if}
 						<div class="flex flex-col w-full place-items-center">
 							{#if !shallow}
 								<Score
-									form={scoreForms[requirementAssessment.id]}
-									min_score={complianceAssessment.min_score}
-									max_score={complianceAssessment.max_score}
-									scores_definition={data.scores.scores_definition}
+									form={superForm(requirementAssessment.scoreForm, {
+										id: `requirement-score-${requirementAssessment.id}`
+									})}
+									min_score={data.compliance_assessment.min_score}
+									max_score={data.compliance_assessment.max_score}
+									scores_definition={data.compliance_assessment.scores_definition}
 									field="score"
-									label={complianceAssessment.show_documentation_score
+									label={data.compliance_assessment.show_documentation_score
 										? m.implementationScore()
 										: m.score()}
 									styles="w-full p-1"
-									onChange={(newScore) => {
-										requirementAssessment.score = newScore;
-										updateScore(requirementAssessment);
-									}}
+									bind:score={requirementAssessment.score}
+									on:change={async () => await updateScore(requirementAssessment)}
 									disabled={!requirementAssessment.is_scored ||
 										requirementAssessment.result === 'not_applicable'}
 								>
-									{#snippet left()}
-										<div>
-											<Checkbox
-												form={isScoredForms[requirementAssessment.id]}
-												field="is_scored"
-												label={''}
-												helpText={m.scoringHelpText()}
-												checkboxComponent="switch"
-												classes="h-full flex flex-row items-center justify-center my-1"
-												classesContainer="h-full flex flex-row items-center space-x-4"
-												onChange={async () => {
-													requirementAssessment.is_scored = !requirementAssessment.is_scored;
-													await update(requirementAssessment, 'is_scored');
-												}}
-											/>
-										</div>
-									{/snippet}
+									<div slot="left">
+										<Checkbox
+											form={superForm(requirementAssessment.scoreForm, {
+												id: `requirement-is-scored-${requirementAssessment.id}`
+											})}
+											field="is_scored"
+											label={''}
+											helpText={m.scoringHelpText()}
+											checkboxComponent="switch"
+											class="h-full flex flex-row items-center justify-center my-1"
+											classesContainer="h-full flex flex-row items-center space-x-4"
+											on:change={async () => {
+												requirementAssessment.is_scored = !requirementAssessment.is_scored;
+												await update(requirementAssessment, 'is_scored');
+											}}
+										/>
+									</div>
 								</Score>
-								{#if complianceAssessment.show_documentation_score}
+								{#if data.compliance_assessment.show_documentation_score}
 									<Score
-										form={docScoreForms[requirementAssessment.id]}
-										min_score={complianceAssessment.min_score}
-										max_score={complianceAssessment.max_score}
-										scores_definition={data.scores.scores_definition}
+										form={superForm(requirementAssessment.scoreForm, {
+											id: `requirement-documentation-score-${requirementAssessment.id}`
+										})}
+										min_score={data.compliance_assessment.min_score}
+										max_score={data.compliance_assessment.max_score}
 										field="documentation_score"
 										label={m.documentationScore()}
-										isDoc={true}
 										styles="w-full p-1"
-										onChange={(newScore) => {
-											requirementAssessment.documentation_score = newScore;
-											updateScore(requirementAssessment);
-										}}
+										bind:score={requirementAssessment.documentation_score}
+										on:change={async () => await updateScore(requirementAssessment)}
 										disabled={!requirementAssessment.is_scored ||
 											requirementAssessment.result === 'not_applicable'}
 									/>
 								{/if}
-							{:else if complianceAssessment.show_documentation_score && requirementAssessment.is_scored}
+							{:else if data.compliance_assessment.show_documentation_score && requirementAssessment.is_scored}
 								<div class="flex flex-row items-center space-x-2 w-full">
 									<span>{m.implementationScoreResult()}</span>
-									<ProgressRing
-										strokeWidth="20px"
-										meterStroke={displayScoreColor(
+									<ProgressRadial
+										stroke={100}
+										meter={displayScoreColor(
 											requirementAssessment.score,
-											complianceAssessment.max_score
+											data.compliance_assessment.max_score
 										)}
-										value={(requirementAssessment.score * 100) / complianceAssessment.max_score}
-										size="size-10"
+										font={150}
+										value={(requirementAssessment.score * 100) /
+											data.compliance_assessment.max_score}
+										width="w-10"
 									>
 										{requirementAssessment.score ?? '--'}
-									</ProgressRing>
+									</ProgressRadial>
 									<span>{m.documentationScoreResult()}</span>
-									<ProgressRing
-										strokeWidth="20px"
-										meterStroke={displayScoreColor(
+									<ProgressRadial
+										stroke={100}
+										meter={displayScoreColor(
 											requirementAssessment.documentation_score,
-											complianceAssessment.max_score
+											data.compliance_assessment.max_score
 										)}
+										font={150}
 										value={(requirementAssessment.documentation_score * 100) /
-											complianceAssessment.max_score}
-										size="size-10"
+											data.compliance_assessment.max_score}
+										width="w-10"
 									>
 										{requirementAssessment.documentation_score ?? '--'}
-									</ProgressRing>
+									</ProgressRadial>
 								</div>
 							{:else if requirementAssessment.is_scored}
 								<div class="flex flex-row items-center space-x-2 w-full">
 									<span>{m.scoreResult()}</span>
-									<ProgressRing
-										strokeWidth="20px"
-										meterStroke={displayScoreColor(
+									<ProgressRadial
+										stroke={100}
+										meter={displayScoreColor(
 											requirementAssessment.score,
-											complianceAssessment.max_score
+											data.compliance_assessment.max_score
 										)}
-										value={(requirementAssessment.score * 100) / complianceAssessment.max_score}
-										size="size-10"
+										font={150}
+										value={(requirementAssessment.score * 100) /
+											data.compliance_assessment.max_score}
+										width="w-10"
 									>
 										{requirementAssessment.score ?? '--'}
-									</ProgressRing>
+									</ProgressRadial>
 								</div>
 							{/if}
-							<Accordion
-								value={accordionItems[requirementAssessment.id]}
-								onValueChange={(e) => (accordionItems[requirementAssessment.id] = e.value)}
-							>
+							<Accordion regionCaret="flex">
 								{#if shallow}
 									{#if requirementAssessment.observation}
 										<p class="text-primary-500">{requirementAssessment.observation}</p>
@@ -619,76 +489,74 @@
 										<p class="text-gray-400 italic">{m.noObservation()}</p>
 									{/if}
 								{:else}
-									<Accordion.Item value="observation">
-										{#snippet control()}
-											<p class="flex">{m.observation()}</p>
-										{/snippet}
-										{#snippet panel()}
+									<AccordionItem caretOpen="rotate-0" caretClosed="-rotate-90">
+										<svelte:fragment slot="summary"
+											><p class="flex">{m.observation()}</p></svelte:fragment
+										>
+										<svelte:fragment slot="content">
 											<div>
 												<textarea
 													placeholder=""
 													class="input w-full"
 													bind:value={requirementAssessment.observation}
-													onkeydown={(event) => event.key === 'Enter' && event.preventDefault()}
-												></textarea>
+													on:keydown={(event) => event.key === 'Enter' && event.preventDefault()}
+												/>
 												{#if requirementAssessment.observationBuffer !== requirementAssessment.observation}
 													<button
 														class="rounded-md w-8 h-8 border shadow-lg hover:bg-green-300 hover:text-green-500 duration-300"
-														onclick={async () => {
+														on:click={async () => {
 															await update(requirementAssessment, 'observation');
 															requirementAssessment.observationBuffer =
 																requirementAssessment.observation;
 														}}
 														type="button"
-														aria-label="Save observation"
 													>
 														<i class="fa-solid fa-check opacity-70"></i>
 													</button>
 													<button
 														class="rounded-md w-8 h-8 border shadow-lg hover:bg-red-300 hover:text-red-500 duration-300"
-														onclick={() =>
+														on:click={() =>
 															(requirementAssessment.observation =
 																requirementAssessment.observationBuffer)}
 														type="button"
-														aria-label="Reset observation"
 													>
 														<i class="fa-solid fa-xmark opacity-70"></i>
 													</button>
 												{/if}
 											</div>
-										{/snippet}
-									</Accordion.Item>
+										</svelte:fragment>
+									</AccordionItem>
 								{/if}
 								{#if requirementAssessment.evidences.length === 0 && shallow}
 									<p class="text-gray-400 italic">{m.noEvidences()}</p>
 								{:else}
-									<Accordion.Item value="evidence">
-										{#snippet control()}
-											<p class="flex items-center space-x-2">
+									<AccordionItem caretOpen="rotate-0" caretClosed="-rotate-90">
+										<svelte:fragment slot="summary"
+											><p class="flex items-center space-x-2">
 												<span>{m.evidence()}</span>
 												{#key addedEvidence}
 													{#if requirementAssessment.evidences != null}
-														<span class="badge preset-tonal-primary"
+														<span class="badge variant-soft-primary"
 															>{requirementAssessment.evidences.length}</span
 														>
 													{/if}
 												{/key}
-											</p>
-										{/snippet}
-										{#snippet panel()}
+											</p></svelte:fragment
+										>
+										<svelte:fragment slot="content">
 											<div class="flex flex-row space-x-2 items-center">
 												{#if !shallow}
 													<button
-														class="btn preset-filled-primary-500 self-start"
-														onclick={() =>
+														class="btn variant-filled-primary self-start"
+														on:click={() =>
 															modalEvidenceCreateForm(requirementAssessment.evidenceCreateForm)}
 														type="button"
-														><i class="fa-solid fa-plus mr-2"></i>{m.addEvidence()}</button
+														><i class="fa-solid fa-plus mr-2" />{m.addEvidence()}</button
 													>
 													<button
-														class="btn preset-filled-secondary-500 self-start"
+														class="btn variant-filled-secondary self-start"
 														type="button"
-														onclick={() => modalUpdateForm(requirementAssessment)}
+														on:click={() => modalUpdateForm(requirementAssessment)}
 														><i class="fa-solid fa-hand-pointer mr-2"></i>{m.selectEvidence()}
 													</button>
 												{/if}
@@ -706,8 +574,8 @@
 													{/each}
 												{/key}
 											</div>
-										{/snippet}
-									</Accordion.Item>
+										</svelte:fragment>
+									</AccordionItem>
 								{/if}
 							</Accordion>
 						</div>

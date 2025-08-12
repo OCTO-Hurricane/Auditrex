@@ -1,32 +1,19 @@
 <script lang="ts">
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import FileInput from '../FileInput.svelte';
 	import Checkbox from '../Checkbox.svelte';
 	import type { CacheLock, ModelInfo } from '$lib/utils/types';
 
+	export let form: SuperValidated<any>;
+	export let importFolder: boolean = false;
 	// Props unused but referenced to avoid browser warnings because they're needed for enterprise Folderform
-
-	interface Props {
-		form: SuperValidated<any>;
-		importFolder?: boolean;
-		// and there is only one ModelForm.
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-		object?: any;
-		model: ModelInfo;
-	}
-
-	let {
-		form,
-		importFolder = false,
-		cacheLocks = {},
-		formDataCache = {},
-		initialData = {},
-		object = {},
-		model
-	}: Props = $props();
+	// and there is only one ModelForm.
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
+	export let object: any = {};
+	export let model: ModelInfo;
 </script>
 
 {#if importFolder}

@@ -52,32 +52,10 @@ export const LOCALE_MAP = {
 		flag: '🇨🇿'
 	},
 	sv: {
-		name: 'swedish',
-		flag: '🇸🇪'
+		name: 'swedish'
 	},
 	id: {
-		name: 'indonesian',
-		flag: '🇮🇩'
-	},
-	da: {
-		name: 'danish',
-		flag: '🇩🇰'
-	},
-	hu: {
-		name: 'hungarian',
-		flag: '🇭🇺'
-	},
-	uk: {
-		name: 'ukrainian',
-		flag: '🇺🇦'
-	},
-	el: {
-		name: 'greek',
-		flag: '🇬🇷'
-	},
-	tr: {
-		name: 'turkish',
-		flag: '🇹🇷'
+		name: 'indonesian'
 	}
 };
 

@@ -1,14 +1,13 @@
-import { ALLAUTH_API_URL, BASE_API_URL } from '$lib/utils/constants';
+import { ALLAUTH_API_URL } from '$lib/utils/constants';
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { activateTOTPSchema } from './mfa/utils/schemas';
-import { message, setError, superValidate } from 'sveltekit-superforms';
+import { setError, superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { setFlash } from 'sveltekit-flash-message/server';
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
 import { safeTranslate } from '$lib/utils/i18n';
 import { z } from 'zod';
-import { AuthTokenCreateSchema } from '$lib/utils/schemas';
 
 export const load: PageServerLoad = async (event) => {
 	const authenticatorsEndpoint = `${ALLAUTH_API_URL}/account/authenticators`;
@@ -40,26 +39,7 @@ export const load: PageServerLoad = async (event) => {
 
 	const activateTOTPForm = await superValidate(zod(activateTOTPSchema));
 
-	const personalAccessTokensEndpoint = `${BASE_API_URL}/iam/auth-tokens/`;
-	const personalAccessTokensResponse = await event.fetch(personalAccessTokensEndpoint);
-	if (!personalAccessTokensResponse.ok) {
-		console.error('Could not get personal access tokens', personalAccessTokensResponse);
-		fail(personalAccessTokensResponse.status, { error: 'Could not get personal access tokens' });
-	}
-	const personalAccessTokens = await personalAccessTokensResponse.json();
-	const personalAccessTokenCreateForm = await superValidate(zod(AuthTokenCreateSchema));
-	const personalAccessTokenDeleteForm = await superValidate(zod(z.object({ id: z.string() })));
-
-	return {
-		authenticators,
-		totp,
-		activateTOTPForm,
-		recoveryCodes,
-		personalAccessTokens,
-		personalAccessTokenCreateForm,
-		personalAccessTokenDeleteForm,
-		title: m.settings()
-	};
+	return { authenticators, totp, activateTOTPForm, recoveryCodes, title: m.settings() };
 };
 
 export const actions: Actions = {
@@ -76,6 +56,8 @@ export const actions: Actions = {
 			body: JSON.stringify(form.data)
 		};
 
+		console.debug('requestInitOptions', requestInitOptions);
+
 		const response = await event.fetch(endpoint, requestInitOptions);
 		const data = await response.json();
 
@@ -90,6 +72,7 @@ export const actions: Actions = {
 			return fail(data.status, { form });
 		}
 
+		console.debug('Activated TOTP', data);
 		setFlash({ type: 'success', message: m.successfullyActivatedTOTP() }, event);
 		return { form };
 	},
@@ -117,6 +100,7 @@ export const actions: Actions = {
 			return fail(response.status, { error: 'Could not deactivate TOTP' });
 		}
 
+		console.debug('Deactivated TOTP', response);
 		setFlash({ type: 'success', message: m.successfullyDeactivatedTOTP() }, event);
 		return { form };
 	},
@@ -137,57 +121,5 @@ export const actions: Actions = {
 		}
 
 		return { recoveryCodes: response.data };
-	},
-	createPAT: async (event) => {
-		const formData = await event.request.formData();
-		if (!formData) return fail(400, { error: 'No form data' });
-
-		const form = await superValidate(formData, zod(AuthTokenCreateSchema));
-		if (!form.valid) return fail(400, { form });
-
-		const endpoint = `${BASE_API_URL}/iam/auth-tokens/`;
-		const requestInitOptions: RequestInit = {
-			method: 'POST',
-			body: JSON.stringify(form.data)
-		};
-
-		const response = await event.fetch(endpoint, requestInitOptions);
-
-		if (!response.ok) {
-			console.error('Could not create PAT');
-			try {
-				const errorResponse = await response.json();
-				const errorMessage = errorResponse?.error || m.errorCreatingPersonalAccessToken();
-				setFlash({ type: 'error', message: safeTranslate(errorMessage) }, event);
-			} catch (e) {
-				setFlash({ type: 'error', message: m.errorCreatingPersonalAccessToken() }, event);
-			}
-			return fail(response.status, { form });
-		}
-
-		const data = await response.json();
-		return message(form, { status: response.status, data });
-	},
-	deletePAT: async (event) => {
-		const formData = await event.request.formData();
-		if (!formData) return fail(400, { error: 'No form data' });
-
-		const form = await superValidate(formData, zod(z.object({ id: z.string() })));
-		if (!form.valid) return fail(400, { form });
-
-		const endpoint = `${BASE_API_URL}/iam/auth-tokens/${form.data.id}/`;
-		const requestInitOptions: RequestInit = {
-			method: 'DELETE'
-		};
-
-		const response = await event.fetch(endpoint, requestInitOptions);
-
-		if (!response.ok) {
-			console.error('Could not delete PAT');
-			return fail(response.status, { form });
-		}
-
-		setFlash({ type: 'success', message: m.successfullyDeletedPersonalAccessToken() }, event);
-		return message(form, { status: response.status });
 	}
 };

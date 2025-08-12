@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 	import { URL_MODEL_MAP } from '$lib/utils/crud';
 	import type { PageData } from './$types';
 
 	import { safeTranslate } from '$lib/utils/i18n';
-	import { m } from '$paraglide/messages';
-	import { getLocale } from '$paraglide/runtime';
+	import * as m from '$paraglide/messages';
+	import { languageTag } from '$paraglide/runtime';
 
 	import ModelTable from '$lib/components/ModelTable/ModelTable.svelte';
 	import { isDark } from '$lib/utils/helpers';
@@ -14,30 +14,21 @@
 	import { goto } from '$app/navigation';
 
 	import { onMount } from 'svelte';
-	import { canPerformAction } from '$lib/utils/access-control';
-	interface Props {
-		data: PageData;
-	}
+	export let data: PageData;
 
-	let { data }: Props = $props();
-
-	const user = page.data.user;
+	const user = $page.data.user;
 	const model = URL_MODEL_MAP['risk-scenarios'];
-	const canEditObject: boolean = canPerformAction({
-		user,
-		action: 'change',
-		model: model.name,
-		domain: data.scenario.perimeter.folder.id
-	});
-	let color_map = $state({});
+	const canEditObject: boolean = Object.hasOwn(user.permissions, `change_${model.name}`);
+
+	let color_map = {};
 	color_map['--'] = '#A9A9A9';
 	data.riskMatrix.risk.forEach((risk, i) => {
 		color_map[risk.name] = risk.hexcolor;
 	});
 
-	let classesCellText = $derived((backgroundHexColor: string) => {
+	$: classesCellText = (backgroundHexColor: string) => {
 		return isDark(backgroundHexColor) ? 'text-white' : '';
-	});
+	};
 	function handleKeydown(event: KeyboardEvent) {
 		if (event.metaKey || event.ctrlKey) return;
 		if (document.activeElement?.tagName !== 'BODY') return;
@@ -45,7 +36,7 @@
 
 		if (event.key === 'e' && canEditObject) {
 			event.preventDefault();
-			goto(`${page.url.pathname}/edit?next=${page.url.pathname}`);
+			goto(`${$page.url.pathname}/edit?next=${$page.url.pathname}`);
 		}
 	}
 	onMount(() => {
@@ -83,9 +74,9 @@
 		</div>
 		{#if canEditObject}
 			<Anchor
-				href={`${page.url.pathname}/edit?next=${page.url.pathname}`}
-				class="btn preset-filled-primary-500 h-fit mt-1"
-				data-testid="edit-button"><i class="fa-solid fa-pen-to-square mr-2"></i> {m.edit()}</Anchor
+				href={`${$page.url.pathname}/edit?next=${$page.url.pathname}`}
+				class="btn variant-filled-primary h-fit mt-1"
+				data-testid="edit-button"><i class="fa-solid fa-pen-to-square mr-2" /> {m.edit()}</Anchor
 			>
 		{/if}
 	</div>
@@ -121,7 +112,7 @@
 				<div>
 					<p class="text-sm font-semibold text-gray-400">{m.lastUpdate()}</p>
 					<p class="text-sm font-semibold">
-						{new Date(data.scenario.updated_at).toLocaleString(getLocale())}
+						{new Date(data.scenario.updated_at).toLocaleString(languageTag())}
 					</p>
 				</div>
 				<div>
@@ -148,7 +139,7 @@
 				source={data.tables['assets']}
 				hideFilters={true}
 				URLModel="assets"
-				baseEndpoint="/assets?risk_scenarios={page.params.id}"
+				baseEndpoint="/assets?risk_scenarios={$page.params.id}"
 			/>
 		</div>
 		<div class="card px-4 py-2 bg-white shadow-lg space-y-4 w-1/2 max-h-96 overflow-y-auto">
@@ -157,7 +148,7 @@
 				source={data.tables['threats']}
 				hideFilters={true}
 				URLModel="threats"
-				baseEndpoint="/threats?risk_scenarios={page.params.id}"
+				baseEndpoint="/threats?risk_scenarios={$page.params.id}"
 			/>
 		</div>
 	</div>
@@ -167,7 +158,7 @@
 			source={data.tables['vulnerabilities']}
 			hideFilters={true}
 			URLModel="vulnerabilities"
-			baseEndpoint="/vulnerabilities?risk_scenarios={page.params.id}"
+			baseEndpoint="/vulnerabilities?risk_scenarios={$page.params.id}"
 		/>
 	</div>
 	<div class="card px-4 py-2 bg-white shadow-lg max-w-full max-h-96 overflow-y-auto">
@@ -176,62 +167,24 @@
 			source={data.tables['security-exceptions']}
 			hideFilters={true}
 			URLModel="security-exceptions"
-			baseEndpoint="/security-exceptions?risk_scenarios={page.params.id}"
+			baseEndpoint="/security-exceptions?risk_scenarios={$page.params.id}"
 		/>
 	</div>
-
-	{#if page.data?.featureflags?.inherent_risk}
-		<div class="flex flex-row space-x-4 card px-4 py-2 bg-white shadow-lg justify-between">
-			<div class="flex flex-col w-1/2">
-				<h4 class="h4 font-semibold">{m.inherentRisk()}</h4>
-			</div>
-			<div class="flex flex-row space-x-4 my-auto items-center justify-center w-1/2 h-full">
-				<p class="flex flex-col">
-					<span class="text-sm font-semibold text-gray-400">{m.probability()}</span>
-					<span
-						class="text-sm text-center font-semibold p-2 rounded-md w-20"
-						style="background-color: {color_map[data.scenario.inherent_proba]}"
-					>
-						{safeTranslate(data.scenario.inherent_proba.name)}
-					</span>
-				</p>
-				<i class="fa-solid fa-xmark mt-5"></i>
-				<p class="flex flex-col">
-					<span class="text-sm font-semibold text-gray-400">{m.impact()}</span>
-					<span
-						class="text-sm text-center font-semibold p-2 rounded-md w-20"
-						style="background-color: {color_map[data.scenario.inherent_impact]}"
-					>
-						{safeTranslate(data.scenario.inherent_impact.name)}
-					</span>
-				</p>
-				<i class="fa-solid fa-equals mt-5"></i>
-				<p class="flex flex-col">
-					<span class="text-sm font-semibold text-gray-400 whitespace-nowrap"
-						>{m.inherentRiskLevel()}</span
-					>
-					<span
-						class="text-sm text-center font-semibold p-2 rounded-md w-20 {classesCellText(
-							data.scenario.inherent_level.hexcolor
-						)}"
-						style="background-color: {data.scenario.inherent_level.hexcolor}"
-					>
-						{safeTranslate(data.scenario.inherent_level.name)}
-					</span>
-				</p>
-			</div>
-		</div>
-	{/if}
-
 	<div class="flex flex-row space-x-4 card px-4 py-2 bg-white shadow-lg justify-between">
 		<div class="flex flex-col w-1/2">
 			<h4 class="h4 font-semibold">{m.currentRisk()}</h4>
+			{#if data.scenario.existing_controls}
+				<p class="text-sm font-semibold text-gray-400">{m.context()}</p>
+				<p class="mt-1 mb-2">
+					{data.scenario.existing_controls}
+				</p>
+			{/if}
 			<p class="text-sm font-semibold text-gray-400">{m.existingControls()}</p>
 			<ModelTable
 				source={data.tables['risk_scenarios_e']}
 				hideFilters={true}
 				URLModel="applied-controls"
-				baseEndpoint="/applied-controls?risk_scenarios_e={page.params.id}"
+				baseEndpoint="/applied-controls?risk_scenarios_e={$page.params.id}"
 			/>
 		</div>
 		<div class="flex flex-row space-x-4 my-auto items-center justify-center w-1/2 h-full">
@@ -244,7 +197,7 @@
 					{safeTranslate(data.scenario.current_proba.name)}
 				</span>
 			</p>
-			<i class="fa-solid fa-xmark mt-5"></i>
+			<i class="fa-solid fa-xmark mt-5" />
 			<p class="flex flex-col">
 				<span class="text-sm font-semibold text-gray-400">{m.impact()}</span>
 				<span
@@ -254,7 +207,7 @@
 					{safeTranslate(data.scenario.current_impact.name)}
 				</span>
 			</p>
-			<i class="fa-solid fa-equals mt-5"></i>
+			<i class="fa-solid fa-equals mt-5" />
 			<p class="flex flex-col">
 				<span class="text-sm font-semibold text-gray-400 whitespace-nowrap"
 					>{m.currentRiskLevel()}</span
@@ -278,7 +231,7 @@
 				source={data.tables['risk_scenarios']}
 				hideFilters={true}
 				URLModel="applied-controls"
-				baseEndpoint="/applied-controls?risk_scenarios={page.params.id}"
+				baseEndpoint="/applied-controls?risk_scenarios={$page.params.id}"
 			/>
 		</div>
 		<div class="flex flex-row space-x-4 my-auto items-center justify-center w-1/2">
@@ -291,7 +244,7 @@
 					{safeTranslate(data.scenario.residual_proba.name)}
 				</span>
 			</p>
-			<i class="fa-solid fa-xmark mt-5"></i>
+			<i class="fa-solid fa-xmark mt-5" />
 			<p class="flex flex-col">
 				<span class="text-sm font-semibold text-gray-400">{m.impact()}</span>
 				<span
@@ -301,7 +254,7 @@
 					{safeTranslate(data.scenario.residual_impact.name)}
 				</span>
 			</p>
-			<i class="fa-solid fa-equals mt-5"></i>
+			<i class="fa-solid fa-equals mt-5" />
 			<p class="flex flex-col">
 				<span class="text-sm font-semibold text-gray-400 whitespace-nowrap"
 					>{m.residualRiskLevel()}</span

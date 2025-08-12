@@ -8,50 +8,21 @@
 	import Score from '$lib/components/Forms/Score.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
-	import { onMount } from 'svelte';
-	import { run } from 'svelte/legacy';
+	import * as m from '$paraglide/messages.js';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		duplicate?: boolean;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		schema?: any;
-		initialData?: Record<string, any>;
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let duplicate: boolean = false;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let schema: any = {};
+	export let initialData: Record<string, any> = {};
+
+	if (model.selectOptions && 'priority' in model.selectOptions) {
+		model.selectOptions['priority'].forEach((element) => {
+			element.value = parseInt(element.value);
+		});
 	}
-
-	let {
-		form,
-		model,
-		duplicate = false,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		schema = {},
-		initialData = {}
-	}: Props = $props();
-
-	onMount(async () => {
-		if (!model.selectOptions) {
-			const selectOptions = {
-				status: await fetch('/applied-controls/status').then((r) => r.json()),
-				priority: await fetch('/applied-controls/priority').then((r) => r.json()),
-				category: await fetch('/applied-controls/category').then((r) => r.json()),
-				csf_function: await fetch('/applied-controls/csf_function').then((r) => r.json()),
-				effort: await fetch('/applied-controls/effort').then((r) => r.json())
-			};
-			model.selectOptions = selectOptions;
-		}
-	});
-
-	run(() => {
-		if (model?.selectOptions?.priority) {
-			model.selectOptions.priority.forEach((element) => {
-				element.value = parseInt(element.value);
-			});
-		}
-	});
 </script>
 
 {#if !duplicate}
@@ -67,8 +38,7 @@
 	/>
 	<Select
 		{form}
-		options={model.selectOptions?.status}
-		disableDoubleDash={true}
+		options={model.selectOptions['status']}
 		field="status"
 		label={m.status()}
 		cacheLock={cacheLocks['status']}
@@ -91,16 +61,6 @@
 		cacheLock={cacheLocks['eta']}
 		bind:cachedValue={formDataCache['eta']}
 	/>
-	<AutocompleteSelect
-		{form}
-		multiple
-		optionsEndpoint="evidences"
-		optionsExtraFields={[['folder', 'str']]}
-		field="evidences"
-		cacheLock={cacheLocks['evidences']}
-		bind:cachedValue={formDataCache['evidences']}
-		label={m.evidences()}
-	/>
 	<Dropdown open={false} style="hover:text-primary-700" icon="fa-solid fa-list" header={m.more()}>
 		<TextField
 			{form}
@@ -111,30 +71,21 @@
 		/>
 		<Select
 			{form}
-			options={model.selectOptions?.priority}
+			options={model.selectOptions['priority']}
 			field="priority"
 			label={m.priority()}
 			cacheLock={cacheLocks['priority']}
 			bind:cachedValue={formDataCache['priority']}
 		/>
-
 		<AutocompleteSelect
 			{form}
 			multiple
-			optionsEndpoint="assets"
+			optionsEndpoint="evidences"
 			optionsExtraFields={[['folder', 'str']]}
-			optionsInfoFields={{
-				fields: [
-					{
-						field: 'type'
-					}
-				],
-				classes: 'text-blue-500'
-			}}
-			field="assets"
-			cacheLock={cacheLocks['assets']}
-			bind:cachedValue={formDataCache['assets']}
-			label={m.assets()}
+			field="evidences"
+			cacheLock={cacheLocks['evidences']}
+			bind:cachedValue={formDataCache['evidences']}
+			label={m.evidences()}
 		/>
 		<AutocompleteSelect
 			{form}
@@ -149,7 +100,7 @@
 		{#if schema.shape.category}
 			<Select
 				{form}
-				options={model.selectOptions?.category}
+				options={model.selectOptions['category']}
 				field="category"
 				label={m.category()}
 				cacheLock={cacheLocks['category']}
@@ -158,7 +109,7 @@
 		{/if}
 		<Select
 			{form}
-			options={model.selectOptions?.csf_function}
+			options={model.selectOptions['csf_function']}
 			field="csf_function"
 			label={m.csfFunction()}
 			cacheLock={cacheLocks['csf_function']}
@@ -184,21 +135,12 @@
 		/>
 		<Select
 			{form}
-			options={model.selectOptions?.effort}
+			options={model.selectOptions['effort']}
 			field="effort"
 			label={m.effort()}
 			helpText={m.effortHelpText()}
 			cacheLock={cacheLocks['effort']}
 			bind:cachedValue={formDataCache['effort']}
-		/>
-		<Select
-			{form}
-			options={model.selectOptions?.control_impact}
-			field="control_impact"
-			label={m.controlImpact()}
-			helpText={m.impactHelpText()}
-			cacheLock={cacheLocks['control_impact']}
-			bind:cachedValue={formDataCache['control_impact']}
 		/>
 		<NumberField
 			{form}
@@ -215,18 +157,6 @@
 			helpText={m.linkHelpText()}
 			cacheLock={cacheLocks['link']}
 			bind:cachedValue={formDataCache['link']}
-		/>
-		<AutocompleteSelect
-			multiple
-			{form}
-			createFromSelection={true}
-			optionsEndpoint="filtering-labels"
-			translateOptions={false}
-			optionsLabelField="label"
-			field="filtering_labels"
-			helpText={m.labelsHelpText()}
-			label={m.labels()}
-			allowUserOptions="append"
 		/>
 	</Dropdown>
 {/if}

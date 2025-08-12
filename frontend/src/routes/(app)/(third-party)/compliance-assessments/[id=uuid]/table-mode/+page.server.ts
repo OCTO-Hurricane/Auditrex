@@ -2,7 +2,7 @@ import { nestedWriteFormAction } from '$lib/utils/actions';
 import { BASE_API_URL } from '$lib/utils/constants';
 import { getModelInfo } from '$lib/utils/crud';
 import { modelSchema } from '$lib/utils/schemas';
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
 import type { Actions } from '@sveltejs/kit';
 import { superValidate } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
@@ -14,8 +14,8 @@ export const load = (async ({ fetch, params }) => {
 	const URLModel = 'compliance-assessments';
 	const endpoint = `${BASE_API_URL}/${URLModel}/${params.id}/`;
 
-	const [compliance_assessment, tableMode, scores] = await Promise.all(
-		[endpoint, `${endpoint}requirements_list/`, `${endpoint}global_score/`].map((endpoint) =>
+	const [compliance_assessment, tableMode] = await Promise.all(
+		[endpoint, `${endpoint}requirements_list/`].map((endpoint) =>
 			fetch(endpoint).then((res) => res.json())
 		)
 	);
@@ -89,7 +89,6 @@ export const load = (async ({ fetch, params }) => {
 	return {
 		URLModel,
 		compliance_assessment,
-		scores,
 		requirement_assessments,
 		requirements,
 		evidenceModel,

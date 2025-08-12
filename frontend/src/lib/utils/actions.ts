@@ -1,7 +1,7 @@
 import { BASE_API_URL } from '$lib/utils/constants';
 import { getModelInfo, urlParamModelVerboseName } from '$lib/utils/crud';
 
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
 
 import { safeTranslate } from '$lib/utils/i18n';
 import { modelSchema } from '$lib/utils/schemas';
@@ -160,7 +160,7 @@ export async function defaultWriteFormAction({
 	};
 
 	if (urlModel == 'users') {
-		((flashParams.type = 'warning'), (flashParams.message += safeTranslate('userHasNoRights')));
+		(flashParams.type = 'warning'), (flashParams.message += safeTranslate('userHasNoRights'));
 	}
 	setFlash(flashParams, event);
 
@@ -224,10 +224,7 @@ export async function defaultDeleteFormAction({
 	if (!res.ok) {
 		const response = await res.json();
 		if (response.error) {
-			const errorMessages = Array.isArray(response.error) ? response.error : [response.error];
-			errorMessages.forEach((error) => {
-				setFlash({ type: 'error', message: safeTranslate(error) }, event);
-			});
+			setFlash({ type: 'error', message: safeTranslate(response.error) }, event);
 			return message(deleteForm, { status: res.status });
 		}
 		if (response.non_field_errors) {

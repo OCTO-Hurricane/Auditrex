@@ -1,6 +1,6 @@
 import { BASE_API_URL, UUID_REGEX } from '$lib/utils/constants';
 import { getModelInfo, type ModelMapEntry } from '$lib/utils/crud';
-import { type TableSource } from '@skeletonlabs/skeleton-svelte';
+import { tableSourceMapper, type TableSource } from '@skeletonlabs/skeleton';
 
 import { modelSchema } from '$lib/utils/schemas';
 import { listViewFields } from '$lib/utils/table';
@@ -51,12 +51,8 @@ export const loadDetail = async ({ event, model, id }) => {
 					tableFields.head.splice(index, 1);
 					tableFields.body.splice(index, 1);
 				}
-				const headData: Record<string, string> = tableFields.body.reduce((obj, key, index) => {
-					obj[key] = index < tableFields.head.length ? tableFields.head[index] : key;
-					return obj;
-				}, {});
 				const table: TableSource = {
-					head: headData,
+					head: tableFields.head,
 					body: [],
 					meta: []
 				};
@@ -81,13 +77,13 @@ export const loadDetail = async ({ event, model, id }) => {
 					initialData['ebios_rm_study'] = data.ebios_rm_study.id;
 				}
 				if (data.folder) {
-					if (!new RegExp(UUID_REGEX).test(data.folder) && !data?.folder?.id) {
+					if (!new RegExp(UUID_REGEX).test(data.folder)) {
 						const objectEndpoint = `${endpoint}object/`;
 						const objectResponse = await event.fetch(objectEndpoint);
 						const objectData = await objectResponse.json();
 						initialData['folder'] = objectData.folder;
 					} else {
-						initialData['folder'] = data?.folder?.id ?? data.folder;
+						initialData['folder'] = data.folder.id ?? data.folder;
 					}
 				}
 				const createForm = await superValidate(initialData, zod(createSchema), { errors: false });
@@ -97,10 +93,7 @@ export const loadDetail = async ({ event, model, id }) => {
 				if (info.selectFields) {
 					await Promise.all(
 						info.selectFields.map(async (selectField) => {
-							let url = `${BASE_API_URL}/${info.endpointUrl || info.urlModel}/${selectField.field}/`;
-							if (selectField.formNestedField && selectField.detail === true) {
-								url = `${BASE_API_URL}/${selectField.endpointUrl}/${initialData[selectField.formNestedField]}/${selectField.field}/`;
-							}
+							const url = `${BASE_API_URL}/${e.endpointUrl || e.urlModel}/${selectField.field}/`;
 							const response = await event.fetch(url);
 							if (response.ok) {
 								selectOptions[selectField.field] = await response.json().then((data) =>
@@ -125,15 +118,14 @@ export const loadDetail = async ({ event, model, id }) => {
 					createForm,
 					selectOptions,
 					initialData,
-					disableCreate: e.disableCreate,
-					disableDelete: e.disableDelete
+					disableAddDeleteButtons: e.disableAddDeleteButtons
 				};
 			})
 		);
 	}
 	return {
 		data,
-		title: data.str || data.name || data.email || data.label || data.id,
+		title: data.str || data.name || data.email || data.id,
 		form,
 		relatedModels,
 		urlModel: model.urlModel as urlModel,

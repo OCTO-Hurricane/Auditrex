@@ -50,29 +50,6 @@ READER_PERMISSIONS_LIST = [
     "view_securityexception",
     "view_finding",
     "view_findingsassessment",
-    "view_incident",
-    "view_timelineentry",
-    "view_tasknode",
-    "view_tasktemplate",
-    "view_businessimpactanalysis",
-    "view_assetassessment",
-    "view_escalationthreshold",
-    "view_assetclass",
-    # privacy,
-    "view_processing",
-    "view_processingnature",
-    "view_purpose",
-    "view_personaldata",
-    "view_datasubject",
-    "view_datarecipient",
-    "view_datacontractor",
-    "view_datatransfer",
-    # campaigns,
-    "view_campaign",
-    # operating modes
-    "view_elementaryaction",
-    "view_operatingmode",
-    "view_killchain",
 ]
 
 APPROVER_PERMISSIONS_LIST = [
@@ -112,29 +89,6 @@ APPROVER_PERMISSIONS_LIST = [
     "view_securityexception",
     "view_finding",
     "view_findingsassessment",
-    "view_incident",
-    "view_timelineentry",
-    "view_tasknode",
-    "view_tasktemplate",
-    "view_businessimpactanalysis",
-    "view_assetassessment",
-    "view_escalationthreshold",
-    "view_assetclass",
-    # campaigns,
-    "view_campaign",
-    # privacy,
-    "view_processing",
-    "view_processingnature",
-    "view_purpose",
-    "view_personaldata",
-    "view_datasubject",
-    "view_datarecipient",
-    "view_datacontractor",
-    "view_datatransfer",
-    # operating modes
-    "view_elementaryaction",
-    "view_operatingmode",
-    "view_killchain",
 ]
 
 ANALYST_PERMISSIONS_LIST = [
@@ -254,81 +208,6 @@ ANALYST_PERMISSIONS_LIST = [
     "view_findingsassessment",
     "change_findingsassessment",
     "delete_findingsassessment",
-    "add_incident",
-    "view_incident",
-    "change_incident",
-    "delete_incident",
-    "add_timelineentry",
-    "view_timelineentry",
-    "change_timelineentry",
-    "delete_timelineentry",
-    # tasks
-    "add_tasktemplate",
-    "view_tasktemplate",
-    "change_tasktemplate",
-    "delete_tasktemplate",
-    "view_tasknode",
-    "change_tasknode",
-    "delete_tasknode",
-    # resilience,
-    "add_businessimpactanalysis",
-    "view_businessimpactanalysis",
-    "change_businessimpactanalysis",
-    "delete_businessimpactanalysis",
-    "add_escalationthreshold",
-    "view_escalationthreshold",
-    "change_escalationthreshold",
-    "delete_escalationthreshold",
-    "add_assetassessment",
-    "view_assetassessment",
-    "change_assetassessment",
-    "delete_assetassessment",
-    "view_assetclass",
-    # campaigns,
-    "view_campaign",
-    # privacy,
-    "add_processing",
-    "change_processing",
-    "view_processing",
-    "delete_processing",
-    "view_processingnature",
-    "add_purpose",
-    "change_purpose",
-    "view_purpose",
-    "delete_purpose",
-    "add_personaldata",
-    "change_personaldata",
-    "view_personaldata",
-    "delete_personaldata",
-    "add_datasubject",
-    "change_datasubject",
-    "view_datasubject",
-    "delete_datasubject",
-    "add_datarecipient",
-    "change_datarecipient",
-    "view_datarecipient",
-    "delete_datarecipient",
-    "add_datacontractor",
-    "change_datacontractor",
-    "view_datacontractor",
-    "delete_datacontractor",
-    "add_datatransfer",
-    "change_datatransfer",
-    "view_datatransfer",
-    "delete_datatransfer",
-    # operating modes
-    "view_elementaryaction",
-    "add_elementaryaction",
-    "change_elementaryaction",
-    "delete_elementaryaction",
-    "view_operatingmode",
-    "add_operatingmode",
-    "change_operatingmode",
-    "delete_operatingmode",
-    "view_killchain",
-    "add_killchain",
-    "change_killchain",
-    "delete_killchain",
 ]
 
 DOMAIN_MANAGER_PERMISSIONS_LIST = [
@@ -456,84 +335,6 @@ DOMAIN_MANAGER_PERMISSIONS_LIST = [
     "view_findingsassessment",
     "change_findingsassessment",
     "delete_findingsassessment",
-    "add_incident",
-    "view_incident",
-    "change_incident",
-    "delete_incident",
-    "add_timelineentry",
-    "view_timelineentry",
-    "change_timelineentry",
-    "delete_timelineentry",
-    # tasks
-    "add_tasktemplate",
-    "view_tasktemplate",
-    "change_tasktemplate",
-    "delete_tasktemplate",
-    "view_tasknode",
-    "change_tasknode",
-    "delete_tasknode",
-    # resilience,
-    "add_businessimpactanalysis",
-    "view_businessimpactanalysis",
-    "change_businessimpactanalysis",
-    "delete_businessimpactanalysis",
-    "add_escalationthreshold",
-    "view_escalationthreshold",
-    "change_escalationthreshold",
-    "delete_escalationthreshold",
-    "add_assetassessment",
-    "view_assetassessment",
-    "change_assetassessment",
-    "delete_assetassessment",
-    "view_assetclass",
-    # campaigns,
-    "add_campaign",
-    "view_campaign",
-    "change_campaign",
-    "delete_campaign",
-    # privacy,
-    "add_processing",
-    "change_processing",
-    "view_processing",
-    "delete_processing",
-    "view_processingnature",
-    "add_purpose",
-    "change_purpose",
-    "view_purpose",
-    "delete_purpose",
-    "add_personaldata",
-    "change_personaldata",
-    "view_personaldata",
-    "delete_personaldata",
-    "add_datasubject",
-    "change_datasubject",
-    "view_datasubject",
-    "delete_datasubject",
-    "add_datarecipient",
-    "change_datarecipient",
-    "view_datarecipient",
-    "delete_datarecipient",
-    "add_datacontractor",
-    "change_datacontractor",
-    "view_datacontractor",
-    "delete_datacontractor",
-    "add_datatransfer",
-    "change_datatransfer",
-    "view_datatransfer",
-    "delete_datatransfer",
-    # operating modes
-    "view_elementaryaction",
-    "add_elementaryaction",
-    "change_elementaryaction",
-    "delete_elementaryaction",
-    "view_operatingmode",
-    "add_operatingmode",
-    "change_operatingmode",
-    "delete_operatingmode",
-    "view_killchain",
-    "add_killchain",
-    "change_killchain",
-    "delete_killchain",
 ]
 
 ADMINISTRATOR_PERMISSIONS_LIST = [
@@ -553,10 +354,6 @@ ADMINISTRATOR_PERMISSIONS_LIST = [
     "view_asset",
     "change_asset",
     "delete_asset",
-    "add_assetclass",
-    "view_assetclass",
-    "change_assetclass",
-    "delete_assetclass",
     "add_threat",
     "view_threat",
     "change_threat",
@@ -680,19 +477,6 @@ ADMINISTRATOR_PERMISSIONS_LIST = [
     "view_operationalscenario",
     "change_operationalscenario",
     "delete_operationalscenario",
-    "view_elementaryaction",
-    "add_elementaryaction",
-    "change_elementaryaction",
-    "delete_elementaryaction",
-    "view_operatingmode",
-    "add_operatingmode",
-    "change_operatingmode",
-    "delete_operatingmode",
-    "view_killchain",
-    "add_killchain",
-    "change_killchain",
-    "delete_killchain",
-    # qualifications,
     "view_qualification",
     "add_qualification",
     "change_qualification",
@@ -709,72 +493,6 @@ ADMINISTRATOR_PERMISSIONS_LIST = [
     "view_findingsassessment",
     "change_findingsassessment",
     "delete_findingsassessment",
-    # privacy,
-    "add_processing",
-    "change_processing",
-    "view_processing",
-    "delete_processing",
-    "view_processingnature",
-    "add_purpose",
-    "change_purpose",
-    "view_purpose",
-    "delete_purpose",
-    "add_personaldata",
-    "change_personaldata",
-    "view_personaldata",
-    "delete_personaldata",
-    "add_datasubject",
-    "change_datasubject",
-    "view_datasubject",
-    "delete_datasubject",
-    "add_datarecipient",
-    "change_datarecipient",
-    "view_datarecipient",
-    "delete_datarecipient",
-    "add_datacontractor",
-    "change_datacontractor",
-    "view_datacontractor",
-    "delete_datacontractor",
-    "add_datatransfer",
-    "change_datatransfer",
-    "view_datatransfer",
-    "delete_datatransfer",
-    # incidents,
-    "add_incident",
-    "view_incident",
-    "change_incident",
-    "delete_incident",
-    "add_timelineentry",
-    "view_timelineentry",
-    "change_timelineentry",
-    "delete_timelineentry",
-    # tasks,
-    "add_tasktemplate",
-    "view_tasktemplate",
-    "change_tasktemplate",
-    "delete_tasktemplate",
-    "view_tasknode",
-    "change_tasknode",
-    "delete_tasknode",
-    "view_logentry",
-    # resilience,
-    "add_businessimpactanalysis",
-    "view_businessimpactanalysis",
-    "change_businessimpactanalysis",
-    "delete_businessimpactanalysis",
-    "add_escalationthreshold",
-    "view_escalationthreshold",
-    "change_escalationthreshold",
-    "delete_escalationthreshold",
-    "add_assetassessment",
-    "view_assetassessment",
-    "change_assetassessment",
-    "delete_assetassessment",
-    # campaigns,
-    "add_campaign",
-    "view_campaign",
-    "change_campaign",
-    "delete_campaign",
 ]
 
 THIRD_PARTY_RESPONDENT_PERMISSIONS_LIST = [
@@ -791,17 +509,15 @@ THIRD_PARTY_RESPONDENT_PERMISSIONS_LIST = [
 
 def startup(sender: AppConfig, **kwargs):
     """
-    Implement CISO Assistant 1.0 default Roles and User Groups during migrate
+    Implement Auditrex 1.0 default Roles and User Groups during migrate
     This makes sure root folder and global groups are defined before any other object is created
     Create superuser if CISO_ASSISTANT_SUPERUSER_EMAIL defined
     """
     from django.contrib.auth.models import Permission
 
-    from core.models import Qualification, AssetClass
+    from core.models import Qualification
     from iam.models import Folder, Role, RoleAssignment, User, UserGroup
     from tprm.models import Entity
-    from privacy.models import ProcessingNature
-    from global_settings.models import GlobalSettings
 
     print("startup handler: initialize database")
 
@@ -925,18 +641,6 @@ def startup(sender: AppConfig, **kwargs):
     except Exception as e:
         logger.error("Error creating default qualifications", exc_info=e)
 
-    # Create default Processing natures
-    try:
-        ProcessingNature.create_default_values()
-    except Exception as e:
-        logger.error("Error creating default ProcessingNature", exc_info=e)
-
-    # Create default AssetClass
-    try:
-        AssetClass.create_default_values()
-    except Exception as e:
-        logger.error("Error creating default AssetClass", exc_info=e)
-
     call_command("storelibraries")
 
     # if superuser defined and does not exist, then create it
@@ -950,43 +654,6 @@ def startup(sender: AppConfig, **kwargs):
             )
         except Exception as e:
             logger.error("Error creating superuser", exc_info=e)
-
-    # add administrators group to superusers (for resiliency)
-    administrators = UserGroup.objects.get(
-        name="BI-UG-ADM", folder=Folder.get_root_folder()
-    )
-    for u in User.objects.filter(is_superuser=True):
-        u.user_groups.add(administrators)
-
-    # reset global setings in case of an issue
-    default_settings = {
-        "security_objective_scale": "1-4",
-        "ebios_radar_max": 6,
-        "ebios_radar_green_zone_radius": 0.2,
-        "ebios_radar_yellow_zone_radius": 0.9,
-        "ebios_radar_red_zone_radius": 2.5,
-        "notifications_enable_mailing": False,
-        "interface_agg_scenario_matrix": False,
-    }
-    try:
-        settings, _ = GlobalSettings.objects.get_or_create(name="general")
-        current_value = settings.value or {}
-
-        ebios_radar_max = current_value.get("ebios_radar_max")
-
-        if ebios_radar_max is None or ebios_radar_max == 0:
-            # This cannot be None or 0, revert to default values
-            logger.warning(
-                "ebios radar settings are invalid (None or 0). Reverting to default settings."
-            )
-            updated_value = {**current_value, **default_settings}
-            settings.value = updated_value
-            settings.save()
-            logger.info(
-                "Global settings have been reset to defaults due to invalid ebios_radar_max."
-            )
-    except Exception as e:
-        logger.error(f"Failed to reset global settings: {e}")
 
 
 class CoreConfig(AppConfig):

@@ -4,23 +4,13 @@
 	import Select from '../Select.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-	}
-
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {}
-	}: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
 </script>
 
 <AutocompleteSelect
@@ -42,19 +32,8 @@
 <Select
 	{form}
 	options={model.selectOptions['lc_status']}
-	disableDoubleDash={true}
 	field="lc_status"
 	label={m.lcStatus()}
 	cacheLock={cacheLocks['lc_status']}
 	bind:cachedValue={formDataCache['lc_status']}
-/>
-<AutocompleteSelect
-	{form}
-	multiple
-	optionsEndpoint="users?is_third_party=false"
-	optionsLabelField="email"
-	field="default_assignee"
-	cacheLock={cacheLocks['default_assignee']}
-	bind:cachedValue={formDataCache['default_assignee']}
-	label={m.defaultAssignee()}
 />

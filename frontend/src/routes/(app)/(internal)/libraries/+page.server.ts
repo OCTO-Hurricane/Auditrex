@@ -1,11 +1,11 @@
 import { BASE_API_URL } from '$lib/utils/constants';
-import { tableSourceMapper } from '$lib/utils/table';
 
 import { nestedDeleteFormAction } from '$lib/utils/actions';
 import { safeTranslate } from '$lib/utils/i18n';
 import { LibraryUploadSchema } from '$lib/utils/schemas';
 import { listViewFields } from '$lib/utils/table';
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
+import { tableSourceMapper } from '@skeletonlabs/skeleton';
 import { fail, type Actions } from '@sveltejs/kit';
 import { setFlash } from 'sveltekit-flash-message/server';
 import { superValidate } from 'sveltekit-superforms';
@@ -17,24 +17,17 @@ export const load = (async ({ fetch }) => {
 	const storedLibrariesEndpoint = `${BASE_API_URL}/stored-libraries/`;
 	const loadedLibrariesEndpoint = `${BASE_API_URL}/loaded-libraries/`;
 	const updatableLibrariesEndpoint = `${loadedLibrariesEndpoint}available-updates/`;
-	const mappingSuggestedEndpoint = `${storedLibrariesEndpoint}?mapping_suggested=true`;
 
-	const [
-		storedLibrariesResponse,
-		loadedLibrariesResponse,
-		updatableLibrariesResponse,
-		mappingSuggestedResponse
-	] = await Promise.all([
-		fetch(storedLibrariesEndpoint),
-		fetch(loadedLibrariesEndpoint),
-		fetch(updatableLibrariesEndpoint),
-		fetch(mappingSuggestedEndpoint)
-	]);
+	const [storedLibrariesResponse, loadedLibrariesResponse, updatableLibrariesResponse] =
+		await Promise.all([
+			fetch(storedLibrariesEndpoint),
+			fetch(loadedLibrariesEndpoint),
+			fetch(updatableLibrariesEndpoint)
+		]);
 
 	const storedLibraries = await storedLibrariesResponse.json();
 	const loadedLibraries = await loadedLibrariesResponse.json();
 	const updatableLibraries = await updatableLibrariesResponse.json();
-	const mappingSuggested = await mappingSuggestedResponse.json().then((res) => res.results);
 
 	const prepareRow = (row: Record<string, any>) => {
 		row.overview = [
@@ -61,13 +54,13 @@ export const load = (async ({ fetch }) => {
 	const storedLibrariesTable = {
 		head: makeHeadData('stored-libraries'),
 		meta: { urlmodel: 'stored-libraries', ...storedLibraries },
-		body: []
+		body: tableSourceMapper(storedLibraries.results, listViewFields['stored-libraries'].body)
 	};
 
 	const loadedLibrariesTable = {
 		head: makeHeadData('loaded-libraries'),
 		meta: { urlmodel: 'loaded-libraries', ...loadedLibraries },
-		body: []
+		body: tableSourceMapper(loadedLibraries.results, listViewFields['loaded-libraries'].body)
 	};
 
 	const schema = z.object({ id: z.string() });
@@ -77,7 +70,6 @@ export const load = (async ({ fetch }) => {
 		storedLibrariesTable,
 		loadedLibrariesTable,
 		updatableLibraries,
-		mappingSuggested,
 		deleteForm,
 		title: m.libraries()
 	};

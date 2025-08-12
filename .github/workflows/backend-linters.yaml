@@ -1,16 +1,9 @@
 name: Backend Linters
-permissions:
-  contents: read
 
 on:
   pull_request:
     paths:
       - "backend/**"
-
-# If two events are triggered within a short time in the same PR, cancel the run of the oldest event
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
 
 env:
   GITHUB_WORKFLOW: github_actions
@@ -31,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"

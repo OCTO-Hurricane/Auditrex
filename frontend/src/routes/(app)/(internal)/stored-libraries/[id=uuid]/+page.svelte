@@ -1,23 +1,22 @@
 <script lang="ts">
-	import { tableSourceMapper } from '$lib/utils/table';
 	import { applyAction, deserialize, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte';
 	import ModelTable from '$lib/components/ModelTable/ModelTable.svelte';
 	import type { TableSource } from '$lib/components/ModelTable/types';
 	import RiskMatrix from '$lib/components/RiskMatrix/RiskMatrix.svelte';
 	import RecursiveTreeView from '$lib/components/TreeView/RecursiveTreeView.svelte';
 	import { formatDateOrDateTime } from '$lib/utils/datetime';
-	import { m } from '$paraglide/messages';
-	import { getLocale } from '$paraglide/runtime';
-	import { ProgressRing } from '@skeletonlabs/skeleton-svelte';
+	import * as m from '$paraglide/messages';
+	import { languageTag } from '$paraglide/runtime';
+	import { ProgressRadial, tableSourceMapper } from '@skeletonlabs/skeleton';
 	import type { ActionResult } from '@sveltejs/kit';
 	import TreeViewItemContent from '../../frameworks/[id=uuid]/TreeViewItemContent.svelte';
 
-	let { data } = $props();
+	export let data;
 
-	let loading = $state({ form: false, library: '' });
+	let loading = { form: false, library: '' };
 	const showRisks = true;
 
 	interface LibraryObjects {
@@ -98,17 +97,17 @@
 		applyAction(result);
 	}
 
-	let displayImportButton = $derived(!(data.library.is_loaded ?? true));
+	$: displayImportButton = !(data.library.is_loaded ?? true);
 </script>
 
-<div class="card bg-white p-4 shadow-sm space-y-4">
+<div class="card bg-white p-4 shadow space-y-4">
 	<div class="flex flex-col space-y-2">
 		<span class="w-full flex flex-row justify-between">
 			<h1 class="font-medium text-xl">{data.library.name}</h1>
 			<div>
 				{#if displayImportButton}
 					{#if loading.form}
-						<ProgressRing size="size-6" meterStroke="stroke-primary-500" />
+						<ProgressRadial width="w-6" meter="stroke-primary-500" />
 					{:else}
 						<form
 							method="post"
@@ -122,11 +121,11 @@
 									update();
 								};
 							}}
-							onsubmit={handleSubmit}
+							on:submit={handleSubmit}
 						>
-							{#if page.data.user.is_admin}
+							{#if $page.data.user.is_admin}
 								<button type="submit" class="p-1 btn text-xl hover:text-primary-500">
-									<i class="fa-solid fa-file-import"></i>
+									<i class="fa-solid fa-file-import" />
 								</button>
 							{/if}
 						</form>
@@ -151,7 +150,7 @@
 				<p class="text-md leading-5 text-gray-700">
 					<strong>{m.publicationDate()}</strong>: {formatDateOrDateTime(
 						data.library.publication_date,
-						getLocale()
+						languageTag()
 					)}
 				</p>
 			{/if}
@@ -190,7 +189,7 @@
 				interactive={false}
 			/>
 			{#each riskMatricesPreview(riskMatrices) as riskMatrix}
-				<RiskMatrix {riskMatrix} showLegend={showRisks} wrapperClass="mt-8" />
+				<RiskMatrix {riskMatrix} {showRisks} wrapperClass="mt-8" />
 			{/each}
 		</Dropdown>
 	{/if}

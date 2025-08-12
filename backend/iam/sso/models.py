@@ -39,7 +39,6 @@ class SSOSettingsQuerySet(QuerySet):
                     updated_at=_settings.updated_at,
                     is_published=_settings.is_published,
                     is_enabled=_settings.value.get("is_enabled"),
-                    force_sso=_settings.value.get("force_sso"),
                     provider=_settings.value.get("provider"),
                     client_id=_settings.value.get("client_id"),
                     provider_id=_settings.value.get("provider_id"),
@@ -74,7 +73,6 @@ class SSOSettings(GlobalSettings):
         verbose_name=_("is enabled"),
         default=False,
     )
-    force_sso = models.BooleanField(verbose_name=_("Force SSO Login"), default=False)
 
     provider = models.CharField(
         verbose_name=_("provider"),

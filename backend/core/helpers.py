@@ -7,7 +7,6 @@ from typing import Dict, List
 # from icecream import ic
 from django.core.exceptions import NON_FIELD_ERRORS as DJ_NON_FIELD_ERRORS
 from django.core.exceptions import ValidationError as DjValidationError
-from django.conf import settings
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError as DRFValidationError
@@ -292,7 +291,7 @@ def get_sorted_requirement_nodes(
                 "score": req_as.score if req_as else None,
                 "documentation_score": req_as.documentation_score if req_as else None,
                 "max_score": max_score if req_as else None,
-                "questions": node.questions,
+                "question": req_as.answer if req_as else node.question,
                 "mapping_inference": req_as.mapping_inference if req_as else None,
                 "status_display": req_as.get_status_display() if req_as else None,
                 "status_i18n": camel_case(req_as.status) if req_as else None,
@@ -333,7 +332,7 @@ def get_sorted_requirement_nodes(
                     if child_req_as
                     else None,
                     "max_score": max_score if child_req_as else None,
-                    "questions": child.questions,
+                    "question": child_req_as.answer if child_req_as else child.question,
                     "mapping_inference": child_req_as.mapping_inference
                     if child_req_as
                     else None,
@@ -387,17 +386,14 @@ def filter_graph_by_implementation_groups(
     return filtered_graph
 
 
-def get_parsed_matrices(
-    user: User, risk_assessments: list | None = None, folder_id=None
-):
-    scoped_folder = (
-        Folder.objects.get(id=folder_id) if folder_id else Folder.get_root_folder()
-    )
+def get_parsed_matrices(user: User, risk_assessments: list | None = None):
     (
         object_ids_view,
         _,
         _,
-    ) = RoleAssignment.get_accessible_object_ids(scoped_folder, user, RiskScenario)
+    ) = RoleAssignment.get_accessible_object_ids(
+        Folder.get_root_folder(), user, RiskScenario
+    )
     if risk_assessments is None:
         risk_matrices = list(
             RiskScenario.objects.filter(id__in=object_ids_view)
@@ -631,70 +627,53 @@ def applied_control_per_reference_control(user: User):
 
 
 def aggregate_risks_per_field(
-    user: User,
-    field: str,
-    residual: bool = False,
-    inherent: bool = False,
-    risk_assessments: list | None = None,
-    folder_id=None,
+    user: User, field: str, residual: bool = False, risk_assessments: list | None = None
 ):
-    scoped_folder = (
-        Folder.objects.get(id=folder_id) if folder_id else Folder.get_root_folder()
-    )
     (
         object_ids_view,
         _,
         _,
-    ) = RoleAssignment.get_accessible_object_ids(scoped_folder, user, RiskScenario)
+    ) = RoleAssignment.get_accessible_object_ids(
+        Folder.get_root_folder(), user, RiskScenario
+    )
     parsed_matrices: list = get_parsed_matrices(
-        user=user, risk_assessments=risk_assessments, folder_id=folder_id
+        user=user, risk_assessments=risk_assessments
     )
     values = dict()
     for m in parsed_matrices:
         for i in range(len(m["risk"])):
-            k = get_referential_translation(m["risk"][i], field)
-            if k not in values:
-                values[k] = dict()
+            if m["risk"][i][field] not in values:
+                values[m["risk"][i][field]] = dict()
 
             if residual:
                 count = (
                     RiskScenario.objects.filter(id__in=object_ids_view)
                     .filter(residual_level=i)
+                    # .filter(risk_assessment__risk_matrix__name=["name"])
                     .count()
-                )
-            elif inherent:
-                count = (
-                    RiskScenario.objects.filter(id__in=object_ids_view)
-                    .filter(inherent_level=i)
-                    .count()
-                )
+                )  # What the second filter does ? Is this useful ?
             else:
                 count = (
                     RiskScenario.objects.filter(id__in=object_ids_view)
                     .filter(current_level=i)
+                    # .filter(risk_assessment__risk_matrix__name=["name"])
                     .count()
-                )
+                )  # What the second filter does ? Is this useful ?
 
-            if "count" not in values[k]:
-                values[k]["count"] = count
-                values[k]["color"] = m["risk"][i]["hexcolor"]
-            else:
-                values[k]["count"] += count
+            if "count" not in values[m["risk"][i][field]]:
+                values[m["risk"][i][field]]["count"] = count
+                values[m["risk"][i][field]]["color"] = m["risk"][i]["hexcolor"]
+                continue
+            values[m["risk"][i][field]]["count"] += count
     return values
 
 
-def risks_count_per_level(
-    user: User,
-    risk_assessments: list | None = None,
-    folder_id=None,
-    include_inherent=False,
-):
+def risks_count_per_level(user: User, risk_assessments: list | None = None):
     current_level = list()
     residual_level = list()
-    inherent_level = list()
 
     for r in aggregate_risks_per_field(
-        user, "name", risk_assessments=risk_assessments, folder_id=folder_id
+        user, "name", risk_assessments=risk_assessments
     ).items():
         current_level.append(
             {
@@ -703,12 +682,9 @@ def risks_count_per_level(
                 "color": r[1]["color"],
             }
         )
+
     for r in aggregate_risks_per_field(
-        user,
-        "name",
-        residual=True,
-        risk_assessments=risk_assessments,
-        folder_id=folder_id,
+        user, "name", residual=True, risk_assessments=risk_assessments
     ).items():
         residual_level.append(
             {
@@ -717,32 +693,7 @@ def risks_count_per_level(
                 "color": r[1]["color"],
             }
         )
-
-    if not include_inherent:
-        return {
-            "current": current_level,
-            "residual": residual_level,
-        }
-
-    for r in aggregate_risks_per_field(
-        user,
-        "name",
-        inherent=True,
-        risk_assessments=risk_assessments,
-        folder_id=folder_id,
-    ).items():
-        inherent_level.append(
-            {
-                "name": r[0],
-                "value": r[1]["count"],
-                "color": r[1]["color"],
-            }
-        )
-    return {
-        "current": current_level,
-        "residual": residual_level,
-        "inherent": inherent_level,
-    }
+    return {"current": current_level, "residual": residual_level}
 
 
 def p_risks(user: User):
@@ -900,31 +851,23 @@ def build_audits_tree_metrics(user):
     return tree
 
 
-def build_audits_stats(user, folder_id=None):
-    scoped_folder = (
-        Folder.objects.get(id=folder_id) if folder_id else Folder.get_root_folder()
-    )
+def build_audits_stats(user):
     (object_ids, _, _) = RoleAssignment.get_accessible_object_ids(
-        scoped_folder, user, ComplianceAssessment
+        Folder.get_root_folder(), user, ComplianceAssessment
     )
     data = list()
     names = list()
-    uuids = list()
-    for audit in ComplianceAssessment.objects.filter(id__in=object_ids).order_by(
-        "-updated_at"
-    )[:10]:
+    uuids = dict()
+    for audit in ComplianceAssessment.objects.filter(id__in=object_ids):
         data.append([rs[0] for rs in audit.get_requirements_result_count()])
         names.append(audit.name)
-        uuids.append(audit.id)
+        uuids[audit.name] = audit.id
     return {"data": data, "names": names, "uuids": uuids}
 
 
-def csf_functions(user, folder_id=None):
-    scoped_folder = (
-        Folder.objects.get(id=folder_id) if folder_id else Folder.get_root_folder()
-    )
+def csf_functions(user):
     (object_ids, _, _) = RoleAssignment.get_accessible_object_ids(
-        scoped_folder, user, AppliedControl
+        Folder.get_root_folder(), user, AppliedControl
     )
     viewable_controls = AppliedControl.objects.filter(id__in=object_ids)
     cnt = dict()
@@ -945,35 +888,21 @@ def csf_functions(user, folder_id=None):
     return data
 
 
-def get_metrics(user: User, folder_id):
-    def viewable_items(model, folder_id=None):
-        scoped_folder = (
-            Folder.objects.get(id=folder_id) if folder_id else Folder.get_root_folder()
-        )
+def get_metrics(user: User):
+    def viewable_items(model):
         (object_ids, _, _) = RoleAssignment.get_accessible_object_ids(
-            scoped_folder, user, model
+            Folder.get_root_folder(), user, model
         )
         return model.objects.filter(id__in=object_ids)
 
-    viewable_controls = viewable_items(AppliedControl, folder_id)
-    viewable_risk_assessments = viewable_items(RiskAssessment, folder_id)
-    viewable_compliance_assessments = viewable_items(ComplianceAssessment, folder_id)
-    viewable_risk_scenarios = viewable_items(RiskScenario, folder_id)
-    viewable_threats = viewable_items(Threat, folder_id)
-    viewable_risk_acceptances = viewable_items(RiskAcceptance, folder_id)
-    viewable_evidences = viewable_items(Evidence, folder_id)
-    viewable_requirement_assessments = viewable_items(RequirementAssessment, folder_id)
+    viewable_controls = viewable_items(AppliedControl)
     controls_count = viewable_controls.count()
     progress_avg = math.ceil(
-        mean([x.get_progress() for x in viewable_compliance_assessments] or [0])
+        mean([x.progress() for x in viewable_items(ComplianceAssessment)] or [0])
     )
-    missed_eta_count = (
-        viewable_controls.filter(
-            eta__lt=date.today(),
-        )
-        .exclude(status="active")
-        .count()
-    )
+    missed_eta_count = viewable_controls.filter(
+        eta__lt=date.today(),
+    ).count()
 
     data = {
         "controls": {
@@ -987,87 +916,33 @@ def get_metrics(user: User, folder_id):
             "eta_missed": missed_eta_count,
         },
         "risk": {
-            "assessments": viewable_risk_assessments.count(),
-            "scenarios": viewable_risk_scenarios.count(),
-            "threats": viewable_threats.filter(risk_scenarios__isnull=False)
+            "assessments": viewable_items(RiskAssessment).count(),
+            "scenarios": viewable_items(RiskScenario).count(),
+            "threats": viewable_items(Threat)
+            .filter(risk_scenarios__isnull=False)
             .distinct()
             .count(),
-            "acceptances": viewable_risk_acceptances.count(),
+            "acceptances": viewable_items(RiskAcceptance).count(),
         },
         "compliance": {
-            "used_frameworks": viewable_compliance_assessments.values("framework_id")
+            "used_frameworks": viewable_items(ComplianceAssessment)
+            .values("framework_id")
             .distinct()
             .count(),
-            "audits": viewable_compliance_assessments.count(),
-            "active_audits": viewable_compliance_assessments.filter(
-                status__in=["in_progress", "in_review", "done"]
-            ).count(),
-            "evidences": viewable_evidences.count(),
-            "non_compliant_items": viewable_requirement_assessments.filter(
-                result="non_compliant"
-            ).count(),
+            "audits": viewable_items(ComplianceAssessment).count(),
+            "active_audits": viewable_items(ComplianceAssessment)
+            .filter(status__in=["in_progress", "in_review", "done"])
+            .count(),
+            "evidences": viewable_items(Evidence).count(),
+            "non_compliant_items": viewable_items(RequirementAssessment)
+            .filter(result="non_compliant")
+            .count(),
             "progress_avg": progress_avg,
         },
-        "audits_stats": build_audits_stats(user, folder_id),
-        "csf_functions": csf_functions(user, folder_id),
+        "audits_stats": build_audits_stats(user),
+        "csf_functions": csf_functions(user),
     }
     return data
-
-
-def get_instance_metrics():
-    """
-    Returns the instance metrics such as the number of users, domains, perimeters, etc.
-    """
-    nb_users = User.objects.all().count()
-    nb_first_login = User.objects.filter(first_login=True).count()
-    nb_libraries = LoadedLibrary.objects.all().count()
-    nb_domains = Folder.objects.filter(content_type="DO").count()
-    nb_perimeters = Perimeter.objects.all().count()
-    nb_assets = Asset.objects.all().count()
-    nb_threats = Threat.objects.all().count()
-    nb_functions = ReferenceControl.objects.all().count()
-    nb_measures = AppliedControl.objects.all().count()
-    nb_evidences = Evidence.objects.all().count()
-    nb_compliance_assessments = ComplianceAssessment.objects.all().count()
-    nb_risk_assessments = RiskAssessment.objects.all().count()
-    nb_risk_scenarios = RiskScenario.objects.all().count()
-    nb_risk_acceptances = RiskAcceptance.objects.all().count()
-    nb_seats = getattr(settings, "LICENSE_SEATS", 0)
-    nb_editors = len(User.get_editors())
-    expiration = getattr(settings, "LICENSE_EXPIRATION", -1)
-
-    created_at = int(Folder.get_root_folder().created_at.timestamp())
-    last_login_dt = max(
-        [
-            x["last_login"]
-            for x in User.objects.all().values("last_login")
-            if x["last_login"]
-        ],
-        default=None,
-    )
-    last_login = int(last_login_dt.timestamp()) if last_login_dt else 0
-
-    return {
-        "nb_users": nb_users,
-        "nb_first_login": nb_first_login,
-        "nb_libraries": nb_libraries,
-        "nb_domains": nb_domains,
-        "nb_perimeters": nb_perimeters,
-        "nb_assets": nb_assets,
-        "nb_threats": nb_threats,
-        "nb_functions": nb_functions,
-        "nb_measures": nb_measures,
-        "nb_evidences": nb_evidences,
-        "nb_compliance_assessments": nb_compliance_assessments,
-        "nb_risk_assessments": nb_risk_assessments,
-        "nb_risk_scenarios": nb_risk_scenarios,
-        "nb_risk_acceptances": nb_risk_acceptances,
-        "nb_seats": nb_seats,
-        "nb_editors": nb_editors,
-        "expiration": expiration,
-        "created_at": created_at,
-        "last_login": last_login,
-    }
 
 
 def risk_status(user: User, risk_assessment_list):
@@ -1167,16 +1042,13 @@ def acceptances_to_review(user: User):
     return acceptances
 
 
-def build_scenario_clusters(risk_assessment: RiskAssessment, include_inherent=False):
+def build_scenario_clusters(risk_assessment: RiskAssessment):
     risk_matrix = risk_assessment.risk_matrix.parse_json()
     grid = risk_matrix["grid"]
     risk_matrix_current = [
         [set() for _ in range(len(grid[0]))] for _ in range(len(grid))
     ]
     risk_matrix_residual = [
-        [set() for _ in range(len(grid[0]))] for _ in range(len(grid))
-    ]
-    risk_matrix_inherent = [
         [set() for _ in range(len(grid[0]))] for _ in range(len(grid))
     ]
 
@@ -1187,18 +1059,8 @@ def build_scenario_clusters(risk_assessment: RiskAssessment, include_inherent=Fa
             risk_matrix_current[ri.current_proba][ri.current_impact].add(ri.ref_id)
         if ri.residual_level >= 0:
             risk_matrix_residual[ri.residual_proba][ri.residual_impact].add(ri.ref_id)
-        if include_inherent:
-            if ri.inherent_level >= 0:
-                risk_matrix_inherent[ri.inherent_proba][ri.inherent_impact].add(
-                    ri.ref_id
-                )
 
-    clusters = {"current": risk_matrix_current, "residual": risk_matrix_residual}
-
-    if include_inherent:
-        clusters["inherent"] = risk_matrix_inherent
-
-    return clusters
+    return {"current": risk_matrix_current, "residual": risk_matrix_residual}
 
 
 def compile_risk_assessment_for_composer(user, risk_assessment_list: list):
@@ -1280,15 +1142,12 @@ def compile_risk_assessment_for_composer(user, risk_assessment_list: list):
     }
 
 
-def threats_count_per_name(user: User, folder_id=None) -> Dict[str, List]:
-    scoped_folder = (
-        Folder.objects.get(id=folder_id) if folder_id else Folder.get_root_folder()
-    )
+def threats_count_per_name(user: User) -> Dict[str, List]:
     object_ids_view, _, _ = RoleAssignment.get_accessible_object_ids(
-        scoped_folder, user, Threat
+        Folder.get_root_folder(), user, Threat
     )
     viewable_scenarios = RoleAssignment.get_accessible_object_ids(
-        scoped_folder, user, RiskScenario
+        Folder.get_root_folder(), user, RiskScenario
     )[0]
 
     # Updated field name from 'riskscenario' to 'risk_scenarios'
@@ -1315,51 +1174,29 @@ def threats_count_per_name(user: User, folder_id=None) -> Dict[str, List]:
     return {"labels": labels, "values": values}
 
 
-def get_folder_content(
-    folder: Folder, include_perimeters, viewable_objects, needed_folders
-):
+def get_folder_content(folder: Folder):
     content = []
     for f in Folder.objects.filter(parent_folder=folder).distinct():
-        if f.id in viewable_objects or f.id in needed_folders:
-            entry = {
-                "name": f.name,
-                "uuid": f.id,
-                "viewable": viewable_objects and f.id in viewable_objects,
+        content.append({"name": f.name, "children": get_folder_content(f)})
+    for p in Perimeter.objects.filter(folder=folder).distinct():
+        content.append(
+            {
+                "name": p.name,
+                "children": [
+                    {
+                        "name": "audits",
+                        "value": ComplianceAssessment.objects.filter(
+                            perimeter=p
+                        ).count(),
+                    },
+                    {
+                        "name": "risk assessments",
+                        "value": RiskAssessment.objects.filter(perimeter=p).count(),
+                    },
+                ],
             }
-            children = get_folder_content(
-                f,
-                include_perimeters=include_perimeters,
-                viewable_objects=viewable_objects,
-                needed_folders=needed_folders,
-            )
-            if len(children) > 0:
-                entry.update({"children": children})
-            content.append(entry)
+        )
 
-    if include_perimeters and folder.id in viewable_objects:
-        for p in Perimeter.objects.filter(folder=folder).distinct():
-            content.append(
-                {
-                    "name": p.name,
-                    "symbol": "circle",
-                    "symbolSize": 10,
-                    "itemStyle": {"color": "#222436"},
-                    "children": [
-                        {
-                            "name": "Audits",
-                            "symbol": "diamond",
-                            "value": ComplianceAssessment.objects.filter(
-                                perimeter=p
-                            ).count(),
-                        },
-                        {
-                            "name": "Risk assessments",
-                            "symbol": "diamond",
-                            "value": RiskAssessment.objects.filter(perimeter=p).count(),
-                        },
-                    ],
-                }
-            )
     return content
 
 
@@ -1441,20 +1278,9 @@ def duplicate_related_objects(
         """
         Duplicate an object and link it to the duplicate object.
         """
-        # Get the model of the object
-        model_class = new_obj.__class__
-
-        # Extract all fields except the primary key
-        field_values = {}
-        for field in new_obj._meta.fields:
-            if not field.primary_key and not field.auto_created:
-                field_values[field.name] = getattr(new_obj, field.name)
-
-        # Apply changes
-        field_values["folder"] = target_folder
-
-        # Create the new object
-        new_obj = model_class.objects.create(**field_values)
+        new_obj.pk = None
+        new_obj.folder = target_folder
+        new_obj.save()
         link_existing_object(duplicate_object, new_obj, field_name)
 
     model_class = getattr(type(source_object), field_name).field.related_model

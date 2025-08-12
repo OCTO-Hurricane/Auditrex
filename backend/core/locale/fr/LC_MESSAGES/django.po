@@ -201,8 +201,8 @@ msgid "Search framework..."
 msgstr "Rechercher un référentiel..."
 
 #: core/management/commands/reset_mail.py:16
-msgid "CISO Assistant: Password Reset"
-msgstr "CISO Assistant : réinitialisation de mot de passe"
+msgid "Auditrex: Password Reset"
+msgstr "Auditrex : réinitialisation de mot de passe"
 
 #: core/models.py:105 core/models.py:214
 msgid "URN"
@@ -1364,8 +1364,8 @@ msgid "Authors "
 msgstr "Auteurs"
 
 #: core/templates/registration/first_connexion_email.html:14
-msgid "Welcome to CISO Assistant!"
-msgstr "Bienvenue sur CISO Assistant !"
+msgid "Welcome to Auditrex!"
+msgstr "Bienvenue sur Auditrex !"
 
 #: core/templates/registration/first_connexion_email.html:15
 #: core/templates/registration/password_reset_email.html:23
@@ -1375,10 +1375,10 @@ msgstr "Votre plateforme de gestion GRC tout-en-un"
 
 #: core/templates/registration/first_connexion_email.html:33
 msgid ""
-"You have been granted access to CISO Assistant. To get started, use the link "
+"You have been granted access to Auditrex. To get started, use the link "
 "below to define your password:"
 msgstr ""
-"Vous avez été autorisé à accéder à CISO Assistant. Pour commencer, utilisez "
+"Vous avez été autorisé à accéder à Auditrex. Pour commencer, utilisez "
 "le lien ci-dessous pour définir votre mot de passe :"
 
 #: core/templates/registration/first_connexion_email.html:38
@@ -1420,8 +1420,8 @@ msgstr ""
 "simplement ignorer cet e-mail."
 
 #: core/templates/registration/first_connexion_email.html:58
-msgid "Learn more about CISO Assistant"
-msgstr "En savoir plus sur CISO Assistant"
+msgid "Learn more about Auditrex"
+msgstr "En savoir plus sur Auditrex"
 
 #: core/templates/registration/first_connexion_email.html:63
 #: core/templates/registration/password_reset_email.html:58
@@ -1432,8 +1432,8 @@ msgstr "Cordialement"
 #: core/templates/registration/first_connexion_email.html:64
 #: core/templates/registration/password_reset_email.html:59
 #: core/templates/tprm/third_party_email.html:50
-msgid "CISO Assistant Team"
-msgstr "Équipe CISO Assistant"
+msgid "Auditrex Team"
+msgstr "Équipe Auditrex"
 
 #: core/templates/registration/password_reset_email.html:32
 #: core/templates/tprm/third_party_email.html:32
@@ -1635,8 +1635,8 @@ msgid "English"
 msgstr "Anglais"
 
 #: core/views.py:2257
-msgid "CISO Assistant: A questionnaire has been assigned to you"
-msgstr "CISO Assistant : un questionnaire vous a été assigné"
+msgid "Auditrex: A questionnaire has been assigned to you"
+msgstr "Auditrex : un questionnaire vous a été assigné"
 
 #~ msgid "Internal reference"
 #~ msgstr "Référence interne"

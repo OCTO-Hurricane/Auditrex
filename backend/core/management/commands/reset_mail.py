@@ -14,7 +14,7 @@ class Command(BaseCommand):
         try:
             admin.mailing(
                 email_template_name="registration/password_reset_email.html",
-                subject=_("CISO Assistant: Password Reset"),
+                subject=_("Auditrex: Password Reset"),
             )
             self.stdout.write("reset mail sent")
         except Exception as e:

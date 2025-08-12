@@ -2,11 +2,7 @@
 	import DetailView from '$lib/components/DetailView/DetailView.svelte';
 	import type { PageData } from './$types';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 </script>
 
 <DetailView {data} />

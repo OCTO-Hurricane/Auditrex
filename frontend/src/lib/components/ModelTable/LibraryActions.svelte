@@ -1,19 +1,30 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import { m } from '$paraglide/messages';
-	import { page } from '$app/state';
-	import type { DataHandler } from '@vincjo/datatables/remote';
-	import { tableHandlers } from '$lib/utils/stores';
+	import { applyAction, deserialize, enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import type { ActionResult } from '@sveltejs/kit';
+	import * as m from '$paraglide/messages';
+	import { page } from '$app/stores';
 
-	interface Props {
-		meta: any;
-		actionsURLModel: string;
-		handler: DataHandler;
+	export let meta: any;
+	export let actionsURLModel: string;
+	$: library = meta;
+	let loading = { form: false, library: '' };
+
+	async function handleSubmit(event: { currentTarget: EventTarget & HTMLFormElement }) {
+		const data = new FormData(event.currentTarget);
+
+		const response = await fetch(event.currentTarget.action, {
+			method: 'POST',
+			body: data
+		});
+
+		const result: ActionResult = deserialize(await response.text());
+
+		if (result.type === 'success') {
+			await invalidateAll();
+		}
+		applyAction(result);
 	}
-
-	let { meta, actionsURLModel }: Props = $props();
-	let library = $derived(meta);
-	let loading = $state({ form: false, library: '' });
 </script>
 
 {#if actionsURLModel === 'stored-libraries' && Object.hasOwn(library, 'is_loaded') && !library.is_loaded}
@@ -36,7 +47,7 @@
 				/>
 			</svg>
 		</div>
-	{:else if page.data.user.is_admin}
+	{:else if $page.data.user.is_admin}
 		<span class="hover:text-primary-500">
 			<form
 				method="post"
@@ -47,20 +58,18 @@
 					return async ({ update }) => {
 						loading.form = false;
 						loading.library = '';
-						await update();
-						Object.values($tableHandlers).forEach((handler) => {
-							handler.invalidate();
-						});
+						update();
 					};
 				}}
+				on:submit={handleSubmit}
 			>
 				<button
 					type="submit"
 					data-testid="tablerow-import-button"
 					id="tablerow-import-button"
-					onclick={(e) => e.stopPropagation()}
+					on:click={(e) => e.stopPropagation()}
 				>
-					<i class="fa-solid fa-file-import"></i>
+					<i class="fa-solid fa-file-import" />
 				</button>
 			</form>
 		</span>
@@ -99,15 +108,13 @@
 					return async ({ update }) => {
 						loading.form = false;
 						loading.library = '';
-						await update();
-						Object.values($tableHandlers).forEach((handler) => {
-							handler.invalidate();
-						});
+						update();
 					};
 				}}
+				on:submit={handleSubmit}
 			>
-				<button title={m.updateThisLibrary()} onclick={(e) => e.stopPropagation()}>
-					<i class="fa-solid fa-circle-up"></i>
+				<button title={m.updateThisLibrary()} on:click={(e) => e.stopPropagation()}>
+					<i class="fa-solid fa-circle-up" />
 				</button>
 			</form>
 		</span>

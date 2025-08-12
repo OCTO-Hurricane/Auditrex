@@ -2,11 +2,7 @@
 	import ModelForm from '$lib/components/Forms/ModelForm.svelte';
 	import type { PageData } from './$types';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 
 	const customNameDescription = ['operational-scenarios'].includes(data.model.urlModel);
 </script>

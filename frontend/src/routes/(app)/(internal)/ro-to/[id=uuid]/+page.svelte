@@ -1,19 +1,20 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { m } from '$paraglide/messages';
-	import { page } from '$app/state';
+	import * as m from '$paraglide/messages';
+	import { page } from '$app/stores';
 	import { pageTitle } from '$lib/utils/stores';
 	import { safeTranslate } from '$lib/utils/i18n';
 	import ModelTable from '$lib/components/ModelTable/ModelTable.svelte';
 	import Anchor from '$lib/components/Anchor/Anchor.svelte';
-	import { canPerformAction } from '$lib/utils/access-control';
+
+	export let data: PageData;
 
 	const roto = data.data;
 
 	pageTitle.set(roto.risk_origin + ' - ' + roto.target_objective);
 
-	let activeActivity: string | null = $state(null);
-	page.url.searchParams.forEach((value, key) => {
+	let activeActivity: string | null = null;
+	$page.url.searchParams.forEach((value, key) => {
 		if (key === 'activity' && value === 'one') {
 			activeActivity = 'one';
 		} else if (key === 'activity' && value === 'two') {
@@ -30,22 +31,6 @@
 		fairly_relevant: 'bg-orange-200 text-orange-700',
 		higly_relevant: 'bg-red-200 text-red-700'
 	};
-
-	const user = page.data.user;
-	import { URL_MODEL_MAP } from '$lib/utils/crud';
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
-	const model = URL_MODEL_MAP['ro-to'];
-	const canEditObject = (roto): boolean =>
-		canPerformAction({
-			user,
-			action: 'change',
-			model: model.name,
-			domain: roto.folder?.id
-		});
 </script>
 
 <div class="card p-4 bg-white shadow-lg">
@@ -56,18 +41,16 @@
 				label={roto.ebios_rm_study.str}
 				class="flex items-center space-x-2 text-primary-800 hover:text-primary-600"
 			>
-				<i class="fa-solid fa-arrow-left"></i>
+				<i class="fa-solid fa-arrow-left" />
 				<p class="">{m.goBackToEbiosRmStudy()}</p>
 			</Anchor>
-			{#if canEditObject(roto)}
-				<Anchor
-					href={`${page.url.pathname}/edit?activity=${activeActivity}&next=${page.url.pathname}?activity=${activeActivity}`}
-					class="btn preset-filled-primary-500 h-fit"
-				>
-					<i class="fa-solid fa-pen-to-square mr-2" data-testid="edit-button"></i>
-					{m.edit()}
-				</Anchor>
-			{/if}
+			<Anchor
+				href={`${$page.url.pathname}/edit?activity=${activeActivity}&next=${$page.url.pathname}?activity=${activeActivity}`}
+				class="btn variant-filled-primary h-fit"
+			>
+				<i class="fa-solid fa-pen-to-square mr-2" data-testid="edit-button" />
+				{m.edit()}
+			</Anchor>
 		</div>
 		<div
 			id="activityOne"
@@ -164,7 +147,7 @@
 					<span class="badge bg-red-200 text-red-700">{m.notSelected()}</span>
 				{/if}
 			</p>
-			<div class="w-full p-4 bg-gray-50 border rounded-md shadow-xs">
+			<div class="w-full p-4 bg-gray-50 border rounded-md shadow-sm">
 				<h3 class="font-semibold text-lg text-gray-700 flex items-center space-x-2">
 					<i class="fa-solid fa-table text-gray-500 opacity-75"></i>
 					<span>{m.fearedEvents()}</span>
@@ -175,14 +158,9 @@
 					regionHeadCell="uppercase bg-gray-50 text-gray-700"
 					source={data.table}
 					URLModel="feared-events"
-					baseEndpoint={'feared-events/?ro_to_couples=' + roto.id}
-					pagination={false}
-					search={false}
-					hideFilters={true}
-					fields={['name', 'assets', 'description', 'qualifications', 'gravity']}
 				></ModelTable>
 			</div>
-			<div class="w-full p-4 bg-gray-50 border rounded-md shadow-xs">
+			<div class="w-full p-4 bg-gray-50 border rounded-md shadow-sm">
 				<h3 class="font-semibold text-lg text-gray-700 flex items-center space-x-2">
 					<i class="fa-solid fa-eye text-gray-500 opacity-75"></i>
 					<span>{m.justification()}</span>

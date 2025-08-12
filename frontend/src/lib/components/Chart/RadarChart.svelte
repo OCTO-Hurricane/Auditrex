@@ -2,28 +2,17 @@
 	import { onMount } from 'svelte';
 	import { safeTranslate } from '$lib/utils/i18n';
 
-	interface Props {
-		// export let name: string;
-		s_label?: string;
-		width?: string;
-		height?: string;
-		classesContainer?: string;
-		title?: string;
-		name?: string;
-		values: any[]; // Set the types for these variables later on
-		labels: any[];
-	}
+	// export let name: string;
+	export let s_label = '';
 
-	let {
-		s_label = '',
-		width = 'w-auto',
-		height = 'h-full',
-		classesContainer = '',
-		title = '',
-		name = '',
-		values = $bindable(),
-		labels
-	}: Props = $props();
+	export let width = 'w-auto';
+	export let height = 'h-full';
+	export let classesContainer = '';
+	export let title = '';
+	export let name = '';
+
+	export let values: any[]; // Set the types for these variables later on
+	export let labels: any[];
 
 	for (const index in values) {
 		if (values[index].localName) {
@@ -78,4 +67,4 @@
 	});
 </script>
 
-<div id={chart_id} class="{width} {height} {classesContainer}"></div>
+<div id={chart_id} class="{width} {height} {classesContainer}" />

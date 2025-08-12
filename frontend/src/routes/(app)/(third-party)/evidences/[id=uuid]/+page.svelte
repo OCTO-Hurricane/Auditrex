@@ -1,24 +1,19 @@
 <script lang="ts">
 	import ConfirmModal from '$lib/components/Modals/ConfirmModal.svelte';
 	import { getModelInfo } from '$lib/utils/crud.js';
-	import type { ModalComponent, ModalSettings, ModalStore } from '@skeletonlabs/skeleton-svelte';
+	import type { ModalComponent, ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import { page } from '$app/state';
+
 	import Anchor from '$lib/components/Anchor/Anchor.svelte';
 	import DetailView from '$lib/components/DetailView/DetailView.svelte';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages';
 	import { defaults } from 'sveltekit-superforms';
 	import { z } from 'zod';
 	import { zod } from 'sveltekit-superforms/adapters';
-	import { canPerformAction } from '$lib/utils/access-control';
-	import { getModalStore } from '$lib/components/Modals/stores';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 
 	interface Attachment {
 		type: string;
@@ -26,7 +21,7 @@
 		fileExists: boolean;
 	}
 
-	let attachment: Attachment | undefined = $state(undefined);
+	let attachment: Attachment | undefined = undefined;
 	const modalStore: ModalStore = getModalStore();
 
 	function modalConfirm(id: string, name: string, action: string): void {
@@ -37,7 +32,6 @@
 					{ id, urlmodel: 'evidences' },
 					zod(z.object({ id: z.string(), urlmodel: z.string() }))
 				),
-				schema: zod(z.object({ id: z.string(), urlmodel: z.string() })),
 				id: id,
 				debug: false,
 				URLModel: getModelInfo('evidences').urlModel,
@@ -66,17 +60,6 @@
 		};
 		attachment = data.data.attachment ? await fetchAttachment() : undefined;
 	});
-
-	const user = page.data.user;
-	const canEditObject: boolean = canPerformAction({
-		user,
-		action: 'change',
-		model: data.model.name,
-		domain:
-			data.model.name === 'folder'
-				? data.data.id
-				: (data.data.folder?.id ?? data.data.folder ?? user.root_folder_id)
-	});
 </script>
 
 <DetailView {data} />
@@ -90,20 +73,17 @@
 			<div class="space-x-2">
 				<Anchor
 					href={`./${data.data.id}/attachment`}
-					class="btn preset-filled-primary-500 h-fit"
+					class="btn variant-filled-primary h-fit"
 					data-testid="attachment-download-button"
-					><i class="fa-solid fa-download mr-2"></i> {m.download()}</Anchor
+					><i class="fa-solid fa-download mr-2" /> {m.download()}</Anchor
 				>
-				{#if canEditObject}
-					<button
-						onclick={(_) => {
-							modalConfirm(data.data.id, data.data.attachment, '?/deleteAttachment');
-						}}
-						onkeydown={(_) =>
-							modalConfirm(data.data.id, data.data.attachment, '?/deleteAttachment')}
-						class="btn preset-filled-tertiary-500 h-full"><i class="fa-solid fa-trash"></i></button
-					>
-				{/if}
+				<button
+					on:click={(_) => {
+						modalConfirm(data.data.id, data.data.attachment, '?/deleteAttachment');
+					}}
+					on:keydown={(_) => modalConfirm(data.data.id, data.data.attachment, '?/deleteAttachment')}
+					class="btn variant-filled-tertiary h-full"><i class="fa-solid fa-trash" /></button
+				>
 			</div>
 		</div>
 		{#if attachment}

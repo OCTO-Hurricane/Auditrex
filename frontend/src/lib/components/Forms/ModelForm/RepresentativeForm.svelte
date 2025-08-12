@@ -3,17 +3,13 @@
 	import TextField from '$lib/components/Forms/TextField.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import Checkbox from '$lib/components/Forms/Checkbox.svelte';
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		data?: any;
-	}
-
-	let { form, model, cacheLocks = {}, formDataCache = $bindable({}), data = {} }: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let data: any = {};
 </script>
 
 <TextField

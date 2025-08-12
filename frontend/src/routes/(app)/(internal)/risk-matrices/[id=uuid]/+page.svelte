@@ -3,7 +3,7 @@
 	import RiskMatrix from '$lib/components/RiskMatrix/RiskMatrix.svelte';
 	import { URL_MODEL_MAP } from '$lib/utils/crud.js';
 	const showRisks = true;
-	let { data } = $props();
+	export let data;
 	const riskMatrix = data.data;
 </script>
 
@@ -59,4 +59,4 @@
 	</div>
 </div>
 
-<RiskMatrix {riskMatrix} showLegend={showRisks} wrapperClass="mt-8" />
+<RiskMatrix {riskMatrix} {showRisks} wrapperClass="mt-8" />

@@ -2,25 +2,14 @@
 	import { onMount } from 'svelte';
 
 	import { goto } from '$app/navigation';
+	// export let name: string;
 
-	interface Props {
-		// export let name: string;
-		width?: string;
-		height?: string;
-		classesContainer?: string;
-		title?: string;
-		name?: string;
-		data: any;
-	}
-
-	let {
-		width = 'w-auto',
-		height = 'h-full',
-		classesContainer = 'border',
-		title = '',
-		name = '',
-		data
-	}: Props = $props();
+	export let width = 'w-auto';
+	export let height = 'h-full';
+	export let classesContainer = 'border';
+	export let title = '';
+	export let name = '';
+	export let data;
 
 	const chart_id = `${name}_div`;
 	onMount(async () => {
@@ -293,7 +282,7 @@
 	});
 </script>
 
-<div id={chart_id} class="{width} {height} {classesContainer}"></div>
+<div id={chart_id} class="{width} {height} {classesContainer}" />
 {#if data.not_displayed > 0}
 	<a class="text-center hover:text-purple-600" href="/applied-controls?priority=null">
 		⚠️ {data.not_displayed} items are not displayed as they don't have their priority set. Click here

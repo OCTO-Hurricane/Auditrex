@@ -3,32 +3,20 @@
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
 	import TextField from '$lib/components/Forms/TextField.svelte';
 	import AutocompleteSelect from '$lib/components/Forms/AutocompleteSelect.svelte';
-	import { m } from '$paraglide/messages';
-	import TextArea from '$lib/components/Forms/TextArea.svelte';
-	import Select from '$lib/components/Forms/Select.svelte';
-	import { page } from '$app/state';
+	import * as m from '$paraglide/messages.js';
+	import TextArea from '../TextArea.svelte';
+	import { page } from '$app/stores';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-		context: string;
-	}
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
+	export let context: string;
 
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {},
-		context
-	}: Props = $props();
+	let activeActivity: string | null = null;
 
-	let activeActivity: string | null = $state(null);
-
-	page.url.searchParams.forEach((value, key) => {
+	$page.url.searchParams.forEach((value, key) => {
 		if (key === 'activity' && value === 'one') {
 			activeActivity = 'one';
 		} else if (key === 'activity' && value === 'two') {
@@ -37,7 +25,7 @@
 	});
 </script>
 
-{#if context != 'selectAudit' && context != 'selectAsset'}
+{#if context != 'selectAudit'}
 	<TextField
 		{form}
 		field="name"
@@ -47,7 +35,7 @@
 		data-focusindex="0"
 	/>
 {/if}
-{#if context !== 'ebiosRmStudy' && context !== 'selectAudit' && context !== 'selectAsset'}
+{#if context !== 'ebiosRmStudy' && context !== 'selectAudit'}
 	<TextField
 		{form}
 		field="version"
@@ -108,15 +96,6 @@
 			cacheLock={cacheLocks['version']}
 			bind:cachedValue={formDataCache['version']}
 		/>
-		<Select
-			{form}
-			options={model.selectOptions['quotation_method']}
-			field="quotation_method"
-			disableDoubleDash
-			label={m.quotationMethod()}
-			cacheLock={cacheLocks['quotation_method']}
-			bind:cachedValue={formDataCache['quotation_method']}
-		/>
 		<TextField
 			{form}
 			field="ref_id"
@@ -163,14 +142,6 @@
 			optionsEndpoint="assets"
 			optionsLabelField="auto"
 			optionsExtraFields={[['folder', 'str']]}
-			optionsInfoFields={{
-				fields: [
-					{
-						field: 'type'
-					}
-				],
-				classes: 'text-blue-500'
-			}}
 			field="assets"
 			label={m.assets()}
 			helpText={m.studyAssetHelpText()}
@@ -183,36 +154,14 @@
 		cacheLock={cacheLocks['observation']}
 		bind:cachedValue={formDataCache['observation']}
 	/>
-{:else if context === 'selectAudit'}
+{:else}
 	<AutocompleteSelect
 		multiple
 		{form}
 		optionsEndpoint="compliance-assessments"
-		optionsExtraFields={[['perimeter', 'str']]}
-		optionsLabelField="auto"
 		field="compliance_assessments"
 		cacheLock={cacheLocks['compliance_assessments']}
 		bind:cachedValue={formDataCache['compliance_assessments']}
 		label={m.complianceAssessment()}
-	/>
-{:else if context === 'selectAsset'}
-	<AutocompleteSelect
-		multiple
-		{form}
-		optionsEndpoint="assets"
-		optionsExtraFields={[['folder', 'str']]}
-		optionsInfoFields={{
-			fields: [
-				{
-					field: 'type'
-				}
-			],
-			classes: 'text-blue-500'
-		}}
-		optionsLabelField="auto"
-		field="assets"
-		cacheLock={cacheLocks['assets']}
-		bind:cachedValue={formDataCache['assets']}
-		label={m.assets()}
 	/>
 {/if}

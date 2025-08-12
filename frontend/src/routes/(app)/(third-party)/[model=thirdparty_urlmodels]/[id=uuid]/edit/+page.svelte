@@ -2,11 +2,7 @@
 	import ModelForm from '$lib/components/Forms/ModelForm.svelte';
 	import type { PageData } from './$types';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 </script>
 
 <div class="card p-4 bg-white shadow-lg">

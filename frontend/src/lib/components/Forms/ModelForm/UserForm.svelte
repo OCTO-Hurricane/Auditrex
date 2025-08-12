@@ -1,29 +1,15 @@
 <script lang="ts">
 	import AutocompleteSelect from '../AutocompleteSelect.svelte';
 	import TextField from '$lib/components/Forms/TextField.svelte';
-	import TextArea from '$lib/components/Forms/TextArea.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import Checkbox from '$lib/components/Forms/Checkbox.svelte';
-	import { page } from '$app/state';
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		shape?: any;
-		context: string;
-	}
-
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		shape = {},
-		context
-	}: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let shape: any = {};
 </script>
 
 <TextField
@@ -64,23 +50,6 @@
 {#if shape.is_active}
 	<Checkbox {form} field="is_active" label={m.isActive()} helpText={m.isActiveHelpText()} />
 {/if}
-
-{#if context !== 'create'}
-	<Checkbox
-		{form}
-		field="keep_local_login"
-		label={m.keepLocalLogin()}
-		helpText={m.keepLocalLoginHelpText()}
-	/>
-{/if}
-<TextArea
-	{form}
-	field="observation"
-	label={m.observation()}
-	cacheLock={cacheLocks['observation']}
-	bind:cachedValue={formDataCache['observation']}
-/>
-
 <span class="text-gray-500 pt-5">
 	⚠️ {m.createdUserWillHaveNoRights()}
 </span>

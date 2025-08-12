@@ -8,5 +8,5 @@
 
 ### 📹 Videos
 
-- BE-CYBER COMMUNITY, French talk, Live presentation of CISO Assistant:
+- BE-CYBER COMMUNITY, French talk, Live presentation of Auditrex:
   - https://www.youtube.com/live/RpQdD9WrKHs

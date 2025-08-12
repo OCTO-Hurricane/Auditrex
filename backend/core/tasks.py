@@ -1,17 +1,16 @@
-from datetime import date, timedelta
+from datetime import date
 from huey import crontab
 from huey.contrib.djhuey import periodic_task, task, db_periodic_task, db_task
 from core.models import AppliedControl
+from django.db.models import Q
 from django.core.mail import send_mail
 from django.conf import settings
 import logging
+import random
 from global_settings.models import GlobalSettings
 
 import logging.config
 import structlog
-
-
-from django.core.management import call_command
 
 logging.config.dictConfig(settings.LOGGING)
 logger = structlog.getLogger(__name__)
@@ -66,12 +65,12 @@ def send_notification_email_expired_eta(owner_email, controls):
     if not check_email_configuration(owner_email, controls):
         return
 
-    subject = f"CISO Assistant: You have {len(controls)} expired control(s)"
+    subject = f"Auditrex: You have {len(controls)} expired control(s)"
     message = "Hello,\n\nThe following controls have expired:\n\n"
     for control in controls:
         message += f"- {control.name} (ETA: {control.eta})\n"
     message += "\nThis reminder will stop once the control is marked as active or you update the ETA.\n"
-    message += "Log in to your CISO Assistant portal and check 'my assignments' section to get to your controls directly.\n\n"
+    message += "Log in to your Auditrex portal and check 'my assignments' section to get to your controls directly.\n\n"
     message += "Thank you."
 
     send_notification_email(subject, message, owner_email)
@@ -82,11 +81,11 @@ def send_notification_email_deprecated_control(owner_email, controls):
     if not check_email_configuration(owner_email, controls):
         return
 
-    subject = f"CISO Assistant: You have {len(controls)} deprecated control(s)"
+    subject = f"Auditrex: You have {len(controls)} deprecated control(s)"
     message = "Hello,\n\nThe following controls are identified as deprecated:\n\n"
     for control in controls:
         message += f"- {control.name}\n"
-    message += "\nLog in to your CISO Assistant portal and check 'my assignments' section to get to your controls directly.\n\n"
+    message += "\nLog in to your Auditrex portal and check 'my assignments' section to get to your controls directly.\n\n"
     message += "Thank you."
 
     send_notification_email(subject, message, owner_email)
@@ -137,24 +136,3 @@ def check_email_configuration(owner_email, controls):
         return False
 
     return True
-
-
-@periodic_task(crontab(hour="22", minute="30"))
-def auditlog_retention_cleanup():
-    retention_days = getattr(settings, "AUDITLOG_RETENTION_DAYS", 90)
-    before_date = date.today() - timedelta(days=retention_days)
-
-    try:
-        call_command("auditlogflush", "--before-date", before_date.isoformat(), "--yes")
-        logger.info(f"Successfully cleaned up audit logs before {before_date}")
-    except Exception as e:
-        logger.error(f"Failed to clean up audit logs: {str(e)}")
-
-
-@periodic_task(crontab(hour="*/3"))
-def auditlog_prune():
-    try:
-        call_command("prune_auditlog")
-        logger.info("Successfully pruned audit logs")
-    except Exception as e:
-        logger.error(f"Failed to prune the audit logs: {str(e)}")

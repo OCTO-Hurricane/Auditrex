@@ -3,35 +3,22 @@
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
 	import Checkbox from '$lib/components/Forms/Checkbox.svelte';
 	import AutocompleteSelect from '$lib/components/Forms/AutocompleteSelect.svelte';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import TextArea from '../TextArea.svelte';
 	import Select from '../Select.svelte';
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-		context: string;
-		object?: any; // Optional object for additional data
-	}
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
+	export let context: string;
 
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {},
-		context,
-		object = null // Optional object for additional data
-	}: Props = $props();
+	const activityBackground = context === 'edit' ? 'bg-white' : 'bg-surface-100-800-token';
 
-	const activityBackground = context === 'edit' ? 'bg-white' : 'bg-surface-100-900';
-
-	let activeActivity: string | null = $state(null);
-	page.url.searchParams.forEach((value, key) => {
+	let activeActivity: string | null = null;
+	$page.url.searchParams.forEach((value, key) => {
 		if (key === 'activity' && value === 'one') {
 			activeActivity = 'one';
 		} else if (key === 'activity' && value === 'two') {
@@ -49,14 +36,6 @@
 	bind:cachedValue={formDataCache['ebios_rm_study']}
 	label={m.ebiosRmStudy()}
 	hidden={initialData.ebios_rm_study}
-/>
-<AutocompleteSelect
-	{form}
-	field="folder"
-	cacheLock={cacheLocks['folder']}
-	bind:cachedValue={formDataCache['folder']}
-	label={m.folder()}
-	hidden
 />
 <div
 	class="relative p-2 space-y-2 rounded-md {activeActivity === 'one'
@@ -88,7 +67,7 @@
 		field="threats"
 		cacheLock={cacheLocks['threats']}
 		bind:cachedValue={formDataCache['threats']}
-		label={m.elementaryActionsTechniques()}
+		label={m.threats()}
 		helpText={m.operationalScenarioThreatsHelpText()}
 	/>
 	{#if context !== 'edit'}
@@ -97,7 +76,7 @@
 			optionsEndpoint="attack-paths?is_selected=true&used=false"
 			optionsDetailedUrlParameters={[['ebios_rm_study', initialData.ebios_rm_study]]}
 			field="attack_path"
-			label={m.attackPath() + ` (${m.strategicScenario()})`}
+			label={m.attackPath()}
 		/>
 	{/if}
 </div>
@@ -113,17 +92,15 @@
 	>
 		{m.activityTwo()}
 	</p>
-	{#if object.quotation_method === 'manual'}
-		<Select
-			{form}
-			options={model.selectOptions['likelihood']}
-			field="likelihood"
-			label={m.likelihood()}
-			cacheLock={cacheLocks['likelihood']}
-			bind:cachedValue={formDataCache['likelihood']}
-			helpText={m.likelihoodHelpText()}
-		/>
-	{/if}
+	<Select
+		{form}
+		options={model.selectOptions['likelihood']}
+		field="likelihood"
+		label={m.likelihood()}
+		cacheLock={cacheLocks['likelihood']}
+		bind:cachedValue={formDataCache['likelihood']}
+		helpText={m.likelihoodHelpText()}
+	/>
 	<TextArea
 		{form}
 		field="justification"

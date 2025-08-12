@@ -1,42 +1,30 @@
-<script lang="ts">
+<script lang="ts" type="module">
 	import { onMount } from 'svelte';
 	import SideBarFooter from './SideBarFooter.svelte';
 	import SideBarHeader from './SideBarHeader.svelte';
 	import SideBarNavigation from './SideBarNavigation.svelte';
 	import SideBarToggle from './SideBarToggle.svelte';
-	import { writable } from 'svelte/store';
 
 	import { getCookie, setCookie } from '$lib/utils/cookies';
-	import { driverInstance, tableHandlers } from '$lib/utils/stores';
-	import { m } from '$paraglide/messages';
+	import { driverInstance } from '$lib/utils/stores';
+	import * as m from '$paraglide/messages';
 
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/stores';
 	import FirstLoginModal from '$lib/components/Modals/FirstLoginModal.svelte';
 	import { breadcrumbs, goto } from '$lib/utils/breadcrumbs';
+	import { getModalStore, type ModalComponent, type ModalSettings } from '@skeletonlabs/skeleton';
 	import { driver } from 'driver.js';
 	import 'driver.js/dist/driver.css';
 	import { getFlash } from 'sveltekit-flash-message';
 	import './driver-custom.css';
-	import LoadingSpinner from '../utils/LoadingSpinner.svelte';
-	import {
-		getModalStore,
-		type ModalComponent,
-		type ModalSettings
-	} from '$lib/components/Modals/stores';
 
-	interface Props {
-		open: boolean;
-		sideBarVisibleItems: Record<string, boolean>;
-	}
-
-	let { open = $bindable(), sideBarVisibleItems }: Props = $props();
+	export let open: boolean;
 
 	const user = $page.data?.user;
 
 	// id is not needed, just to help us with authoring
 	// this is not great, but couldn't find a way for i18n while separating the file.
-	// NOTE: .svelte.ts files might help here https://svelte.dev/docs/svelte/svelte-js-files
 	const steps = [
 		{
 			id: 1,
@@ -55,7 +43,7 @@
 		},
 		{
 			id: 3,
-			element: 'button[type="button"][id$="organization"]',
+			element: '#organization',
 			popover: {
 				title: m.tourOrganizationTitle(),
 				description: m.tourOrganizationDescription()
@@ -91,7 +79,7 @@
 		},
 		{
 			id: 8,
-			element: 'catalog-step',
+			element: '#catalog-step',
 			popover: {
 				title: m.tourCatalogTitle(),
 				description: m.tourCatalogDescription()
@@ -99,7 +87,7 @@
 		},
 		{
 			id: 9,
-			element: 'button[type="button"][id$="catalog"]',
+			element: '#catalog',
 			popover: {
 				description: m.tourCatalogBrowseDescription()
 			}
@@ -136,7 +124,7 @@
 		},
 		{
 			id: 14,
-			element: 'button[type="button"][id$="compliance"]',
+			element: '#compliance',
 			popover: {
 				description: m.tourComplianceDescription()
 			}
@@ -151,7 +139,7 @@
 		},
 		{
 			id: 16,
-			element: 'button[type="button"][id$="risk"]',
+			element: '#risk',
 			popover: {
 				description: m.tourRiskDescription()
 			}
@@ -166,7 +154,7 @@
 		},
 		{
 			id: 18,
-			element: 'button[type="button"][id$="overview"]',
+			element: '#overview',
 			popover: {
 				title: m.tourAnalyticsTitle(),
 				description: m.tourAnalyticsDescription()
@@ -207,13 +195,13 @@
 					{
 						label: m.showGuidedTour(),
 						action: triggerVisit,
-						classes: 'preset-filled-surface-500',
+						classes: 'variant-filled-surface',
 						btnIcon: 'fa-wand-magic-sparkles'
 					},
 					{
 						label: m.loadDemoData(),
 						action: loadDemoDomain,
-						classes: 'preset-filled-secondary-500',
+						classes: 'variant-filled-secondary',
 						btnIcon: 'fa-file-import',
 						async: true
 					}
@@ -230,34 +218,20 @@
 		modalStore.trigger(modal);
 	}
 
-	const loading = writable(false);
-
 	async function loadDemoDomain() {
-		$loading = true;
 		const response = await fetch('/folders/import-dummy/', { method: 'POST' });
 		if (!response.ok) {
-			if (response.status === 500) {
-				flash.set({ type: 'error', message: m.demoDataAlreadyImported() });
-			} else {
-				flash.set({ type: 'error', message: m.errorOccuredDuringImport() });
-			}
 			console.error('Failed to load demo data');
-			$loading = false;
+			$flash = { type: 'error', message: m.errorOccuredDuringImport() };
 			return false;
 		}
-		flash.set({ type: 'success', message: m.successfullyImportedFolder() });
-
+		$flash = { type: 'success', message: m.successfullyImportedFolder() };
 		await goto('/folders', {
 			crumbs: breadcrumbs,
 			label: m.domains(),
 			breadcrumbAction: 'replace'
 		});
-
 		invalidateAll();
-		Object.values($tableHandlers).forEach((handler) => {
-			handler.invalidate();
-		});
-		$loading = false;
 		return true;
 	}
 
@@ -284,27 +258,19 @@
 		setCookie('show_first_login_modal', 'false');
 	});
 
-	let classesSidebarOpen = $derived((open: boolean) => (open ? '' : '-ml-56 pointer-events-none'));
+	$: classesSidebarOpen = (open: boolean) => (open ? '' : '-ml-[14rem] pointer-events-none');
 </script>
 
-<div data-testid="sidebar">
-	<aside
-		class="flex w-64 shadow transition-all duration-300 fixed h-screen overflow-visible top-0 left-0 z-20 {classesSidebarOpen(
-			open
-		)}"
-	>
-		<nav class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden bg-gray-50 py-4 px-3">
-			<SideBarHeader />
-			<SideBarNavigation {sideBarVisibleItems} />
-			<SideBarFooter on:triggerGT={triggerVisit} on:loadDemoDomain={loadDemoDomain} />
-		</nav>
-	</aside>
-	{#if $loading}
-		<div class="fixed inset-0 flex items-center justify-center bg-gray-50 bg-opacity-50 z-1000">
-			<div class="flex flex-col items-center space-y-2">
-				<LoadingSpinner></LoadingSpinner>
-			</div>
-		</div>
-	{/if}
-	<SideBarToggle bind:open />
-</div>
+<aside
+	class="flex w-64 shadow transition-all duration-300 fixed h-screen overflow-visible top-0 left-0 z-20 {classesSidebarOpen(
+		open
+	)}"
+>
+	<nav class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden bg-gray-50 py-4 px-3">
+		<SideBarHeader />
+		<SideBarNavigation />
+		<SideBarFooter on:triggerGT={triggerVisit} on:loadDemoDomain={loadDemoDomain} />
+	</nav>
+</aside>
+
+<SideBarToggle bind:open />

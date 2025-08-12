@@ -1,5 +1,7 @@
 import { safeTranslate } from '$lib/utils/i18n';
+import { availableLanguageTags, setLanguageTag } from '../../src/paraglide/runtime.js';
 import { expect, setHttpResponsesListener, test } from '../utils/test-utils.js';
+import * as m from '$paraglide/messages.js';
 
 test('sidebar navigation tests', async ({ logedPage, analyticsPage, sideBar, page }) => {
 	test.slow();
@@ -24,45 +26,17 @@ test('sidebar navigation tests', async ({ logedPage, analyticsPage, sideBar, pag
 						await expect(logedPage.modalTitle).not.toBeVisible();
 						continue;
 					}
-					if (item.href === '/calendar') {
-						const currentDate = new Date();
-						const year = currentDate.getFullYear();
-						const month = currentDate.getMonth() + 1;
-						await expect(page).toHaveURL(`/calendar/${year}/${month}`);
-					} else await expect(page).toHaveURL(item.href);
+					await expect(page).toHaveURL(item.href);
 					await logedPage.hasTitle(safeTranslate(item.name));
 					//await logedPage.hasBreadcrumbPath([safeTranslate(item.name)]); //TODO: fix me
 				}
 			}
 		}
 	});
-});
 
-test('more panel components work properly', async ({ logedPage, sideBar, page }) => {
 	await test.step('user email is showing properly', async () => {
 		await expect(sideBar.userEmailDisplay).toHaveText(logedPage.email);
-	});
-
-	await test.step('user name and first name are displayed instead of email when set', async () => {
-		await sideBar.moreButton.click();
-		await expect(sideBar.morePanel).not.toHaveAttribute('inert');
-		await sideBar.profileButton.click();
-		await expect(page).toHaveURL('/my-profile');
-
-		await page.getByText('Edit').click();
-		const testFirstName = 'Eric';
-		const testLastName = 'Abder';
-		await page.getByTestId('form-input-first-name').fill(testFirstName);
-		await page.getByTestId('form-input-last-name').fill(testLastName);
-		await page.getByTestId('save-button').click();
-
-		await page.waitForURL('/my-profile');
-
-		await page.goto('/analytics');
-
-		// Check that user name display now shows first name and last name instead of email
-		await expect(sideBar.userNameDisplay).toHaveText(`${testFirstName} ${testLastName}`);
-		//await expect(sideBar.userEmailDisplay).not.toBeVisible();
+		//TODO test also that user name and first name are displayed instead of the email when sets
 	});
 
 	await test.step('user profile panel is working properly', async () => {
@@ -82,17 +56,34 @@ test('more panel components work properly', async ({ logedPage, sideBar, page })
 
 		await expect(sideBar.docsButton).toBeVisible();
 	});
-});
 
-test('about panel works properly', async ({ logedPage, sideBar, page }) => {
+	await test.step('translation panel is working properly', async () => {
+		await analyticsPage.goto();
+		const locales = [...availableLanguageTags];
+		const index = locales.indexOf('en');
+		if (index !== -1) {
+			locales.splice(index, 1);
+			locales.push('en');
+		}
+		for (const languageTag of locales) {
+			await sideBar.moreButton.click();
+			await expect(sideBar.morePanel).not.toHaveAttribute('inert');
+			await expect(sideBar.languageSelect).toBeVisible();
+			setLanguageTag(languageTag);
+			await sideBar.languageSelect.selectOption(languageTag);
+			await logedPage.hasTitle(m.analytics());
+		}
+	});
+
 	await test.step('about panel is working properly', async () => {
 		await sideBar.moreButton.click();
 		await expect(sideBar.morePanel).not.toHaveAttribute('inert');
 
 		await expect(sideBar.aboutButton).toBeVisible();
 		await sideBar.aboutButton.click();
+		await expect(sideBar.morePanel).toHaveAttribute('inert');
 		await expect(logedPage.modalTitle).toBeVisible();
-		await expect.soft(logedPage.modalTitle).toHaveText('About CISO Assistant');
+		await expect.soft(logedPage.modalTitle).toHaveText('About Auditrex');
 
 		await expect(logedPage.page.getByTestId('version-key')).toContainText('version', {
 			ignoreCase: true
@@ -109,29 +100,14 @@ test('about panel works properly', async ({ logedPage, sideBar, page }) => {
 	});
 });
 
-import { test as testV2, expect as expectV2 } from '../utilsv2/core/base';
-
-testV2('sidebar component tests', async ({ loginPage }) => {
+test('sidebar component tests', async ({ logedPage, sideBar }) => {
 	await test.step('sidebar can be collapsed and expanded', async () => {
-		await loginPage.gotoSelf();
-		const analyticsPage = await loginPage.doLoginAdminP();
-		await analyticsPage.checkSelf(expectV2);
-		await analyticsPage.doCloseModal();
-
-		const sidebar = analyticsPage.getSidebar();
-		await sidebar.doToggle();
-		await sidebar.checkIsOpened(expectV2);
-		await sidebar.doToggle();
-		await sidebar.checkIsClosed(expectV2);
+		if (await logedPage.page.locator('#driver-dummy-element').isVisible()) {
+			await logedPage.page.locator('.driver-popover-close-btn').first().click();
+		}
+		sideBar.toggleButton.click();
+		await expect(sideBar.toggleButton).toHaveClass(/rotate-180/);
+		sideBar.toggleButton.click();
+		await expect(sideBar.toggleButton).not.toHaveClass(/rotate-180/);
 	});
-});
-
-test('redirect to the right page after login', async ({ loginPage, page }) => {
-	await page.goto('/login?next=/calendar');
-	await loginPage.hasUrl(1);
-	await loginPage.login();
-	const currentDate = new Date();
-	const year = currentDate.getFullYear();
-	const month = currentDate.getMonth() + 1;
-	await expect(page).toHaveURL(`/calendar/${year}/${month}`);
 });

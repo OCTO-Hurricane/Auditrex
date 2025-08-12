@@ -1,28 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	export let width = 'w-auto';
+	export let height = 'h-full';
+	export let classesContainer = '';
+	export let title = '';
+	export let name = '';
 
 	interface sankeyData {
 		source: string;
 		target: string;
 		value: number;
 	}
-	interface Props {
-		width?: string;
-		height?: string;
-		classesContainer?: string;
-		title?: string;
-		name?: string;
-		values: sankeyData[]; // Set the types for these variables later on
-	}
-
-	let {
-		width = 'w-auto',
-		height = 'h-full',
-		classesContainer = '',
-		title = '',
-		name = '',
-		values
-	}: Props = $props();
+	export let values: sankeyData[]; // Set the types for these variables later on
 
 	const chart_id = `${name}_div`;
 	onMount(async () => {
@@ -82,4 +71,4 @@
 	});
 </script>
 
-<div id={chart_id} class="{width} {height} {classesContainer}"></div>
+<div id={chart_id} class="{width} {height} {classesContainer}" />

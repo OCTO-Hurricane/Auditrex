@@ -46,7 +46,7 @@ export abstract class BasePage {
 	 * Otherwise, it checks if the browser's URL starts with `this.url`.
 	 * @returns {void}
 	 */
-	async hasUrl(strict: boolean = false, url: string = this.url) {
+	async hasUrl(strict: boolean = true, url: string = this.url) {
 		const URLPattern = strict ? url : new RegExp(escapeRegex(url) + '.*');
 		await expect(this.page).toHaveURL(URLPattern);
 	}
@@ -54,11 +54,9 @@ export abstract class BasePage {
 	async hasBreadcrumbPath(paths: (string | RegExp)[], fullPath = true, origin = 'Home') {
 		paths.unshift(new RegExp('.+' + origin));
 		if (fullPath) {
-			await expect.soft(this.breadcrumbs).toHaveText(paths, { ignoreCase: true });
+			await expect.soft(this.breadcrumbs).toHaveText(paths);
 		} else {
-			await expect
-				.soft(this.breadcrumbs.last())
-				.toHaveText(paths[paths.length - 1], { ignoreCase: true });
+			await expect.soft(this.breadcrumbs.last()).toHaveText(paths[paths.length - 1]);
 		}
 	}
 

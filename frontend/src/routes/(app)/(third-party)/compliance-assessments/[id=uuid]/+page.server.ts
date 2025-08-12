@@ -8,7 +8,7 @@ import { zod } from 'sveltekit-superforms/adapters';
 import type { PageServerLoad } from './$types';
 import { z } from 'zod';
 import { setFlash } from 'sveltekit-flash-message/server';
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
 
 export const load = (async ({ fetch, params }) => {
 	const URLModel = 'compliance-assessments';
@@ -30,9 +30,6 @@ export const load = (async ({ fetch, params }) => {
 		(res) => res.json()
 	);
 
-	const threats = await fetch(`${BASE_API_URL}/${URLModel}/${params.id}/threats_metrics/`).then(
-		(res) => res.json()
-	);
 	const initialData = { baseline: compliance_assessment.id };
 	const auditCreateForm = await superValidate(initialData, zod(ComplianceAssessmentSchema), {
 		errors: false
@@ -72,7 +69,6 @@ export const load = (async ({ fetch, params }) => {
 		tree,
 		compliance_assessment_donut_values,
 		global_score,
-		threats,
 		form,
 		title: compliance_assessment.name
 	};
@@ -123,43 +119,5 @@ export const actions: Actions = {
 			);
 		}
 		return { form };
-	},
-	syncToActions: async (event) => {
-		const formData = await event.request.formData();
-
-		if (!formData) {
-			return fail(400, { form: null });
-		}
-
-		const schema = z.object({ id: z.string().uuid() });
-		const form = await superValidate(formData, zod(schema));
-
-		const response = await event.fetch(
-			`${BASE_API_URL}/compliance-assessments/${event.params.id}/syncToActions/?dry_run=false`,
-			{
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				}
-			}
-		);
-		if (response.ok) {
-			setFlash(
-				{
-					type: 'success',
-					message: m.syncToAppliedControlsSuccess()
-				},
-				event
-			);
-		} else {
-			setFlash(
-				{
-					type: 'error',
-					message: m.syncToAppliedControlsError()
-				},
-				event
-			);
-		}
-		return { form, message: { requirementAssessmentsSync: await response.json() } };
 	}
 };

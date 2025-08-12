@@ -8,7 +8,6 @@ export interface User {
 	first_name: string;
 	last_name: string;
 	is_active: boolean;
-	keep_local_login: boolean;
 	date_joined: string;
 	user_groups: Record<string, any>[];
 	roles: Record<string, any>[];
@@ -16,11 +15,6 @@ export interface User {
 	is_third_party: boolean;
 	is_admin: boolean;
 	accessible_domains: string[];
-	domain_permissions: Record<string, string[]>;
-	root_folder_id: string;
-	preferences: {
-		lang?: string;
-	};
 }
 
 export interface GlobalSettings {
@@ -59,7 +53,6 @@ export const URL_MODEL = [
 	'libraries',
 	'sso-settings',
 	'general-settings',
-	'feature-flags',
 	'requirement-mapping-sets',
 	'entities',
 	'entity-assessments',
@@ -67,44 +60,17 @@ export const URL_MODEL = [
 	'representatives',
 	'vulnerabilities',
 	'filtering-labels',
-	// 'ebios-rm',
 	'feared-events',
 	'ro-to',
 	'stakeholders',
 	'strategic-scenarios',
 	'attack-paths',
 	'operational-scenarios',
-	'elementary-actions',
-	'operating-modes',
-	'kill-chains',
-	// qualifications
 	'qualifications',
-	'processings',
-	'processing-natures',
+	// 'ebios-rm',
 	'security-exceptions',
 	'findings',
-	'findings-assessments',
-	// privacy,
-	'processings',
-	'purposes',
-	'personal-data',
-	'data-subjects',
-	'data-recipients',
-	'data-contractors',
-	'data-transfers',
-	// incidents,
-	'incidents',
-	'timeline-entries',
-	// tasks,
-	'task-templates',
-	'task-nodes',
-	// resilience,
-	'business-impact-analysis',
-	'escalation-thresholds',
-	'asset-assessments',
-	'asset-class',
-	// campaigns,
-	'campaigns'
+	'findings-assessments'
 ] as const;
 
 export const THIRD_PARTY_URL_MODEL = ['compliance-assessments', 'evidences'] as const;
@@ -192,12 +158,6 @@ export interface AggregatedData {
 }
 
 export interface AppliedControlStatus {
-	localLables: string[];
-	labels: any[];
-	values: any[]; // Set these types later on
-}
-
-export interface AppliedControlImpact {
 	localLables: string[];
 	labels: any[];
 	values: any[]; // Set these types later on

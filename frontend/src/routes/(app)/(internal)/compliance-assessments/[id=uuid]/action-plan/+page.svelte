@@ -1,9 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 	import ModelTable from '$lib/components/ModelTable/ModelTable.svelte';
 	import type { TableSource } from '$lib/components/ModelTable/types';
-	import { m } from '$paraglide/messages';
-	let { data } = $props();
+	import * as m from '$paraglide/messages.js';
+	import { tableSourceMapper } from '@skeletonlabs/skeleton';
+
+	export let data;
 
 	const appliedControlsHead = {
 		name: 'name',
@@ -15,17 +17,17 @@
 		expiry_date: 'expiryDate',
 		effort: 'effort',
 		cost: 'cost',
-		requirement_assessments: 'matchingRequirements'
+		'requirements-assessments': 'matchingRequirements'
 	};
 
-	const appliedControls: TableSource = {
+	const AppliedControls: TableSource = {
 		head: appliedControlsHead,
 		body: [],
 		meta: []
 	};
 </script>
 
-<div class="bg-white p-2 shadow-sm rounded-lg space-x-2 flex flex-row justify-center mb-2">
+<div class="bg-white p-2 shadow rounded-lg space-x-2 flex flex-row justify-center mb-2">
 	<p class="font-semibold text-lg">
 		{m.perimeter()}:
 		<a
@@ -53,7 +55,7 @@
 		>
 	</p>
 </div>
-<div class="flex flex-col space-y-4 bg-white p-4 shadow-sm rounded-lg space-x-2">
+<div class="flex flex-col space-y-4 bg-white p-4 shadow rounded-lg space-x-2">
 	<div>
 		<p class="text-xl font-extrabold">{m.associatedAppliedControls()}</p>
 		<p class="text-sm text-gray-500">
@@ -63,11 +65,12 @@
 	<div class="">
 		<ModelTable
 			URLModel="applied-controls"
-			source={appliedControls}
+			source={AppliedControls}
 			search={true}
 			rowsPerPage={true}
 			orderBy={{ identifier: 'eta', direction: 'desc' }}
-			baseEndpoint="/compliance-assessments/{page.params.id}/action-plan"
+			tags={false}
+			baseEndpoint="/compliance-assessments/{$page.params.id}/action-plan"
 			fields={[
 				'name',
 				'status',
@@ -78,7 +81,7 @@
 				'expiry_date',
 				'effort',
 				'cost',
-				'requirement_assessments'
+				'requirement-assessments'
 			]}
 		/>
 	</div>

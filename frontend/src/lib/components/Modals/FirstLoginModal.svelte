@@ -1,26 +1,26 @@
 <script lang="ts">
-	import { getModalStore, type ModalStore } from './stores';
+	// Props
+	/** Exposes parent props to this component. */
+	export let parent: any;
+
+	// Stores
+	import type { CssClasses, ModalStore } from '@skeletonlabs/skeleton';
+	import { getModalStore } from '@skeletonlabs/skeleton';
 
 	interface Action {
 		label: string;
 		action: () => boolean | Promise<boolean>;
 		async: boolean;
-		classes?: string;
+		classes?: CssClasses;
 		btnIcon?: string;
 	}
 
-	interface Props {
-		/** Exposes parent props to this component. */
-		parent: any;
-		actions: Action[];
-	}
-
-	let { parent, actions }: Props = $props();
+	export let actions: Action[];
 
 	const modalStore: ModalStore = getModalStore();
 
 	// Base Classes
-	const cBase = 'card bg-surface-50 p-4 w-modal shadow-xl space-y-4';
+	const cBase = 'card p-4 w-modal shadow-xl space-y-4';
 	const cHeader = 'text-2xl font-bold';
 </script>
 
@@ -34,14 +34,14 @@
 			<span class="flex flex-row justify-between">
 				{#each actions as action}
 					<button
-						onclick={async (event) => {
+						on:click={async (event) => {
 							const result = await action.action();
 							return result ? parent.onConfirm(event) : null;
 						}}
-						class="btn {action.classes ?? 'preset-filled-surface-500'}"
+						class="btn {action.classes ?? 'variant-filled-surface'}"
 					>
 						{#if action.btnIcon}
-							<i class="fa-solid mr-2 {action.btnIcon}"></i>
+							<i class="fa-solid mr-2 {action.btnIcon}" />
 						{/if}
 						{action.label}
 					</button>

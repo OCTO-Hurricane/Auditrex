@@ -1,6 +1,4 @@
 name: Frontend code coverage
-permissions:
-  contents: read
 
 on:
   pull_request:

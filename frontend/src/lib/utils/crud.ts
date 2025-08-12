@@ -4,6 +4,7 @@ import EvidenceFilePreview from '$lib/components/ModelTable/EvidenceFilePreview.
 import LanguageDisplay from '$lib/components/ModelTable/LanguageDisplay.svelte';
 import LibraryActions from '$lib/components/ModelTable/LibraryActions.svelte';
 import UserGroupNameDisplay from '$lib/components/ModelTable/UserGroupNameDisplay.svelte';
+import { BASE_API_URL } from './constants';
 import { type urlModel } from './types';
 
 type GetOptionsParams = {
@@ -98,12 +99,10 @@ interface ForeignKeyField {
 	urlParams?: string;
 	detail?: boolean;
 	detailUrlParams?: string[]; // To prepare possible fetch for foreign keys with detail in generic views
-	disableCreate?: boolean;
-	disableDelete?: boolean;
+	disableAddDeleteButtons?: boolean;
 }
 
 interface Field {
-	keyNameOverride?: string;
 	field: string;
 	type?: 'date' | 'datetime';
 }
@@ -112,11 +111,7 @@ interface SelectField {
 	field: string;
 	detail?: boolean;
 	valueType?: 'string' | 'number';
-	endpointUrl?: string;
-	formNestedField?: string;
 }
-
-type FeatureFlag = string;
 
 export interface ModelMapEntry {
 	name: string;
@@ -126,7 +121,6 @@ export interface ModelMapEntry {
 	verboseNamePlural?: string;
 	urlModel?: urlModel;
 	listViewUrlParams?: string;
-	flaggedFields?: Record<string, FeatureFlag>;
 	detailViewFields?: Field[];
 	foreignKeyFields?: ForeignKeyField[];
 	reverseForeignKeyFields?: ForeignKeyField[];
@@ -152,8 +146,7 @@ export const URL_MODEL_MAP: ModelMap = {
 		foreignKeyFields: [{ field: 'parent_folder', urlModel: 'folders' }],
 		reverseForeignKeyFields: [
 			{ field: 'folder', urlModel: 'perimeters' },
-			{ field: 'folder', urlModel: 'entities' },
-			{ field: 'folder', urlModel: 'assets' }
+			{ field: 'folder', urlModel: 'entities' }
 		]
 	},
 	perimeters: {
@@ -162,18 +155,14 @@ export const URL_MODEL_MAP: ModelMap = {
 		localNamePlural: 'perimeters',
 		verboseName: 'Perimeter',
 		verboseNamePlural: 'Perimeters',
-		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' },
-			{ field: 'default_assignee', urlModel: 'users' }
-		],
+		foreignKeyFields: [{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' }],
 		selectFields: [{ field: 'lc_status' }],
 		reverseForeignKeyFields: [
-			{ field: 'perimeter', urlModel: 'compliance-assessments' },
 			{ field: 'perimeter', urlModel: 'risk-assessments' },
-			{ field: 'perimeter', urlModel: 'entity-assessments' },
-			{ field: 'perimeters', urlModel: 'campaigns' }
+			{ field: 'perimeter', urlModel: 'compliance-assessments' },
+			{ field: 'perimeter', urlModel: 'entity-assessments' }
 		],
-		filters: [{ field: 'lc_status' }, { field: 'folder' }, { field: 'campaigns' }]
+		filters: [{ field: 'lc_status' }, { field: 'folder' }]
 	},
 	'risk-matrices': {
 		name: 'riskmatrix',
@@ -202,7 +191,7 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'ebios_rm_study', urlModel: 'ebios-rm' }
 		],
 		reverseForeignKeyFields: [{ field: 'risk_assessment', urlModel: 'risk-scenarios' }],
-		selectFields: [{ field: 'status' }, { field: 'risk_tolerance', valueType: 'number' }],
+		selectFields: [{ field: 'status' }],
 		filters: [{ field: 'perimeter' }, { field: 'auditor' }, { field: 'status' }]
 	},
 	'risk-assessment_duplicate': {
@@ -220,8 +209,7 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseName: 'Threat',
 		verboseNamePlural: 'Threats',
 		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
-			{ field: 'filtering_labels', urlModel: 'filtering-labels' }
+			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' }
 		]
 	},
 	'risk-scenarios': {
@@ -230,11 +218,6 @@ export const URL_MODEL_MAP: ModelMap = {
 		localNamePlural: 'riskScenarios',
 		verboseName: 'Risk scenario',
 		verboseNamePlural: 'Risk scenarios',
-		flaggedFields: {
-			inherent_proba: 'inherent_risk',
-			inherent_impact: 'inherent_risk',
-			inherent_level: 'inherent_risk'
-		},
 		foreignKeyFields: [
 			{ field: 'threats', urlModel: 'threats' },
 			{ field: 'risk_assessment', urlModel: 'risk-assessments' },
@@ -264,7 +247,6 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'csf_function' },
 			{ field: 'priority' },
 			{ field: 'effort' },
-			{ field: 'control_impact' },
 			{ field: 'cost' },
 			{ field: 'status' },
 			{ field: 'created_at', type: 'datetime' },
@@ -277,48 +259,21 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'expiry_date', type: 'date' },
 			{ field: 'link' },
 			{ field: 'progress_field' },
-			{ field: 'security_exceptions', urlModel: 'security-exceptions' },
-			{ field: 'filtering_labels', urlModel: 'filtering-labels' }
+			{ field: 'security_exceptions', urlModel: 'security-exceptions' }
 		],
 		foreignKeyFields: [
 			{ field: 'reference_control', urlModel: 'reference-controls' },
 			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
 			{ field: 'evidences', urlModel: 'evidences' },
 			{ field: 'owner', urlModel: 'users' },
-			{ field: 'security_exceptions', urlModel: 'security-exceptions' },
-			{ field: 'filtering_labels', urlModel: 'filtering-labels' },
-			{ field: 'requirement_assessments', urlModel: 'requirement-assessments' },
-			{ field: 'risk_scenarios', urlModel: 'risk-scenarios' },
-			{ field: 'assets', urlModel: 'assets' }
+			{ field: 'security_exceptions', urlModel: 'security-exceptions' }
 		],
-		reverseForeignKeyFields: [
-			{ field: 'applied_controls', urlModel: 'evidences' },
-			{
-				field: 'applied_controls',
-				urlModel: 'requirement-assessments',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'applied_controls',
-				urlModel: 'risk-scenarios',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'applied_controls',
-				urlModel: 'findings',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{ field: 'applied_controls', urlModel: 'assets', disableCreate: true, disableDelete: true }
-		],
+		reverseForeignKeyFields: [{ field: 'applied_controls', urlModel: 'evidences' }],
 		selectFields: [
 			{ field: 'status' },
 			{ field: 'category' },
 			{ field: 'csf_function' },
 			{ field: 'effort' },
-			{ field: 'control_impact', valueType: 'number' },
 			{ field: 'priority' }
 		],
 		filters: [
@@ -327,7 +282,6 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'category' },
 			{ field: 'csf_function' },
 			{ field: 'effort' },
-			{ field: 'control_impact' },
 			{ field: 'folder' },
 			{ field: 'owner' },
 			{ field: 'priority' }
@@ -360,7 +314,6 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'status' },
 			{ field: 'csf_function' },
 			{ field: 'effort' },
-			{ field: 'control_impact', valueType: 'number' },
 			{ field: 'priority' }
 		],
 		filters: [
@@ -368,7 +321,6 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'status' },
 			{ field: 'csf_function' },
 			{ field: 'effort' },
-			{ field: 'control_impact' },
 			{ field: 'folder' },
 			{ field: 'owner' },
 			{ field: 'priority' }
@@ -382,12 +334,11 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseNamePlural: 'Vulnerabilities',
 		foreignKeyFields: [
 			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
-			{ field: 'assets', urlModel: 'assets' },
 			{ field: 'applied_controls', urlModel: 'applied-controls' },
 			{ field: 'filtering_labels', urlModel: 'filtering-labels' },
 			{ field: 'security_exceptions', urlModel: 'security-exceptions' }
 		],
-		selectFields: [{ field: 'severity', valueType: 'number' }, { field: 'status' }],
+		selectFields: [{ field: 'status' }],
 		filters: [{ field: 'folder' }, { field: 'filtering_labels' }]
 	},
 	'filtering-labels': {
@@ -421,16 +372,7 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseName: 'Reference control',
 		verboseNamePlural: 'Reference controls',
 		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
-			{ field: 'filtering_labels', urlModel: 'filtering-labels' }
-		],
-		reverseForeignKeyFields: [
-			{
-				field: 'reference_control',
-				urlModel: 'applied-controls',
-				disableCreate: true,
-				disableDelete: true
-			}
+			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' }
 		],
 		selectFields: [{ field: 'category' }, { field: 'csf_function' }],
 		filters: [{ field: 'folder' }]
@@ -442,42 +384,25 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseName: 'Asset',
 		verboseNamePlural: 'Assets',
 		reverseForeignKeyFields: [
-			{
-				field: 'assets',
-				urlModel: 'compliance-assessments',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{ field: 'assets', urlModel: 'vulnerabilities' },
-			{ field: 'assets', urlModel: 'solutions' }
+			{ field: 'assets', urlModel: 'compliance-assessments', disableAddDeleteButtons: true }
 		],
 		foreignKeyFields: [
 			{ field: 'parent_assets', urlModel: 'assets' },
 			{ field: 'children_assets', urlModel: 'assets' },
 			{ field: 'owner', urlModel: 'users' },
-			{ field: 'asset_class', urlModel: 'asset-class' },
 			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
 			{ field: 'filtering_labels', urlModel: 'filtering-labels' },
 			{ field: 'ebios_rm_studies', urlModel: 'ebios-rm', endpointUrl: 'ebios-rm/studies' },
 			{ field: 'security_exceptions', urlModel: 'security-exceptions' }
 		],
-		selectFields: [{ field: 'type' }, { field: 'asset_class' }],
+		selectFields: [{ field: 'type' }],
 		filters: [
 			{ field: 'parent_assets' },
 			{ field: 'folder' },
-			{ field: 'asset_class' },
 			{ field: 'type' },
 			{ field: 'owner' },
 			{ field: 'filtering_labels' }
 		]
-	},
-	'asset-class': {
-		endpointUrl: 'asset-class',
-		name: 'asset-class',
-		localName: 'assetClass',
-		localNamePlural: 'assetClasses',
-		verboseName: 'assetclass',
-		verboseNamePlural: 'assetclasses'
 	},
 	users: {
 		name: 'user',
@@ -533,37 +458,11 @@ export const URL_MODEL_MAP: ModelMap = {
 				urlParams: 'content_type=DO&content_type=GL&content_type=EN'
 			},
 			{ field: 'applied_controls', urlModel: 'applied-controls' },
-			{ field: 'requirement_assessments', urlModel: 'requirement-assessments' },
-			{ field: 'filtering_labels', urlModel: 'filtering-labels' },
-			{ field: 'findings', urlModel: 'findings' },
-			{ field: 'findings_assessments', urlModel: 'findings-assessments' }
+			{ field: 'requirement_assessments', urlModel: 'requirement-assessments' }
 		],
 		reverseForeignKeyFields: [
-			{
-				field: 'evidences',
-				urlModel: 'applied-controls',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'evidences',
-				urlModel: 'compliance-assessments',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'evidences',
-				urlModel: 'requirement-assessments',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'evidences',
-				urlModel: 'findings-assessments',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{ field: 'evidences', urlModel: 'findings', disableCreate: true, disableDelete: true }
+			{ field: 'evidences', urlModel: 'applied-controls' },
+			{ field: 'evidences', urlModel: 'requirement-assessments' }
 		]
 	},
 	'compliance-assessments': {
@@ -575,14 +474,12 @@ export const URL_MODEL_MAP: ModelMap = {
 		foreignKeyFields: [
 			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' },
 			{ field: 'perimeter', urlModel: 'perimeters' },
-			{ field: 'campaign', urlModel: 'campaigns', endpointUrl: 'campaigns' },
 			{ field: 'framework', urlModel: 'frameworks' },
 			{ field: 'authors', urlModel: 'users' },
 			{ field: 'reviewers', urlModel: 'users', urlParams: 'is_third_party=false' },
 			{ field: 'baseline', urlModel: 'compliance-assessments' },
 			{ field: 'ebios_rm_studies', urlModel: 'ebios-rm' },
-			{ field: 'assets', urlModel: 'assets' },
-			{ field: 'evidences', urlModel: 'evidences' }
+			{ field: 'assets', urlModel: 'assets' }
 		],
 		selectFields: [{ field: 'status' }],
 		filters: [{ field: 'status' }]
@@ -605,7 +502,6 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'applied_controls', urlModel: 'applied-controls' },
 			{ field: 'evidences', urlModel: 'evidences' },
 			{ field: 'compliance_assessment', urlModel: 'compliance-assessments' },
-			{ field: 'perimeter', urlModel: 'perimeters' },
 			{ field: 'security_exceptions', urlModel: 'security-exceptions' }
 		]
 	},
@@ -639,13 +535,6 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseNamePlural: 'General settings',
 		selectFields: [{ field: 'security_objective_scale' }]
 	},
-	'feature-flags': {
-		name: 'featureFlags',
-		localName: 'featureFlags',
-		localNamePlural: 'featureFlags',
-		verboseName: 'Feature flag',
-		verboseNamePlural: 'Feature flags'
-	},
 	'requirement-mapping-sets': {
 		name: 'requirementmappingset',
 		localName: 'requirementMappingSet',
@@ -665,9 +554,9 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseName: 'Entity',
 		verboseNamePlural: 'Entities',
 		reverseForeignKeyFields: [
-			{ field: 'entity', urlModel: 'entity-assessments' },
+			{ field: 'entity', urlModel: 'solutions' },
 			{ field: 'entity', urlModel: 'representatives' },
-			{ field: 'provider_entity', urlModel: 'solutions' }
+			{ field: 'entity', urlModel: 'entity-assessments' }
 		],
 		foreignKeyFields: [
 			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
@@ -702,8 +591,7 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseNamePlural: 'Solutions',
 		foreignKeyFields: [
 			{ field: 'provider_entity', urlModel: 'entities' },
-			{ field: 'recipient_entity', urlModel: 'entities' },
-			{ field: 'assets', urlModel: 'assets' }
+			{ field: 'recipient_entity', urlModel: 'entities' }
 		]
 	},
 	representatives: {
@@ -724,195 +612,6 @@ export const URL_MODEL_MAP: ModelMap = {
 		verboseName: 'Qualification',
 		verboseNamePlural: 'Qualifications'
 	},
-	'business-impact-analysis': {
-		endpointUrl: 'resilience/business-impact-analysis',
-		name: 'businessimpactanalysis',
-		localName: 'businessImpactAnalysis',
-		localNamePlural: 'businessImpactAnalysis',
-		verboseName: 'businessimpactanalysis',
-		verboseNamePlural: 'businessimpactanalysis',
-		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' },
-			{ field: 'perimeter', urlModel: 'perimeters' },
-			{ field: 'authors', urlModel: 'users' },
-			{ field: 'reviewers', urlModel: 'users', urlParams: 'is_third_party=false' },
-			{ field: 'risk_matrix', urlModel: 'risk-matrices' }
-		],
-		reverseForeignKeyFields: [{ field: 'bia', urlModel: 'asset-assessments' }],
-		selectFields: [{ field: 'status' }],
-		filters: [{ field: 'perimeter' }, { field: 'auditor' }, { field: 'status' }]
-	},
-	'asset-assessments': {
-		endpointUrl: 'resilience/asset-assessments',
-		name: 'assetassessment',
-		localName: 'assetAssessment',
-		localNamePlural: 'assetAssessments',
-		verboseName: 'assetassessment',
-		verboseNamePlural: 'assetassessments',
-		reverseForeignKeyFields: [{ field: 'asset_assessment', urlModel: 'escalation-thresholds' }],
-		foreignKeyFields: [
-			{ field: 'asset', urlModel: 'assets' },
-			{ field: 'folder', urlModel: 'folders' },
-			{ field: 'asset_folder', urlModel: 'folders' },
-			{ field: 'dependencies', urlModel: 'assets' },
-			{ field: 'associated_controls', urlModel: 'applied-controls' },
-			{
-				field: 'bia',
-				urlModel: 'business-impact-analysis',
-				endpointUrl: 'business-impact-analysis'
-			}
-		]
-	},
-	'escalation-thresholds': {
-		endpointUrl: 'resilience/escalation-thresholds',
-		name: 'escalationthreshold',
-		localName: 'escalationThreshold',
-		localNamePlural: 'escalationThresholds',
-		verboseName: 'escalationthreshold',
-		verboseNamePlural: 'escalationthresholds',
-		selectFields: [
-			{ field: 'quant_unit' },
-			{
-				field: 'quali_impact',
-				valueType: 'number',
-				detail: true,
-				endpointUrl: 'resilience/asset-assessments',
-				formNestedField: 'asset_assessment'
-			} //this is for edit only
-		],
-		foreignKeyFields: [
-			{
-				field: 'asset_assessment',
-				urlModel: 'asset-assessments',
-				endpointUrl: 'asset-assessments'
-			}
-		],
-		detailViewFields: [
-			{ field: 'asset_assessment' },
-			{ field: 'get_human_pit' },
-			{ field: 'qualifications' },
-			{ field: 'quali_impact' },
-			{ field: 'justification' },
-			{ field: 'created_at' },
-			{ field: 'updated_at' }
-		]
-	},
-	processings: {
-		endpointUrl: 'privacy/processings',
-		name: 'processing',
-		localName: 'processing',
-		localNamePlural: 'processings',
-		verboseName: 'processing',
-		verboseNamePlural: 'processings',
-		selectFields: [{ field: 'status' }, { field: 'legal_basis' }, { field: 'nature' }],
-		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO&content_type=GL' },
-			{ field: 'owner', urlModel: 'users' }
-		],
-		reverseForeignKeyFields: [
-			{ field: 'processing', urlModel: 'personal-data' },
-			{ field: 'processing', urlModel: 'data-subjects' },
-			{ field: 'processing', urlModel: 'purposes' },
-			{ field: 'processing', urlModel: 'data-recipients' },
-			{ field: 'processing', urlModel: 'data-contractors' },
-			{ field: 'processing', urlModel: 'data-transfers' },
-			{
-				field: 'processings',
-				urlModel: 'applied-controls',
-				disableCreate: true,
-				disableDelete: true
-			}
-		],
-		detailViewFields: [
-			{ field: 'id' },
-			{ field: 'name' },
-			{ field: 'description' },
-			{ field: 'status' },
-			{ field: 'legal_basis' },
-			{ field: 'dpia_required' },
-			{ field: 'dpia_reference' },
-			{ field: 'folder' },
-			{ field: 'nature' },
-			{ field: 'created_at' },
-			{ field: 'updated_at' },
-			{ field: 'filtering_labels' }
-		]
-	},
-	'processing-natures': {
-		endpointUrl: 'privacy/processing-natures',
-		name: 'processingnature',
-		localName: 'processingNature',
-		localNamePlural: 'processingNatures',
-		verboseName: 'processing nature',
-		verboseNamePlural: 'processing natures'
-	},
-	purposes: {
-		endpointUrl: 'privacy/purposes',
-		name: 'purpose',
-		localName: 'purpose',
-		localNamePlural: 'purposes',
-		verboseName: 'purpose',
-		verboseNamePlural: 'purposes',
-		foreignKeyFields: [{ field: 'processing', urlModel: 'processings', endpointUrl: 'processings' }]
-	},
-	'personal-data': {
-		endpointUrl: 'privacy/personal-data',
-		name: 'personaldata',
-		localName: 'personalData',
-		localNamePlural: 'personalData',
-		verboseName: 'personal data',
-		verboseNamePlural: 'personal data',
-		foreignKeyFields: [
-			{ field: 'processing', urlModel: 'processings', endpointUrl: 'processings' }
-		],
-		selectFields: [{ field: 'category' }, { field: 'deletion_policy' }]
-	},
-	'data-subjects': {
-		endpointUrl: 'privacy/data-subjects',
-		name: 'datasubject',
-		localName: 'dataSubject',
-		localNamePlural: 'dataSubjects',
-		verboseName: 'data subject',
-		verboseNamePlural: 'data subjects',
-		foreignKeyFields: [{ field: 'processing', urlModel: 'processings' }],
-		selectFields: [{ field: 'category' }]
-	},
-	'data-recipients': {
-		endpointUrl: 'privacy/data-recipients',
-		name: 'datarecipient',
-		localName: 'dataRecipient',
-		localNamePlural: 'dataRecipients',
-		verboseName: 'data recipient',
-		verboseNamePlural: 'data recipients',
-		foreignKeyFields: [{ field: 'processing', urlModel: 'processings' }],
-		selectFields: [{ field: 'category' }]
-	},
-	'data-contractors': {
-		endpointUrl: 'privacy/data-contractors',
-		name: 'datacontractor',
-		localName: 'dataContractor',
-		localNamePlural: 'dataContractors',
-		verboseName: 'data contractor',
-		verboseNamePlural: 'data contractors',
-		foreignKeyFields: [
-			{ field: 'processing', urlModel: 'processings' },
-			{ field: 'entity', urlModel: 'entities' }
-		],
-		selectFields: [{ field: 'relationship_type' }, { field: 'country' }]
-	},
-	'data-transfers': {
-		endpointUrl: 'privacy/data-transfers',
-		name: 'datatransfer',
-		localName: 'dataTransfer',
-		localNamePlural: 'dataTransfers',
-		verboseName: 'data transfer',
-		verboseNamePlural: 'data transfers',
-		foreignKeyFields: [
-			{ field: 'processing', urlModel: 'processings' },
-			{ field: 'entity', urlModel: 'entities' }
-		],
-		selectFields: [{ field: 'legal_basis' }, { field: 'country' }]
-	},
 	'ebios-rm': {
 		endpointUrl: 'ebios-rm/studies',
 		name: 'ebiosrmstudy',
@@ -929,8 +628,7 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'compliance_assessments', urlModel: 'compliance-assessments' },
 			{ field: 'reference_entity', urlModel: 'entities' }
 		],
-		reverseForeignKeyFields: [{ field: 'ebios_rm_studies', urlModel: 'assets' }],
-		selectFields: [{ field: 'quotation_method' }]
+		reverseForeignKeyFields: [{ field: 'ebios_rm_studies', urlModel: 'assets' }]
 	},
 	'feared-events': {
 		endpointUrl: 'ebios-rm/feared-events',
@@ -983,13 +681,7 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'ebios_rm_study', urlModel: 'ebios-rm', endpointUrl: 'ebios-rm/studies' },
 			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' }
 		],
-		selectFields: [{ field: 'category' }],
-		reverseForeignKeyFields: [
-			{
-				field: 'stakeholders',
-				urlModel: 'applied-controls'
-			}
-		]
+		selectFields: [{ field: 'category' }]
 	},
 	'strategic-scenarios': {
 		endpointUrl: 'ebios-rm/strategic-scenarios',
@@ -1007,12 +699,7 @@ export const URL_MODEL_MAP: ModelMap = {
 				urlParams: 'is_selected=true&used=false&ebios_rm_study=',
 				detail: true
 			},
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' },
-			{
-				field: 'attack_paths',
-				urlModel: 'attack-paths',
-				endpointUrl: 'ebios-rm/attack-paths'
-			}
+			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' }
 		],
 		reverseForeignKeyFields: [
 			{
@@ -1066,90 +753,7 @@ export const URL_MODEL_MAP: ModelMap = {
 				detail: true
 			}
 		],
-		reverseForeignKeyFields: [
-			{
-				field: 'operational_scenario',
-				urlModel: 'operating-modes',
-				endpointUrl: 'ebios-rm/operating-modes'
-			}
-		],
-		selectFields: [
-			{ field: 'likelihood', valueType: 'number', detail: true, endpointUrl: 'ebios-rm/studies' }
-		]
-	},
-	'elementary-actions': {
-		endpointUrl: 'ebios-rm/elementary-actions',
-		name: 'elementaryaction',
-		localName: 'elementaryAction',
-		localNamePlural: 'elementaryActions',
-		verboseName: 'Elementary action',
-		verboseNamePlural: 'Elementary actions',
-		foreignKeyFields: [
-			{ field: 'threat', urlModel: 'threats' },
-			{ field: 'folder', urlModel: 'folders' }
-		],
-		selectFields: [{ field: 'attack_stage', valueType: 'number' }, { field: 'icon' }],
-		detailViewFields: [
-			{ field: 'folder' },
-			{ field: 'ref_id' },
-			{ field: 'name' },
-			{ field: 'description' },
-			{ field: 'threat' },
-			{ field: 'icon' },
-			{ field: 'attack_stage' },
-			{ field: 'created_at' },
-			{ field: 'updated_at' }
-		]
-	},
-	'operating-modes': {
-		endpointUrl: 'ebios-rm/operating-modes',
-		name: 'operatingmode',
-		localName: 'operatingMode',
-		localNamePlural: 'operatingModes',
-		verboseName: 'Operating mode',
-		verboseNamePlural: 'Operating modes',
-		foreignKeyFields: [
-			{ field: 'operational_scenario', urlModel: 'operational-scenarios' },
-			{ field: 'elementary_actions', urlModel: 'elementary-actions' },
-			{ field: 'folder', urlModel: 'folders' }
-		],
-		selectFields: [{ field: 'likelihood', valueType: 'number', detail: true }],
-		reverseForeignKeyFields: [
-			{
-				field: 'operating_modes',
-				urlModel: 'elementary-actions',
-				endpointUrl: 'ebios-rm/elementary-actions',
-				disableDelete: true
-			},
-			{
-				field: 'operating_mode',
-				urlModel: 'kill-chains',
-				endpointUrl: 'ebios-rm/kill-chains'
-			}
-		],
-		detailViewFields: [
-			{ field: 'ref_id' },
-			{ field: 'name' },
-			{ field: 'description' },
-			{ field: 'operational_scenario' },
-			{ field: 'likelihood' },
-			{ field: 'created_at' },
-			{ field: 'updated_at' }
-		]
-	},
-	'kill-chains': {
-		endpointUrl: 'ebios-rm/kill-chains',
-		name: 'killchain',
-		localName: 'killChain',
-		localNamePlural: 'killChains',
-		verboseName: 'Kill chain',
-		verboseNamePlural: 'Kill chains',
-		foreignKeyFields: [
-			{ field: 'operating_mode', urlModel: 'operating-modes' },
-			{ field: 'elementary_action', urlModel: 'elementary-actions' },
-			{ field: 'antecedents', urlModel: 'elementary-actions' }
-		],
-		selectFields: [{ field: 'logic_operator' }]
+		selectFields: [{ field: 'likelihood', valueType: 'number', detail: true }]
 	},
 	'security-exceptions': {
 		name: 'securityexception',
@@ -1164,36 +768,15 @@ export const URL_MODEL_MAP: ModelMap = {
 		],
 		selectFields: [{ field: 'severity', valueType: 'number' }, { field: 'status' }],
 		reverseForeignKeyFields: [
-			{
-				field: 'security_exceptions',
-				urlModel: 'applied-controls',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'security_exceptions',
-				urlModel: 'assets',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{
-				field: 'security_exceptions',
-				urlModel: 'vulnerabilities',
-				disableCreate: true,
-				disableDelete: true
-			},
+			{ field: 'security_exceptions', urlModel: 'applied-controls', disableAddDeleteButtons: true },
+			{ field: 'security_exceptions', urlModel: 'assets', disableAddDeleteButtons: true },
+			{ field: 'security_exceptions', urlModel: 'vulnerabilities', disableAddDeleteButtons: true },
 			{
 				field: 'security_exceptions',
 				urlModel: 'requirement-assessments',
-				disableCreate: true,
-				disableDelete: true
+				disableAddDeleteButtons: true
 			},
-			{
-				field: 'security_exceptions',
-				urlModel: 'risk-scenarios',
-				disableCreate: true,
-				disableDelete: true
-			}
+			{ field: 'security_exceptions', urlModel: 'risk-scenarios', disableAddDeleteButtons: true }
 		]
 	},
 	'findings-assessments': {
@@ -1207,13 +790,9 @@ export const URL_MODEL_MAP: ModelMap = {
 			{ field: 'perimeter', urlModel: 'perimeters' },
 			{ field: 'authors', urlModel: 'users' },
 			{ field: 'reviewers', urlModel: 'users', urlParams: 'is_third_party=false' },
-			{ field: 'owner', urlModel: 'users', urlParams: 'is_third_party=false' },
-			{ field: 'evidences', urlModel: 'evidences' }
+			{ field: 'owner', urlModel: 'users', urlParams: 'is_third_party=false' }
 		],
-		reverseForeignKeyFields: [
-			{ field: 'findings_assessment', urlModel: 'findings' },
-			{ field: 'findings_assessments', urlModel: 'evidences' }
-		],
+		reverseForeignKeyFields: [{ field: 'findings_assessment', urlModel: 'findings' }],
 		selectFields: [{ field: 'status' }, { field: 'category' }]
 	},
 	findings: {
@@ -1222,124 +801,13 @@ export const URL_MODEL_MAP: ModelMap = {
 		localNamePlural: 'findings',
 		verboseName: 'Finding',
 		verboseNamePlural: 'Findings',
-		foreignKeyFields: [
-			{ field: 'findings_assessment', urlModel: 'findings-assessments' },
-			{ field: 'applied_controls', urlModel: 'applied-controls' },
-			{ field: 'evidences', urlModel: 'evidences' }
-		],
-		reverseForeignKeyFields: [
-			// 	{ field: 'findings', urlModel: 'vulnerabilities' },
-			// 	{ field: 'findings', urlModel: 'reference-controls' },
-			{ field: 'findings', urlModel: 'applied-controls' },
-			{ field: 'findings', urlModel: 'evidences' }
-		],
-		selectFields: [{ field: 'severity', valueType: 'number' }, { field: 'status' }]
-	},
-	incidents: {
-		name: 'incident',
-		localName: 'incident',
-		localNamePlural: 'incidents',
-		verboseName: 'Incident',
-		verboseNamePlural: 'Incidents',
-		foreignKeyFields: [
-			{ field: 'threats', urlModel: 'threats' },
-			{ field: 'assets', urlModel: 'assets' },
-			{ field: 'perimeter', urlModel: 'perimeters' },
-			{ field: 'owner', urlModel: 'users', urlParams: 'is_third_party=false' }
-		],
-		reverseForeignKeyFields: [{ field: 'incident', urlModel: 'timeline-entries' }],
-		selectFields: [
-			{ field: 'severity', valueType: 'number' },
-			{ field: 'status' },
-			{ field: 'detection' }
-		]
-	},
-	'timeline-entries': {
-		name: 'timelineentry',
-		localName: 'timelineEntry',
-		localNamePlural: 'timelineEntries',
-		verboseName: 'Timeline entry',
-		verboseNamePlural: 'Timeline entries',
-		foreignKeyFields: [
-			{ field: 'incident', urlModel: 'incidents' },
-			{ field: 'author', urlModel: 'users' },
-			{ field: 'folder', urlModel: 'folders' }
-		],
-		selectFields: [{ field: 'entry_type' }],
-		reverseForeignKeyFields: [{ field: 'timeline_entries', urlModel: 'evidences' }]
-	},
-	'task-templates': {
-		name: 'tasktemplate',
-		localName: 'taskTemplate',
-		localNamePlural: 'taskTemplates',
-		verboseName: 'Task template',
-		verboseNamePlural: 'Task templates',
-		selectFields: [{ field: 'status' }],
-		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders' },
-			{ field: 'evidences', urlModel: 'evidences' },
-			{ field: 'assigned_to', urlModel: 'users' },
-			{ field: 'assets', urlModel: 'assets' },
-			{ field: 'applied_controls', urlModel: 'applied-controls' },
-			{ field: 'compliance_assessments', urlModel: 'compliance-assessments' },
-			{ field: 'risk_assessments', urlModel: 'risk-assessments' },
-			{ field: 'findings_assessment', urlModel: 'findings-assessments' }
-		],
-		reverseForeignKeyFields: [
-			{ field: 'task_template', urlModel: 'task-nodes', disableCreate: true, disableDelete: true }
-		]
-	},
-	'task-nodes': {
-		name: 'tasknode',
-		localName: 'taskNode',
-		localNamePlural: 'taskNodes',
-		verboseName: 'Task node',
-		verboseNamePlural: 'Task nodes',
-		selectFields: [{ field: 'status' }],
-		foreignKeyFields: [
-			{ field: 'task_template', urlModel: 'task-templates' },
-			{ field: 'evidences', urlModel: 'evidences' },
-			{ field: 'folder', urlModel: 'folders' }
-		]
-	},
-	campaigns: {
-		name: 'campaign',
-		localName: 'campaign',
-		localNamePlural: 'campaigns',
-		verboseName: 'Campaign',
-		verboseNamePlural: 'Campaigns',
-		selectFields: [{ field: 'status' }],
-		foreignKeyFields: [
-			{ field: 'folder', urlModel: 'folders', urlParams: 'content_type=DO' },
-			{ field: 'framework', urlModel: 'frameworks' },
-			{ field: 'perimeters', urlModel: 'perimeters' }
-		],
-		reverseForeignKeyFields: [
-			{
-				field: 'campaign',
-				urlModel: 'compliance-assessments',
-				disableCreate: true,
-				disableDelete: true
-			},
-			{ field: 'campaigns', urlModel: 'perimeters', disableCreate: true, disableDelete: true }
-		],
-		detailViewFields: [
-			{ field: 'id' },
-			{ field: 'name' },
-			{ field: 'description' },
-			{ field: 'framework' },
-			{ field: 'status' },
-			{ field: 'start_date' },
-			{ field: 'due_date' },
-			{ field: 'created_at' },
-			{ field: 'updated_at' }
-		],
-		filters: [
-			{ field: 'status' },
-			{ field: 'framework' },
-			{ field: 'folder' },
-			{ field: 'perimeters' }
-		]
+		foreignKeyFields: [{ field: 'findings_assessment', urlModel: 'findings-assessments' }],
+		// reverseForeignKeyFields: [
+		// 	{ field: 'findings', urlModel: 'vulnerabilities' },
+		// 	{ field: 'findings', urlModel: 'reference-controls' },
+		// 	{ field: 'findings', urlModel: 'applied-controls' }
+		// ],
+		selectFields: [{ field: 'status' }]
 	}
 };
 
@@ -1481,8 +949,8 @@ export const FIELD_COLORED_TAG_MAP: FieldColoredTagMap = {
 	users: {
 		email: {
 			keys: {
-				keep_local_login: {
-					true: { text: 'Local', cssClasses: 'badge bg-violet-200' }
+				is_sso: {
+					true: { text: 'SSO', cssClasses: 'badge bg-violet-200' }
 				},
 				is_third_party: {
 					true: { text: 'Third party', cssClasses: 'badge bg-stone-200' }
@@ -1492,17 +960,8 @@ export const FIELD_COLORED_TAG_MAP: FieldColoredTagMap = {
 	}
 };
 
-export const getModelInfo = (model: urlModel | string): ModelMapEntry => {
-	const baseModel = model.split('_')[0];
-	const map = URL_MODEL_MAP[model] || URL_MODEL_MAP[baseModel] || {};
-	// The urlmodel of {model}_duplicate must be {model}
-	map['urlModel'] = baseModel;
-	return map;
-};
-
 export const urlParamModelVerboseName = (model: string): string => {
-	const modelInfo = getModelInfo(model);
-	return modelInfo?.localName || modelInfo?.verboseName || model;
+	return URL_MODEL_MAP[model]?.verboseName || '';
 };
 
 export const urlParamModelForeignKeyFields = (model: string): ForeignKeyField[] => {
@@ -1511,6 +970,14 @@ export const urlParamModelForeignKeyFields = (model: string): ForeignKeyField[] 
 
 export const urlParamModelSelectFields = (model: string): SelectField[] => {
 	return URL_MODEL_MAP[model]?.selectFields || [];
+};
+
+export const getModelInfo = (model: urlModel | string): ModelMapEntry => {
+	const baseModel = model.split('_')[0];
+	const map = URL_MODEL_MAP[model] || URL_MODEL_MAP[baseModel] || {};
+	// The urlmodel of {model}_duplicate must be {model}
+	map['urlModel'] = baseModel;
+	return map;
 };
 
 export function processObject(

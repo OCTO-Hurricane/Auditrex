@@ -1,14 +1,31 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { safeTranslate } from '$lib/utils/i18n';
 	import { onMount } from 'svelte';
 	import { formFieldProxy, type SuperForm } from 'sveltekit-superforms';
 	import type { AnyZodObject } from 'zod';
-	import * as m from '$paraglide/messages.js';
-	import { toCamelCase } from '$lib/utils/locales';
 
-	let selectElement: HTMLElement | null = $state(null);
+	let _class = '';
+
+	export { _class as class };
+	export let label: string | undefined = undefined;
+	export let field: string;
+	export let helpText: string | undefined = undefined;
+	export let cachedValue: string | undefined = undefined;
+	export let blank: boolean = false;
+	export let disableDoubleDash: boolean = false;
+	export let cacheLock: CacheLock = {
+		promise: new Promise((res) => res(null)),
+		resolve: (x) => x
+	};
+
+	export let color_map = {};
+
+	export let form: SuperForm<AnyZodObject>;
+
+	const { value, errors, constraints } = formFieldProxy(form, field);
+	// $: value.set(cachedValue);
+	$: cachedValue = $value; // I must add an initial value.set(cachedValue) to make the cache work after that, but i firstly want to see if i can pass the test with this.
+	let selectElement: HTMLElement | null = null;
 
 	onMount(async () => {
 		const cacheResult = await cacheLock.promise;
@@ -20,53 +37,10 @@
 		value: unknown;
 	}
 
-	interface Props {
-		class?: string;
-		label?: string | undefined;
-		field: string;
-		valuePath?: any; // the place where the value is stored in the form. This is useful for nested objects
-		helpText?: string | undefined;
-		cachedValue?: string | undefined;
-		blank?: boolean;
-		disableDoubleDash?: boolean;
-		cacheLock?: CacheLock;
-		color_map?: any;
-		form: SuperForm<AnyZodObject>;
-		options?: Option[];
-		[key: string]: any;
-		translateOptions?: boolean;
-	}
+	export let options: Option[] = [];
 
-	let {
-		class: _class = '',
-		label = undefined,
-		field,
-		valuePath = field,
-		helpText = undefined,
-		cachedValue = $bindable(),
-		blank = false,
-		disableDoubleDash = false,
-		cacheLock = {
-			promise: new Promise((res) => res(null)),
-			resolve: (x) => x
-		},
-		color_map = {},
-		form,
-		options = [],
-		translateOptions = true,
-		...rest
-	}: Props = $props();
-
-	const { value, errors, constraints } = formFieldProxy(form, valuePath);
-
-	let classesTextField = $derived((errors: string[] | undefined) =>
-		errors && errors.length > 0 ? 'input-error' : ''
-	);
-
-	// $: value.set(cachedValue);
-	run(() => {
-		cachedValue = $value;
-	}); // I must add an initial value.set(cachedValue) to make the cache work after that, but i firstly want to see if i can pass the test with this.
+	$: classesTextField = (errors: string[] | undefined) =>
+		errors && errors.length > 0 ? 'input-error' : '';
 </script>
 
 <div>
@@ -97,22 +71,15 @@
 			bind:value={$value}
 			bind:this={selectElement}
 			{...$constraints}
-			{...rest}
+			{...$$restProps}
 		>
-			{#if !disableDoubleDash && !$constraints?.required && options && !options.find( (o) => new Set( ['--', 'undefined'] ).has(o.label.toLowerCase()) )}
+			{#if !disableDoubleDash && !$constraints?.required && !options.find( (o) => new Set( ['--', 'undefined'] ).has(o.label.toLowerCase()) )}
 				{@const defaultValue = blank ? '' : null}
 				<option value={defaultValue} selected>--</option>
 			{/if}
-			{#each options || [] as option}
-				{@const camelKey = toCamelCase(option.value)}
+			{#each options as option}
 				<option value={option.value} style="background-color: {color_map[option.value]}">
-					{#if !translateOptions}
-						{option.label}
-					{:else if camelKey !== 'm' && m[camelKey]}
-						{safeTranslate(option.value)}
-					{:else}
-						{safeTranslate(option.label)}
-					{/if}
+					{safeTranslate(option.label)}
 				</option>
 			{/each}
 		</select>

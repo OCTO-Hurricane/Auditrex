@@ -7,7 +7,6 @@ from docxtpl import InlineImage
 from docx.shared import Cm
 import matplotlib.pyplot as plt
 import numpy as np
-from icecream import ic
 
 from django.utils.translation import gettext_lazy as _
 # from icecream import ic
@@ -308,27 +307,6 @@ def plot_spider_chart(data, colors=None, title=None):
     return chart_buffer
 
 
-def calculate_depths(framework):
-    depth_map = dict()
-    req_nodes = RequirementNode.objects.filter(framework=framework)
-    # pass 1 for top levels
-    for rn in req_nodes:
-        depth_map[rn.urn] = 1 if rn.parent_urn is None else None
-    # pass 2+ for children levels
-    changed = True
-    while changed:
-        changed = False
-        for rn in req_nodes:
-            if (
-                depth_map[rn.urn] is None
-                and rn.parent_urn in depth_map
-                and depth_map[rn.parent_urn] is not None
-            ):
-                depth_map[rn.urn] = depth_map[rn.parent_urn] + 1
-                changed = True
-    return depth_map
-
-
 def gen_audit_context(id, doc, tree, lang):
     def count_category_results(data):
         def recursive_result_count(node_data):
@@ -403,29 +381,29 @@ def gen_audit_context(id, doc, tree, lang):
 
         # Dictionary to store category scores
         category_scores = {}
+
+        # Process only top-level nodes (categories)
         for node_id, node_data in data.items():
-            # this acts only at the top level nodes since it's not crawling the children.
-            # TODO: we need a new param to control on which depth we want to report now that we have the depth map
-            scores = recursive_score_calculation(node_data)
+            if node_data.get("parent_urn") is None:
+                scores = recursive_score_calculation(node_data)
 
-            # Calculate average score for the category
-            average_score = 0
-            if scores["scored_count"] > 0:
-                average_score = scores["total_score"] / scores["scored_count"]
+                # Calculate average score for the category
+                average_score = 0
+                if scores["scored_count"] > 0:
+                    average_score = scores["total_score"] / scores["scored_count"]
 
-            category_scores[node_data["urn"]] = {
-                "name": node_data["node_content"].split(":")[0],
-                "total_score": scores["total_score"],
-                "item_count": scores["item_count"],
-                "scored_count": scores["scored_count"],
-                "average_score": round(average_score, 1),
-            }
+                category_scores[node_data["urn"]] = {
+                    "name": node_data["node_content"],
+                    "total_score": scores["total_score"],
+                    "item_count": scores["item_count"],
+                    "scored_count": scores["scored_count"],
+                    "average_score": round(average_score, 1),
+                }
 
         return category_scores
 
-    audit = ComplianceAssessment.objects.get(id=id)
-
     context = dict()
+    audit = ComplianceAssessment.objects.get(id=id)
 
     authors = ", ".join([a.email for a in audit.authors.all()])
     reviewers = ", ".join([a.email for a in audit.reviewers.all()])
@@ -437,7 +415,6 @@ def gen_audit_context(id, doc, tree, lang):
 
     # Calculate category scores
     category_scores = aggregate_category_scores(tree)
-
     max_score = 100  # default
     for node in tree.values():
         if node.get("max_score") is not None:
@@ -452,9 +429,10 @@ def gen_audit_context(id, doc, tree, lang):
         ].get("not_applicable", 0)
         ok_perc = ceil(ok_items / total * 100) if total > 0 else 0
         not_ok_count = total - ok_items
-        name = content["node_content"].split(":")[0]
-        spider_data.append({"category": name, "value": ok_perc})
-        agg_drifts.append({"name": name, "drift_count": not_ok_count})
+        spider_data.append({"category": content["node_content"], "value": ok_perc})
+        agg_drifts.append(
+            {"name": content["node_content"], "drift_count": not_ok_count}
+        )
 
     aggregated = {
         "compliant": 0,
@@ -483,16 +461,6 @@ def gen_audit_context(id, doc, tree, lang):
             "non_compliant": "Non compliant",
             "not_applicable": "Not applicable",
             "not_assessed": "Not assessed",
-            "to_do": "To do",
-            "on_hold": "On hold",
-            "in_progress": "In progress",
-            "deprecated": "Deprecated",
-            "active": "Active",
-            "policy": "Policy",
-            "process": "Process",
-            "technical": "Technical",
-            "physical": "Physical",
-            "procedure": "Procedure",
         },
         "fr": {
             "compliant": "Conformes",
@@ -500,43 +468,25 @@ def gen_audit_context(id, doc, tree, lang):
             "non_compliant": "Non conformes",
             "not_applicable": "Non applicables",
             "not_assessed": "Non évalués",
-            "to_do": "À faire",
-            "on_hold": "En attente",
-            "in_progress": "En cours",
-            "deprecated": "Déprécié",
-            "active": "Actif",
-            "policy": "Politique",
-            "process": "Processus",
-            "technical": "Technique",
-            "physical": "Physique",
-            "procedure": "Procédure",
         },
     }
 
-    def safe_translate(lang: str, key: str) -> str:
-        if key is None or key == "--":
-            return "-"
-        return i18n_dict[lang].get(key, key)
-
     donut_data = [
+        {"category": i18n_dict[lang]["compliant"], "value": aggregated["compliant"]},
         {
-            "category": safe_translate(lang, "compliant"),
-            "value": aggregated["compliant"],
-        },
-        {
-            "category": safe_translate(lang, "partially_compliant"),
+            "category": i18n_dict[lang]["partially_compliant"],
             "value": aggregated["partially_compliant"],
         },
         {
-            "category": safe_translate(lang, "non_compliant"),
+            "category": i18n_dict[lang]["non_compliant"],
             "value": aggregated["non_compliant"],
         },
         {
-            "category": safe_translate(lang, "not_applicable"),
+            "category": i18n_dict[lang]["not_applicable"],
             "value": aggregated["not_applicable"],
         },
         {
-            "category": safe_translate(lang, "not_assessed"),
+            "category": i18n_dict[lang]["not_assessed"],
             "value": aggregated["not_assessed"],
         },
     ]
@@ -561,11 +511,7 @@ def gen_audit_context(id, doc, tree, lang):
     ac_total = applied_controls.count()
     status_cnt = applied_controls.values("status").annotate(count=Count("id"))
     ac_chart_data = [
-        {
-            "category": safe_translate(lang, item["status"]),
-            "value": item["count"],
-        }
-        for item in status_cnt
+        {"category": item["status"], "value": item["count"]} for item in status_cnt
     ]
     p1_controls = list()
     full_controls = list()
@@ -575,13 +521,12 @@ def gen_audit_context(id, doc, tree, lang):
             .filter(applied_controls=ac.id)
             .count()
         )
-        print(f"[{ac.name}] {ac.category}: {type(ac.category)}")
         p1_controls.append(
             {
                 "name": ac.name,
-                "description": safe_translate(lang, ac.description),  # None -> "-"
-                "status": safe_translate(lang, ac.status),
-                "category": safe_translate(lang, ac.category),
+                "description": ac.description,
+                "status": ac.status,
+                "category": ac.category,
                 "coverage": requirements_count,
             }
         )
@@ -595,11 +540,11 @@ def gen_audit_context(id, doc, tree, lang):
         full_controls.append(
             {
                 "name": ac.name,
-                "description": safe_translate(lang, ac.description),  # None -> "-"
+                "description": ac.description,
                 "prio": f"P{ac.priority}" if ac.priority else "-",
-                "status": safe_translate(lang, ac.status),
-                "eta": safe_translate(lang, ac.eta),  # None -> "-"
-                "category": safe_translate(lang, ac.category),
+                "status": ac.status,
+                "eta": ac.eta,
+                "category": ac.category,
                 "coverage": requirements_count,
             }
         )

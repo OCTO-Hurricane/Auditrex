@@ -5,23 +5,13 @@
 	import TextArea from '$lib/components/Forms/TextArea.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-	}
-
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {}
-	}: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
 </script>
 
 <TextField
@@ -69,16 +59,4 @@
 	bind:cachedValue={formDataCache['folder']}
 	label={m.domain()}
 	hidden={initialData.folder}
-/>
-<AutocompleteSelect
-	multiple
-	{form}
-	createFromSelection={true}
-	optionsEndpoint="filtering-labels"
-	optionsLabelField="label"
-	translateOptions={false}
-	field="filtering_labels"
-	helpText={m.labelsHelpText()}
-	label={m.labels()}
-	allowUserOptions="append"
 />

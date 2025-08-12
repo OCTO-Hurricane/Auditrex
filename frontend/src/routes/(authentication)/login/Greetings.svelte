@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { m } from '$paraglide/messages';
-	import Typewriter from 'sv-typewriter';
+	import * as m from '$paraglide/messages.js';
+	import Typewriter from 'svelte-typewriter';
 </script>
 
 <div

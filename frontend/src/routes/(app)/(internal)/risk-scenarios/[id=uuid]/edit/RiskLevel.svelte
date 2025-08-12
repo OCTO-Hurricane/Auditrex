@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import type { RiskMatrixJsonDefinition } from '$lib/utils/types';
 	import { formFieldProxy } from 'sveltekit-superforms';
 
@@ -8,25 +6,16 @@
 	import { safeTranslate } from '$lib/utils/i18n';
 	import { isDark } from '$lib/utils/helpers';
 
-	interface Props {
-		label?: string | undefined;
-		field: string;
-		helpText?: string | undefined;
-		riskMatrix: RiskMatrixJsonDefinition;
-		probabilityField: string;
-		impactField: string;
-		form: any;
-	}
+	export let label: string | undefined = undefined;
+	export let field: string;
+	export let helpText: string | undefined = undefined;
 
-	let {
-		label = undefined,
-		field,
-		helpText = undefined,
-		riskMatrix,
-		probabilityField,
-		impactField,
-		form
-	}: Props = $props();
+	export let riskMatrix: RiskMatrixJsonDefinition;
+
+	export let probabilityField: string;
+	export let impactField: string;
+
+	export let form;
 
 	const { value: probabilityValue } = formFieldProxy(form, probabilityField);
 	const { value: impactValue } = formFieldProxy(form, impactField);
@@ -46,22 +35,19 @@
 		return riskMatrix.grid[probabilityValue][impactValue];
 	};
 
-	let riskLevel = $state(
+	let riskLevel =
 		$probabilityValue >= 0 && $impactValue >= 0
 			? riskMatrix.risk[gridPosition($probabilityValue, $impactValue)!]
-			: undefined
-	);
+			: undefined;
 
-	run(() => {
-		riskLevel =
-			$probabilityValue >= 0 && $impactValue >= 0
-				? riskMatrix.risk[gridPosition($probabilityValue, $impactValue)!]
-				: undefined;
-	});
+	$: riskLevel =
+		$probabilityValue >= 0 && $impactValue >= 0
+			? riskMatrix.risk[gridPosition($probabilityValue, $impactValue)!]
+			: undefined;
 
-	let classesCellText = $derived((backgroundHexColor: string) => {
+	$: classesCellText = (backgroundHexColor: string) => {
 		return isDark(backgroundHexColor) ? 'text-white' : '';
-	});
+	};
 </script>
 
 <div class="flex flex-col">
@@ -70,7 +56,7 @@
 	{/if}
 	{#if riskLevel}
 		<div
-			class="flex font-medium w-32 justify-center p-2 rounded-base {classesCellText(
+			class="flex font-medium w-32 justify-center p-2 rounded-token {classesCellText(
 				riskLevel.hexcolor
 			)}"
 			style="background-color: {riskLevel.hexcolor}"
@@ -78,7 +64,7 @@
 			{safeTranslate(riskLevel.name)}
 		</div>
 	{:else}
-		<div class="flex font-medium w-32 justify-center p-2 rounded-base bg-gray-300">--</div>
+		<div class="flex font-medium w-32 justify-center p-2 rounded-token bg-gray-300">--</div>
 	{/if}
 	{#if helpText}
 		<p class="text-sm text-gray-500 w-64">{helpText}</p>

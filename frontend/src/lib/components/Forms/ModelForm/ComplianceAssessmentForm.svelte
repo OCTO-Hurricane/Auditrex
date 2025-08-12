@@ -5,33 +5,19 @@
 	import TextArea from '$lib/components/Forms/TextArea.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import Checkbox from '../Checkbox.svelte';
 
 	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte';
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-		object?: any;
-		context: string;
-	}
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
+	export let object: any = {};
+	export let context: string;
 
-	let {
-		form,
-		model = $bindable(),
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {},
-		object = {},
-		context
-	}: Props = $props();
-
-	let suggestions = $state(false);
-
-	let implementationGroupsChoices = $state<{ label: string; value: string }[]>([]);
+	let suggestions = false;
 
 	async function handleFrameworkChange(id: string) {
 		if (id) {
@@ -39,10 +25,9 @@
 				.then((r) => r.json())
 				.then((r) => {
 					const implementation_groups = r['implementation_groups_definition'] || [];
-					implementationGroupsChoices = implementation_groups.map((group) => ({
-						label: group.name,
-						value: group.ref_id
-					}));
+					model.selectOptions['selected_implementation_groups'] = implementation_groups.map(
+						(group) => ({ label: group.name, value: group.ref_id })
+					);
 					suggestions = r['reference_controls'].length > 0;
 				});
 		}
@@ -57,7 +42,6 @@
 		bind:cachedValue={formDataCache['baseline']}
 		label={m.baseline()}
 		optionsEndpoint="compliance-assessments"
-		disabled="true"
 	/>
 {/if}
 {#if initialData.ebios_rm_studies}
@@ -90,15 +74,15 @@
 	cacheLock={cacheLocks['framework']}
 	bind:cachedValue={formDataCache['framework']}
 	label={m.targetFramework()}
-	onChange={async (e) => handleFrameworkChange(e)}
-	mount={async (e) => handleFrameworkChange(e)}
+	on:change={async (e) => handleFrameworkChange(e.detail)}
+	on:mount={async (e) => handleFrameworkChange(e.detail)}
 />
-{#if implementationGroupsChoices.length > 0}
+{#if model.selectOptions['selected_implementation_groups'] && model.selectOptions['selected_implementation_groups'].length}
 	<AutocompleteSelect
 		multiple
 		translateOptions={false}
 		{form}
-		options={implementationGroupsChoices}
+		options={model.selectOptions['selected_implementation_groups']}
 		field="selected_implementation_groups"
 		cacheLock={cacheLocks['selected_implementation_groups']}
 		bind:cachedValue={formDataCache['selected_implementation_groups']}
@@ -143,38 +127,21 @@
 		cacheLock={cacheLocks['show_documentation_score']}
 		bind:cachedValue={formDataCache['show_documentation_score']}
 	/>
-	<TextField
-		{form}
-		field="ref_id"
-		label={m.refId()}
-		cacheLock={cacheLocks['ref_id']}
-		bind:cachedValue={formDataCache['ref_id']}
-	/>
 	<AutocompleteSelect
 		multiple
 		{form}
 		optionsEndpoint="assets"
 		optionsLabelField="auto"
 		optionsExtraFields={[['folder', 'str']]}
-		optionsInfoFields={{
-			fields: [
-				{
-					field: 'type'
-				}
-			],
-			classes: 'text-blue-500'
-		}}
 		field="assets"
 		label={m.assets()}
 	/>
-	<AutocompleteSelect
-		multiple
+	<TextField
 		{form}
-		optionsEndpoint="evidences"
-		optionsLabelField="auto"
-		optionsExtraFields={[['folder', 'str']]}
-		field="evidences"
-		label={m.evidences()}
+		field="ref_id"
+		label={m.refId()}
+		cacheLock={cacheLocks['ref_id']}
+		bind:cachedValue={formDataCache['ref_id']}
 	/>
 	<TextField
 		{form}

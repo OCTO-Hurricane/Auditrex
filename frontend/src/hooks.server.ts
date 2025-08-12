@@ -1,11 +1,12 @@
-import { BASE_API_URL, DEFAULT_LANGUAGE } from '$lib/utils/constants';
 import { safeTranslate } from '$lib/utils/i18n';
+import { BASE_API_URL } from '$lib/utils/constants';
 import type { User } from '$lib/utils/types';
-import { redirect, type Handle, type HandleFetch, type RequestEvent } from '@sveltejs/kit';
+import { redirect, type Handle, type RequestEvent, type HandleFetch } from '@sveltejs/kit';
 import { setFlash } from 'sveltekit-flash-message/server';
+import { languageTag, setLanguageTag } from '$paraglide/runtime';
+import { DEFAULT_LANGUAGE } from '$lib/utils/constants';
 
 import { loadFeatureFlags } from '$lib/feature-flags';
-import { paraglideMiddleware } from '$paraglide/server';
 
 async function ensureCsrfToken(event: RequestEvent): Promise<string> {
 	let csrfToken = event.cookies.get('csrftoken') || '';
@@ -57,70 +58,45 @@ async function validateUserSession(event: RequestEvent): Promise<User | null> {
 	return res.json();
 }
 
-export const handle: Handle = async ({ event, resolve }) =>
-	paraglideMiddleware(event.request, async ({ request: localizedRequest, locale }) => {
-		event.request = localizedRequest;
+export const handle: Handle = async ({ event, resolve }) => {
+	event.locals.featureFlags = loadFeatureFlags();
 
-		event.locals.featureFlags = loadFeatureFlags();
+	await ensureCsrfToken(event);
 
-		await ensureCsrfToken(event);
+	if (event.locals.user) return await resolve(event);
 
-		if (event.locals.user)
-			return await resolve(event, {
-				transformPageChunk: ({ html }) => {
-					return html.replace('%lang%', locale);
-				}
-			});
+	const errorId = new URL(event.request.url).searchParams.get('error');
+	if (errorId) {
+		setLanguageTag(event.cookies.get('ciso_lang') || DEFAULT_LANGUAGE);
+		setFlash({ type: 'error', message: safeTranslate(errorId) }, event);
+		redirect(302, '/login');
+	}
 
-		const errorId = new URL(event.request.url).searchParams.get('error');
-		if (errorId) {
-			setFlash({ type: 'error', message: safeTranslate(errorId) }, event);
-			redirect(302, '/login');
-		}
-
-		const user = await validateUserSession(event);
-		if (user) {
-			event.locals.user = user;
-			const generalSettings = await fetch(`${BASE_API_URL}/settings/general/object/`, {
-				credentials: 'include',
-				headers: {
-					'content-type': 'application/json',
-					Authorization: `Token ${event.cookies.get('token')}`
-				}
-			});
-			event.locals.settings = await generalSettings.json();
-
-			const featureFlagSettings = await fetch(`${BASE_API_URL}/settings/feature-flags/`, {
-				credentials: 'include',
-				headers: {
-					'content-type': 'application/json',
-					Authorization: `Token ${event.cookies.get('token')}`
-				}
-			});
-			try {
-				event.locals.featureflags = await featureFlagSettings.json();
-			} catch (e) {
-				console.error('Error fetching feature flags', e);
-				event.locals.featureflags = {};
-			}
-		}
-
-		return await resolve(event, {
-			transformPageChunk: ({ html }) => {
-				return html.replace('%lang%', locale);
+	const user = await validateUserSession(event);
+	if (user) {
+		event.locals.user = user;
+		const generalSettings = await fetch(`${BASE_API_URL}/settings/general/object/`, {
+			credentials: 'include',
+			headers: {
+				'content-type': 'application/json',
+				Authorization: `Token ${event.cookies.get('token')}`
 			}
 		});
-	});
+		event.locals.settings = await generalSettings.json();
+	}
 
-export const handleFetch: HandleFetch = async ({ request, fetch, event }) => {
+	return await resolve(event);
+};
+
+export const handleFetch: HandleFetch = async ({ request, fetch, event: { cookies } }) => {
 	const unsafeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-	const currentLang = event.locals.user?.preferences?.lang || DEFAULT_LANGUAGE;
+
 	if (request.url.startsWith(BASE_API_URL)) {
 		request.headers.set('Content-Type', 'application/json');
-		request.headers.set('Accept-Language', currentLang);
+		request.headers.set('Accept-Language', languageTag());
 
-		const token = event.cookies.get('token');
-		const csrfToken = event.cookies.get('csrftoken');
+		const token = cookies.get('token');
+		const csrfToken = cookies.get('csrftoken');
 
 		if (token) {
 			request.headers.append('Authorization', `Token ${token}`);
@@ -133,40 +109,10 @@ export const handleFetch: HandleFetch = async ({ request, fetch, event }) => {
 	}
 
 	if (request.url.startsWith(`${BASE_API_URL}/_allauth/app`)) {
-		const allauthSessionToken = event.cookies.get('allauth_session_token');
+		const allauthSessionToken = cookies.get('allauth_session_token');
 		if (allauthSessionToken) {
 			request.headers.append('X-Session-Token', allauthSessionToken);
 		}
-		const response = await fetch(request);
-		const clonedResponse = response.clone();
-
-		// Session is invalid
-		if (clonedResponse.status === 410) logoutUser(event);
-
-		if (clonedResponse.status === 401) {
-			const data = await clonedResponse.json();
-			const reauthenticationFlows = ['reauthenticate', 'mfa_reauthenticate'];
-			console.log(data);
-
-			if (
-				// User is authenticated, but needs to reauthenticate to perform a sensitive action
-				data.meta.is_authenticated &&
-				data.data.flows.filter((flow: Record<string, any>) =>
-					reauthenticationFlows.includes(flow.id)
-				)
-			) {
-				setFlash(
-					{ type: 'warning', message: safeTranslate('reauthenticateForSensitiveAction') },
-					event
-				);
-				// NOTE: This is a temporary solution to force the user to reauthenticate
-				// We have to properly implement allauth's reauthentication flow
-				// https://docs.allauth.org/en/latest/headless/openapi-specification/#tag/Authentication:-Account/paths/~1_allauth~1%7Bclient%7D~1v1~1auth~1reauthenticate/post
-				logoutUser(event);
-			}
-		}
-
-		return response;
 	}
 
 	return fetch(request);

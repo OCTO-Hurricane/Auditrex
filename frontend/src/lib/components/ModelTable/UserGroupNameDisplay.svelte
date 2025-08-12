@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { safeTranslate } from '$lib/utils/i18n';
 
-	interface Props {
-		cell: { folder: string; role: string };
-	}
-
-	let { cell }: Props = $props();
+	export let cell: { folder: string; role: string };
 	export const meta: any = undefined;
 </script>
 

@@ -4,8 +4,8 @@ import { getModelInfo, urlParamModelVerboseName } from '$lib/utils/crud';
 import { getSecureRedirect } from '$lib/utils/helpers';
 import { modelSchema } from '$lib/utils/schemas';
 import { listViewFields } from '$lib/utils/table';
-import { m } from '$paraglide/messages';
-import { type TableSource } from '@skeletonlabs/skeleton-svelte';
+import * as m from '$paraglide/messages';
+import { tableSourceMapper, type TableSource } from '@skeletonlabs/skeleton';
 import type { Actions } from '@sveltejs/kit';
 import { fail, redirect } from '@sveltejs/kit';
 import { setFlash } from 'sveltekit-flash-message/server';
@@ -255,7 +255,7 @@ export const actions: Actions = {
 			},
 			event
 		);
-		return { form, newControls: [measure.id] };
+		return { form, newControl: measure.id };
 	},
 	createEvidence: async (event) => {
 		const result = await nestedWriteFormAction({ event, action: 'create' });

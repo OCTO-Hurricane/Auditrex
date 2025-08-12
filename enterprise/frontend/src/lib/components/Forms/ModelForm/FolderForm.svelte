@@ -6,25 +6,13 @@
 	import Checkbox from '../Checkbox.svelte';
 	import FileInput from '../FileInput.svelte';
 
-	interface Props {
-		form: SuperValidated<any>;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-		importFolder?: boolean;
-		object?: any;
-		model: ModelInfo;
-	}
-
-	let {
-		form,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {},
-		importFolder = false,
-		object = {},
-		model
-	}: Props = $props();
+	export let form: SuperValidated<any>;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
+	export let importFolder: boolean = false;
+	export let object: any = {};
+	export let model: ModelInfo;
 </script>
 
 {#if importFolder}
@@ -43,14 +31,15 @@
 		helpText={m.loadMissingLibrariesHelpText()}
 	/>
 {:else}
-	<AutocompleteSelect
-		{form}
-		optionsEndpoint="folders?content_type=DO&content_type=GL"
-		optionsSelf={object}
-		field="parent_folder"
-		cacheLock={cacheLocks['parent_folder']}
-		bind:cachedValue={formDataCache['parent_folder']}
-		label={m.parentDomain()}
-		hide={initialData.parent_folder}
-	/>
+  <AutocompleteSelect
+    {form}
+    optionsEndpoint="folders?content_type=DO&content_type=GL"
+	optionsSelf={object}
+    field="parent_folder"
+    cacheLock={cacheLocks['parent_folder']}
+    bind:cachedValue={formDataCache['parent_folder']}
+    label={m.parentDomain()}
+    hide={initialData.parent_folder}
+  />
 {/if}
+

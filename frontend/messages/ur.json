@@ -14,8 +14,6 @@
 	"urdu": "اردو",
 	"czech": "چیک",
 	"swedish": "سویڈش",
-	"indonesian": "انڈونیشین",
-	"danish": "ڈینش",
 	"addThreat": "خطرہ شامل کریں",
 	"addVulnerability": "کمزوری شامل کریں",
 	"addReferenceControl": "حوالہ کنٹرول شامل کریں",
@@ -38,8 +36,6 @@
 	"associatedRiskScenarios": "وابستہ خطرے کے منظرنامے",
 	"associatedRiskAcceptances": "وابستہ خطرے کی منظوری",
 	"associatedComplianceAssessments": "وابستہ آڈٹ",
-	"associatedRequirementAssessments": "متعلقہ ضروریات",
-	"associatedVulnerabilities": "وابستہ کمزوریاں",
 	"associatedEvidences": "وابستہ ثبوت",
 	"associatedDomains": "وابستہ ڈومینز",
 	"associatedPerimeters": "وابستہ پیریمیٹرز",
@@ -64,8 +60,6 @@
 	"referenceControls": "حوالہ کنٹرول",
 	"referenceControlsColon": "حوالہ کنٹرول:",
 	"appliedControls": "لاگو کنٹرول",
-	"existingAppliedControls": "موجودہ کنٹرولز",
-	"extraAppliedControls": "اضافی کنٹرولز",
 	"assets": "اثاثے",
 	"asset": "اثاثہ",
 	"policy": "پالیسی",
@@ -115,7 +109,6 @@
 	"provider": "مہیا کرنے والا",
 	"providerColon": "مہیا کرنے والا:",
 	"domain": "ڈومین",
-	"domainSemiColon": "ڈومین:",
 	"urn": "URN",
 	"treatmentStatus": "علاج کی حیثیت",
 	"qualification": "اہلیت",
@@ -151,7 +144,6 @@
 	"acceptedAt": "منظور شدہ",
 	"rejectedAt": "مسترد شدہ",
 	"revokedAt": "منسوخ شدہ",
-	"created": "بنایا",
 	"submitted": "جمع کرایا گیا",
 	"rejected": "مسترد شدہ",
 	"revoked": "منسوخ شدہ",
@@ -273,6 +265,7 @@
 	"cancel": "منسوخ کریں",
 	"save": "محفوظ کریں",
 	"assetsImpactedByTheRiskScenario": "خطرے کے منظرنامے سے متاثرہ اثاثے",
+	"ecistingMeasures": "موجودہ کنٹرول",
 	"theExistingAppliedControlsToManageThisRisk": "اس خطرے کو منظم کرنے کے لیے موجودہ لاگو کنٹرول",
 	"currentRiskLevelGivenCurrentMeasures": "موجودہ لاگو کنٹرول کے مطابق موجودہ خطرے کی سطح",
 	"riskLevelWhenAllExtraMeasuresDone": "جب تمام اضافی اقدامات مکمل ہو جائیں تو خطرے کی سطح",
@@ -435,7 +428,7 @@
 	"etaHelpText": "متوقع آمد کا وقت",
 	"dueDateHelpText": "وہ تاریخ جس تک تشخیص مکمل کرنا ضروری ہے",
 	"expiryDateHelpText": "جس تاریخ تک شے اب درست نہیں ہوگی",
-	"linkHelpText": "ٹریکنگ یا حوالہ کے لیے بیرونی یو آر ایل (مثلاً شیئر پوائنٹ، جیرا، وغیرہ)",
+	"linkHelpText": "فالو اپ کارروائی کے لیے بیرونی URL (جیسے جِرا ٹکٹ)",
 	"effortHelpText": "لاگو کنٹرول کو لاگو کرنے کی کوشش کی ضرورت ہے",
 	"costHelpText": "لاگو کنٹرول کو لاگو کرنے کے لیے درکار لاگت",
 	"riskAcceptanceJusitficationHelpText": "خطرے کی منظوری کا جواز۔ صرف منظوری دینے والا اس فیلڈ میں ترمیم کر سکتا ہے۔",
@@ -449,6 +442,7 @@
 	"yourStreamlined": "آپ کا آسان بنایا ہوا",
 	"oneStopShop": "ایک ہی مقام",
 	"forComplianceRiskManagement": "تعمیل اور خطرے کے انتظام کے لیے۔",
+	"youCanSetPAsswordHere": "آپ یہاں اپنا پاس ورڈ سیٹ کر سکتے ہیں",
 	"setPassword": "پاس ورڈ سیٹ کریں",
 	"logIntoYourAccount": "اپنے اکاؤنٹ میں لاگ ان کریں",
 	"youNeedToLogIn": "تمام خصوصیات تک رسائی حاصل کرنے کے لیے آپ کو لاگ ان کرنے کی ضرورت ہے",
@@ -716,7 +710,7 @@
 	"addRepresentative": "نمائندہ شامل کریں۔",
 	"phone": "فون",
 	"role": "کردار",
-	"questions": "سوالات",
+	"question": "سوال",
 	"recipientEntity": "وصول کنندہ ادارہ",
 	"financial": "مالیاتی",
 	"legal": "قانونی",
@@ -771,7 +765,6 @@
 	"licenseExpiredMessage": "آپ کے لائسنس کی میعاد ختم ہو گئی ہے۔ تحریری کارروائیاں غیر فعال ہیں۔ اس کی تجدید کے لیے براہ کرم اپنے منتظم سے رابطہ کریں۔",
 	"experimental": "تجرباتی",
 	"timeline": "ٹائم لائن",
-	"timelineEntries": "ٹائم لائن",
 	"graph": "گراف",
 	"startDate": "تاریخ شروع",
 	"startDateHelpText": "تاریخ شروع (ٹائم لائن کے لیے مفید)",
@@ -871,61 +864,8 @@
 	"mappingInferenceHelpText": "یہ متغیرات طے شدہ ہیں اور ماخذ کے لحاظ سے تبدیل نہیں ہوں گے۔",
 	"bringTheEvidences": "ثبوت لے کر آئیں",
 	"bringTheEvidencesHelpText": "اگر غیر فعال ہو تو، اعتراض کو اس کے ثبوت کے بغیر نقل کر دیا جائے گا۔",
-	"publicationDate": "اشاعت کی تاریخ",
 	"documentationScore": "دستاویزی سکور",
 	"useDocumentationScore": "دستاویزی سکور استعمال کریں۔",
 	"useDocumentationScoreHelpText": "ضروریات کو پورا کرنے کے لیے دوسرا سکور (دستاویزی سکور) دستیاب ہوگا۔",
-	"finding": "نتیجہ",
-	"findings": "نتائج",
-	"associatedFindings": "وابستہ نتائج",
-	"findings_count": "نتائج کی تعداد",
-	"addFinding": "نتیجہ شامل کریں۔",
-	"youCanSetPasswordHere": "آپ یہاں اپنا پاس ورڈ سیٹ کر سکتے ہیں",
-	"failedToContactProvider": "فراہم کنندہ سے رابطہ کرنے میں ناکامی",
-	"userIsNotSSO": "آپ کے اکاؤنٹ کے لیے SSO لاگ ان فی الحال غیر فعال ہے۔",
-	"enableSSOHelpText": "تمام صارفین کے لیے SSO کو لاگ ان کے اختیارات کے طور پر فعال کریں۔",
-	"keepLocalLogin": "مجبور SSO سے مستثنیٰ کریں",
-	"keepLocalLoginHelpText": "جب عالمی 'مجبور SSO' فعال ہو، تو یہ صارف کو اسے بائی پاس کرنے اور ضرورت پڑنے پر مقامی طور پر منظم کردہ پاس ورڈ کے ذریعے لاگ ان کرنے کی اجازت دیتا ہے۔",
-	"forceSSOLogin": "SSO لاگ ان کو مجبور کریں",
-	"forceSSOLoginHelpText": "تمام صارفین کے لیے SSO کی ضرورت ہے اور کسی بھی محفوظ کردہ پاس ورڈز کو ری سیٹ کرتا ہے۔ جن صارفین کے لیے 'مجبور SSO سے مستثنیٰ کریں' فعال ہے، وہ پاس ورڈ پر مبنی بیک اپ رسائی برقرار رکھیں گے۔",
-	"forceSSOLoginHelpText2": "اس آپشن کو فعال کرنے سے پہلے یقینی بنائیں کہ آپ کا SSO فعال ہے یا آپ کے پاس بیک اپ اکاؤنٹ موجود ہے۔",
-	"taskScheduleWarning": "نئی شیڈول کا حصہ نہ ہونے والے کسی بھی کام کو مستقل طور پر حذف کر دیا جائے گا۔",
-	"mappingSuggested": "نقشہ سازی تجویز کردہ",
-	"mappingSuggestedHelpText": "لوڈ کردہ فریم ورکس کے بنیاد پر نقشہ سازی کی تجویزیں",
-	"mappingSuggestionTeasing": "اب نقشہ سازی کی تجویزیں دی جاتی ہیں! آپ لوڈ کردہ فریم ورکس کے بنیاد پر تجویزوں کو تلاش کرنے کے لیے فلٹرز استعمال کر سکتے ہیں۔",
-	"associatedFindingsAssessments": "متعلقہ فالو اپز",
-	"hourCount": [
-		{
-			"declarations": ["input count", "local countPlural = count: plural"],
-			"selectors": ["count", "countPlural"],
-			"match": {
-				"countPlural=one": "گھنٹہ {count}",
-				"countPlural=other": "گھنٹے {count}"
-			}
-		}
-	],
-	"minuteCount": [
-		{
-			"declarations": ["input count", "local countPlural = count: plural"],
-			"selectors": ["countPlural"],
-			"match": {
-				"countPlural=one": "منٹ {count}",
-				"countPlural=other": "منٹ {count}"
-			}
-		}
-	],
-	"dayCount": [
-		{
-			"declarations": ["input count", "local countPlural = count: plural"],
-			"selectors": ["countPlural"],
-			"match": {
-				"countPlural=one": "دن {count}",
-				"countPlural=other": "دن {count}"
-			}
-		}
-	],
-	"matchingScenarios": "مطابق منظرنامے",
-	"select": "منتخب کریں",
-	"deselect": "انتخاب ختم کریں",
-	"fearedEventAssetHelpText": "خوفناک واقعات عام طور پر کاروباری قیمتیں (پہلی جائیدادیں) سے منسلک ہوتے ہیں۔ ان کے لیے اندرونی جائیدادیں بھی ان کے لچکدار ہونے کی وجہ سے اجازت دی جاتی ہیں۔"
+	"publicationDate": "اشاعت کی تاریخ"
 }

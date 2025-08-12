@@ -50,7 +50,7 @@ done
 
 if [[ " ${SCRIPT_SHORT_ARGS[@]} " =~ " -h " ]] || [[ " ${SCRIPT_LONG_ARGS[@]} " =~ " --help " ]]; then
   echo "Usage: e2e-tests.sh [options] [test_path]"
-  echo "Run the end-to-end tests for the CISO Assistant application."
+  echo "Run the end-to-end tests for the Auditrex application."
   echo "Options:"
   echo "  -q                      Quick mode: execute only the tests 1 time with no retries and only 1 project"
   echo "  -k                      Keep a saved snapshot of the initial database and use it to avoid executing useless migrations."
@@ -240,7 +240,7 @@ fi
 echo "=========================================================================================="
 
 FRONTEND_HASH_FILE="$APP_DIR/frontend/tests/.frontend_hash"
-FRONTEND_HASH=$(find "$APP_DIR"/frontend/{src,messages} -type f \( -name "*.ts" -o -name "*.svelte" -o -name "*.json" \) -print0 | xargs -0 md5sum | md5sum)
+FRONTEND_HASH=$(find "$APP_DIR/frontend/src" -type f \( -name "*.ts" -o -name "*.svelte" \) -print0 | xargs -0 md5sum | md5sum)
 
 if [ "$(cat "$FRONTEND_HASH_FILE")" != "$FRONTEND_HASH" ]; then
   pnpm run build # Required for the "pnpm run preview" command of playwright.config.ts

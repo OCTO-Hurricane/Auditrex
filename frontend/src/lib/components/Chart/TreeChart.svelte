@@ -1,27 +1,16 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	export let width = 'w-auto';
+	export let height = 'h-full';
+	export let classesContainer = '';
+	export let title = '';
+	export let name = '';
 	interface treeType {
 		name: string;
 		children: treeType[];
 	}
-	interface Props {
-		width?: string;
-		height?: string;
-		classesContainer?: string;
-		title?: string;
-		name?: string;
-		tree: treeType[];
-	}
-
-	let {
-		width = 'w-auto',
-		height = 'h-full',
-		classesContainer = '',
-		title = '',
-		name = '',
-		tree
-	}: Props = $props();
+	export let tree: treeType[];
 
 	const chart_id = `${name}_div`;
 	onMount(async () => {
@@ -38,21 +27,18 @@
 			series: [
 				{
 					type: 'tree',
-					roam: true,
+
 					data: [tree],
-					top: '10%',
-					left: '5%',
-					bottom: '10%',
-					right: '20%',
-					symbolSize: 14,
-					symbol: 'roundRect',
+					symbol: 'emptyCircle',
+					symbolSize: 10,
+
 					label: {
-						backgroundColor: '#fff',
 						position: 'left',
 						verticalAlign: 'middle',
 						align: 'right',
-						fontSize: 14
+						fontSize: 10
 					},
+
 					leaves: {
 						label: {
 							position: 'right',
@@ -60,9 +46,6 @@
 							align: 'left'
 						}
 					},
-					edgeShape: 'polyline',
-					edgeForkPosition: '70%',
-					initialTreeDepth: 2,
 
 					emphasis: {
 						focus: 'descendant'
@@ -93,5 +76,5 @@
 		>
 	</div>
 {:else}
-	<div id={chart_id} class="{height} {width} {classesContainer}"></div>
+	<div id={chart_id} class="{height} {width} {classesContainer}" />
 {/if}

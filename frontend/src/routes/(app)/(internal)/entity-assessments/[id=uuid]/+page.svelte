@@ -2,18 +2,13 @@
 	import { goto, preloadData, pushState } from '$app/navigation';
 	import { page } from '$app/stores';
 	import DetailView from '$lib/components/DetailView/DetailView.svelte';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages';
+	import { TreeView, TreeViewItem } from '@skeletonlabs/skeleton';
 	import AuditTableMode from '../../../(third-party)/compliance-assessments/[id=uuid]/table-mode/+page.svelte';
-	import TreeView from '$lib/components/TreeView/TreeView.svelte';
-	import TreeViewItem from '$lib/components/TreeView/TreeViewItem.svelte';
 	import type { Actions, PageData } from './$types';
 
-	interface Props {
-		data: PageData;
-		form: Actions;
-	}
-
-	let { data, form }: Props = $props();
+	export let data: PageData;
+	export let form: Actions;
 
 	const mailing =
 		Boolean(data.data.compliance_assessment) && Boolean(data.data.representatives.length);
@@ -25,10 +20,8 @@
 		<div class="card px-6 py-4 bg-white flex flex-row justify-between shadow-lg w-full">
 			<TreeView>
 				<TreeViewItem
-					alwaysDisplayCaret={true}
-					caretOpen=""
-					caretClosed="-rotate-90"
-					onToggle={async () => {
+					on:toggle={async (e) => {
+						e.preventDefault();
 						const href = `/compliance-assessments/${data.data.compliance_assessment.id}/table-mode`;
 						const result = await preloadData(href);
 						if (result.type === 'loaded' && result.status === 200) {
@@ -40,12 +33,12 @@
 					}}
 				>
 					<span class="font-semibold text-lg select-none">{m.questionnaire()}</span>
-					{#snippet childrenSlot()}
-						{#if Object.hasOwn($page?.state, 'auditTableMode')}
-							<div class="max-h-192 overflow-y-scroll">
+					<svelte:fragment slot="children">
+						{#if Object.hasOwn($page.state, 'auditTableMode')}
+							<div class="max-h-[48rem] overflow-y-scroll">
 								<AuditTableMode
 									{form}
-									data={$page?.state?.auditTableMode}
+									data={$page.state.auditTableMode}
 									actionPath={`/compliance-assessments/${data.data.compliance_assessment.id}/table-mode`}
 									shallow
 									questionnaireOnly
@@ -53,7 +46,7 @@
 								/>
 							</div>
 						{/if}
-					{/snippet}
+					</svelte:fragment>
 				</TreeViewItem>
 			</TreeView>
 		</div>

@@ -1,6 +1,9 @@
 import { getModelInfo } from '$lib/utils/crud';
 import { loadDetail } from '$lib/utils/load';
-import { nestedDeleteFormAction, nestedWriteFormAction } from '$lib/utils/actions';
+import {
+	nestedDeleteFormAction,
+	nestedWriteFormAction,
+} from '$lib/utils/actions';
 
 import type { Actions, PageServerLoad } from './$types';
 
@@ -15,5 +18,6 @@ export const actions: Actions = {
 	},
 	delete: async (event) => {
 		return nestedDeleteFormAction({ event });
-	}
+	},
 };
+

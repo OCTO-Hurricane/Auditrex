@@ -45,32 +45,14 @@ class AccountAdapter(DefaultAccountAdapter):
                 }
             )
             serializer.is_valid(raise_exception=True)
-            user = serializer.validated_data["user"]
-            if not user.is_local:
-                raise NotImplementedError(
-                    "This user is not allowed to use local login."
-                )
-
-            return user
+            return serializer.validated_data["user"]
         except Exception:
             return None
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
     def pre_social_login(self, request, sociallogin):
-        extra = sociallogin.account.extra_data
-        # Primary lookup
-        email_address = extra.get("email") or extra.get("email_address")
-        # Fallback: first string value containing '@'
-        if not email_address:
-            email_address = next(
-                (v for v in extra.values() if isinstance(v, str) and "@" in v), None
-            )
-
-        if not email_address:
-            return Response(
-                {"message": "Email not provided."}, status=HTTP_401_UNAUTHORIZED
-            )
+        email_address = next(iter(sociallogin.account.extra_data.values()))[0]
         try:
             user = User.objects.get(email=email_address)
             sociallogin.user = user

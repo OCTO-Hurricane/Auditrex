@@ -5,24 +5,13 @@
 	import Select from '../Select.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import Dropdown from '$lib/components/Dropdown/Dropdown.svelte';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-	}
-
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {}
-	}: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
 </script>
 
 <TextField
@@ -79,50 +68,37 @@
 	label={m.authors()}
 />
 <AutocompleteSelect
-	multiple
 	{form}
-	optionsEndpoint="evidences"
-	optionsExtraFields={[['folder', 'str']]}
-	optionsLabelField="auto"
-	field="evidences"
-	label={m.evidences()}
-	cacheLock={cacheLocks['evidences']}
-	bind:cachedValue={formDataCache['evidences']}
+	multiple
+	optionsEndpoint="users?is_third_party=false"
+	optionsLabelField="email"
+	field="reviewers"
+	cacheLock={cacheLocks['reviewers']}
+	bind:cachedValue={formDataCache['reviewers']}
+	label={m.reviewers()}
 />
-<Dropdown open={false} style="hover:text-primary-700" icon="fa-solid fa-list" header={m.more()}>
-	<AutocompleteSelect
-		{form}
-		multiple
-		optionsEndpoint="users?is_third_party=false"
-		optionsLabelField="email"
-		field="reviewers"
-		cacheLock={cacheLocks['reviewers']}
-		bind:cachedValue={formDataCache['reviewers']}
-		label={m.reviewers()}
-	/>
-	<TextField
-		type="date"
-		{form}
-		field="eta"
-		label={m.eta()}
-		helpText={m.etaHelpText()}
-		cacheLock={cacheLocks['eta']}
-		bind:cachedValue={formDataCache['eta']}
-	/>
-	<TextField
-		type="date"
-		{form}
-		field="due_date"
-		label={m.dueDate()}
-		helpText={m.dueDateHelpText()}
-		cacheLock={cacheLocks['due_date']}
-		bind:cachedValue={formDataCache['due_date']}
-	/>
-	<TextArea
-		{form}
-		field="observation"
-		label={m.observation()}
-		cacheLock={cacheLocks['observation']}
-		bind:cachedValue={formDataCache['observation']}
-	/>
-</Dropdown>
+<TextField
+	type="date"
+	{form}
+	field="eta"
+	label={m.eta()}
+	helpText={m.etaHelpText()}
+	cacheLock={cacheLocks['eta']}
+	bind:cachedValue={formDataCache['eta']}
+/>
+<TextField
+	type="date"
+	{form}
+	field="due_date"
+	label={m.dueDate()}
+	helpText={m.dueDateHelpText()}
+	cacheLock={cacheLocks['due_date']}
+	bind:cachedValue={formDataCache['due_date']}
+/>
+<TextArea
+	{form}
+	field="observation"
+	label={m.observation()}
+	cacheLock={cacheLocks['observation']}
+	bind:cachedValue={formDataCache['observation']}
+/>

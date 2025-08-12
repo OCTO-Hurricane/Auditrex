@@ -4,7 +4,6 @@ from django.utils.formats import date_format
 import magic
 import structlog
 from core.views import BaseModelViewSet
-from core.permissions import IsAdministrator
 from django.conf import settings
 from iam.models import User
 from rest_framework import status
@@ -17,9 +16,6 @@ from rest_framework.parsers import FileUploadParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import mixins, viewsets, filters
-
-from django_filters.rest_framework import DjangoFilterBackend
 
 from django.conf import settings
 
@@ -37,9 +33,7 @@ from pathlib import Path
 import humanize
 
 from .models import ClientSettings
-from .serializers import ClientSettingsReadSerializer, LogEntrySerializer
-
-from auditlog.models import LogEntry
+from .serializers import ClientSettingsReadSerializer
 
 logger = structlog.get_logger(__name__)
 
@@ -101,10 +95,7 @@ class ClientSettingsViewSet(BaseModelViewSet):
     @action(methods=["get"], detail=False, permission_classes=[AllowAny])
     def logo(self, request):
         instance = ClientSettings.objects.get()
-        show_data = (
-            instance.show_images_unauthenticated or request.user.is_authenticated
-        )
-        if not (instance.logo and show_data):
+        if not instance.logo:
             return Response(
                 {"error": "No logo uploaded"}, status=status.HTTP_404_NOT_FOUND
             )
@@ -112,13 +103,11 @@ class ClientSettingsViewSet(BaseModelViewSet):
             {"data": instance.logo_base64, "mime_type": instance.logo_mime_type}
         )
 
-    @action(methods=["get"], detail=False, permission_classes=[AllowAny])
+    @permission_classes((AllowAny,))
+    @action(methods=["get"], detail=False)
     def favicon(self, request):
         instance = ClientSettings.objects.get()
-        show_data = (
-            instance.show_images_unauthenticated or request.user.is_authenticated
-        )
-        if not (instance.favicon and show_data):
+        if not instance.favicon:
             return Response(
                 {"error": "No favicon uploaded"}, status=status.HTTP_404_NOT_FOUND
             )
@@ -278,13 +267,6 @@ def get_build(request):
     BUILD = settings.BUILD
     LICENSE_SEATS = settings.LICENSE_SEATS
     LICENSE_EXPIRATION = settings.LICENSE_EXPIRATION
-    default_db_engine = settings.DATABASES["default"]["ENGINE"]
-    if "postgresql" in default_db_engine:
-        database_type = "P-FS"
-    elif "sqlite" in default_db_engine:
-        database_type = "S-FS"
-    else:
-        database_type = "Unknown"
     try:
         try:
             expiration_iso = datetime.fromisoformat(LICENSE_EXPIRATION)
@@ -301,7 +283,7 @@ def get_build(request):
         total, used, free = disk_info
         disk_response = {
             "Disk space": f"{humanize.naturalsize(total)}",
-            "Used": f"{humanize.naturalsize(used)} ({int((used / total) * 100)} %)",
+            "Used": f"{humanize.naturalsize(used)} ({int((used/total)*100)} %)",
         }
     else:
         disk_response = {
@@ -311,34 +293,9 @@ def get_build(request):
         {
             "version": VERSION,
             "build": BUILD,
-            "infrastructure": database_type,
             "license_seats": LICENSE_SEATS,
             "available_seats": LICENSE_SEATS - len(User.get_editors()),
             "license_expiration": license_expiration,
             **disk_response,
         }
     )
-
-
-class LogEntryViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
-    ordering = ["-timestamp"]
-    ordering_fields = "__all__"
-    search_fields = [
-        "content_type__model",
-        "action",
-        "actor__email",
-        "actor__first_name",
-        "actor__last_name",
-    ]
-    filterset_fields = ["action", "actor", "content_type__model"]
-
-    permission_classes = (IsAdministrator,)
-    serializer_class = LogEntrySerializer
-    queryset = LogEntry.objects.all()

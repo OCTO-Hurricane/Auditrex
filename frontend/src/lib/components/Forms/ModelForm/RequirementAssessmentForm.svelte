@@ -4,18 +4,14 @@
 	import HiddenInput from '$lib/components/Forms/HiddenInput.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import AutocompleteSelect from '../AutocompleteSelect.svelte';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		context: string;
-	}
-
-	let { form, model, cacheLocks = {}, formDataCache = $bindable({}), context }: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let context: string;
 </script>
 
 {#if context === 'selectEvidences'}

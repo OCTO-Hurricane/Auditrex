@@ -1,18 +1,14 @@
 <script lang="ts">
 	import DonutChart from '$lib/components/Chart/DonutChart.svelte';
 	import BarChart from '$lib/components/Chart/BarChart.svelte';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages';
 	import type { AppliedControlStatus } from '$lib/utils/types';
 
-	interface Props {
-		// Props
-		data: any;
-	}
-
-	let { data }: Props = $props();
+	// Props
+	export let data;
 
 	// Make a reactive copy of data to track changes properly
-	let riskData = $state({ ...data });
+	let riskData = { ...data };
 	riskData.risk_assessment_objects.forEach((risk_assessment: Record<string, any>) => {
 		risk_assessment.show = false;
 	});
@@ -24,10 +20,10 @@
 	<div>
 		<div class="px-2 mx-2 font-semibold text-xl">{m.yourSelection()}</div>
 		<div class="px-2 mx-2 text-sm">
-			<i class="fa-solid fa-info-circle mr-2"></i>{m.composerHint()}
+			<i class="fa-solid fa-info-circle mr-2" />{m.composerHint()}
 		</div>
 	</div>
-	<div class="card p-4 bg-white shadow-sm">
+	<div class="card p-4 bg-white shadow">
 		<div class="p-2 font-semibold text-lg">
 			{riskData.risk_assessment_objects.length <= 1
 				? m.composerTitle()
@@ -72,10 +68,11 @@
 				</div>
 			</div>
 		</div>
-		<div class="bg-zinc-100 shadow-sm rounded-sm p-3 flex flex-col space-y-2">
+		<div class="bg-zinc-100 shadow rounded p-3 flex flex-col space-y-2">
 			<div>
-				<i class="far fa-lightbulb mr-1"></i>
-				<span class="font-semibold">{m.forTheSelectedScope()}:</span>
+				<i class="far fa-lightbulb mr-1" />&nbsp;<span class="font-semibold"
+					>{m.forTheSelectedScope()}:</span
+				>
 			</div>
 			<ul class="list-disc px-6">
 				<li>
@@ -107,35 +104,35 @@
 	<div class="flex flex-col space-y-2">
 		{#each riskData.risk_assessment_objects as item}
 			<div>
-				<div class="card bg-white overflow-hidden shadow-sm" id="headingOne">
+				<div class="card bg-white overflow-hidden shadow" id="headingOne">
 					<div
 						class="flex flex-row space-x-4 px-8 py-4 w-full hover:bg-gray-100 cursor-pointer items-center"
-						onclick={() => {
+						on:click={() => {
 							item.show = !item.show;
 						}}
 						role="button"
 						tabindex="0"
-						onkeydown={(e) => {
+						on:keydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') item.show = !item.show;
 						}}
 					>
 						<div class="text-gray-700">
 							{#if item.show}
-								<i class="fas fa-angle-up"></i>
+								<i class="fas fa-angle-up" />
 							{:else}
-								<i class="fas fa-angle-down"></i>
+								<i class="fas fa-angle-down" />
 							{/if}
 						</div>
-						<button class="text-gray-700 font-semibold focus:outline-hidden" type="button">
+						<button class="text-gray-700 font-semibold focus:outline-none" type="button">
 							{item.risk_assessment.perimeter.str}/{item.risk_assessment.name}
 						</button>
 						<div>
 							{#if item.risk_assessment.quality_check.count > 0}
-								<span class="text-xs px-2 py-1 rounded-sm bg-orange-200 shadow-sm"
+								<span class="text-xs px-2 py-1 rounded bg-orange-200 shadow"
 									>{m.reviewNeeded()}</span
 								>
 							{:else}
-								<span class="text-xs px-2 py-1 rounded-sm bg-green-200 shadow-sm">{m.ok()}</span>
+								<span class="text-xs px-2 py-1 rounded bg-green-200 shadow">{m.ok()}</span>
 							{/if}
 						</div>
 					</div>
@@ -157,10 +154,10 @@
 									{/if}
 								</div>
 								<div>
-									<table class="border border-collapse my-2 p-2 rounded-sm">
+									<table class="border border-collapse my-2 p-2 rounded">
 										<thead>
 											<tr>
-												<th class="border p-2 bg-gray-200"></th>
+												<th class="border p-2 bg-gray-200" />
 												<th class="border p-2 bg-gray-200">{m.current()}</th>
 												<th class="border p-2 bg-gray-200">{m.residual()}</th>
 											</tr>
@@ -182,7 +179,7 @@
 									<a
 										class="text-indigo-800 hover:text-indigo-600 py-2 my-2"
 										href="/risk-assessments/{item.risk_assessment.id}/"
-										><i class="fas fa-external-link-square-alt"></i> {m.jumpToRiskAssessment()}</a
+										><i class="fas fa-external-link-square-alt" /> {m.jumpToRiskAssessment()}</a
 									>
 								</div>
 							</div>

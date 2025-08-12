@@ -1,11 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import ModelForm from '$lib/components/Forms/ModelForm.svelte';
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 </script>
 
 <div class="card p-4 bg-white shadow-lg">

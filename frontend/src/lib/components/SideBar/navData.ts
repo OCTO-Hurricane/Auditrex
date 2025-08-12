@@ -68,6 +68,11 @@ export const navData = {
 					name: 'roleAssignments',
 					fa_icon: 'fa-solid fa-user-tag',
 					href: '/role-assignments'
+				},
+				{
+					name: 'assets',
+					fa_icon: 'fa-solid fa-gem',
+					href: '/assets'
 				}
 			]
 		},
@@ -102,26 +107,6 @@ export const navData = {
 			]
 		},
 		{
-			name: 'assetsManagement',
-			items: [
-				{
-					name: 'assets',
-					fa_icon: 'fa-solid fa-gem',
-					href: '/assets'
-				},
-				{
-					name: 'businessImpactAnalysis',
-					fa_icon: 'fa-solid fa-arrows-to-eye',
-					href: '/business-impact-analysis',
-					permissions: [
-						'view_businessimpactanalysis',
-						'view_assetassessment',
-						'view_escalationthreshold'
-					]
-				}
-			]
-		},
-		{
 			name: 'operations',
 			items: [
 				{
@@ -140,16 +125,6 @@ export const navData = {
 					fa_icon: 'fa-solid fa-bolt',
 					href: '/x-rays',
 					permissions: ['view_riskassessment', 'view_assessment']
-				},
-				{
-					name: 'incidents',
-					fa_icon: 'fa-solid fa-bug',
-					href: '/incidents'
-				},
-				{
-					name: 'tasks',
-					fa_icon: 'fa-solid fa-note-sticky',
-					href: '/task-templates'
 				}
 			]
 		},
@@ -235,28 +210,23 @@ export const navData = {
 					name: 'recap',
 					fa_icon: 'fa-solid fa-clipboard-list',
 					href: '/recap',
-					permissions: ['view_appliedcontrol'] //this is temporary workaround to manage 3rd parties
+					permissions: ['view_complianceassessment']
 				}
 			]
 		},
+
 		{
 			name: 'thirdPartyCategory',
 			items: [
 				{
-					name: 'tprmOverview',
-					fa_icon: 'fa-solid fa-gauge',
-					href: '/analytics/tprm',
-					permissions: [
-						'view_entity',
-						'view_solution',
-						'view_entityassessment',
-						'view_appliedcontrol'
-					]
-				},
-				{
 					name: 'entities',
 					fa_icon: 'fa-solid fa-building',
 					href: '/entities'
+				},
+				{
+					name: 'entityAssessments',
+					fa_icon: 'fa-solid fa-clipboard-list',
+					href: '/entity-assessments'
 				},
 				{
 					name: 'representatives',
@@ -267,40 +237,6 @@ export const navData = {
 					name: 'solutions',
 					fa_icon: 'fa-solid fa-box',
 					href: '/solutions'
-				},
-				{
-					name: 'entityAssessments',
-					fa_icon: 'fa-solid fa-clipboard-list',
-					href: '/entity-assessments'
-				}
-			]
-		},
-		{
-			name: 'privacy',
-			items: [
-				{
-					name: 'overview',
-					fa_icon: 'fa-solid fa-gauge',
-					href: '/analytics/gdpr',
-					permissions: ['view_processing', 'view_purpose']
-				},
-				{
-					name: 'processingsRegister',
-					fa_icon: 'fa-solid fa-clipboard-list',
-					href: '/processings',
-					permissions: ['view_processing']
-				},
-				{
-					name: 'personalData',
-					fa_icon: 'fa-solid fa-users-viewfinder',
-					href: '/personal-data',
-					permissions: ['view_personaldata']
-				},
-				{
-					name: 'purposes',
-					fa_icon: 'fa-solid fa-diamond',
-					href: '/purposes',
-					permissions: ['view_purpose']
 				}
 			]
 		},
@@ -326,7 +262,7 @@ export const navData = {
 					permissions: ['backup']
 				},
 				{
-					name: 'experimental',
+					name: 'Experimental',
 					fa_icon: 'fa-solid fa-flask',
 					href: '/experimental',
 					permissions: ['change_globalsettings']

@@ -13,7 +13,7 @@ class Command(BaseCommand):
         try:
             admin.mailing(
                 email_template_name="registration/first_connexion_email.html",
-                subject="Welcome to CISO Assistant!",
+                subject="Welcome to Auditrex!",
             )
             self.stdout.write("welcome mail sent")
         except Exception as e:

@@ -4,32 +4,21 @@
 	import Checkbox from '$lib/components/Forms/Checkbox.svelte';
 	import AutocompleteSelect from '$lib/components/Forms/AutocompleteSelect.svelte';
 	import Select from '$lib/components/Forms/Select.svelte';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import TextArea from '../TextArea.svelte';
-	import { page } from '$app/state';
+	import { page } from '$app/stores';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-		context: string;
-	}
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
+	export let context: string;
 
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {},
-		context
-	}: Props = $props();
+	const activityBackground = context === 'edit' ? 'bg-white' : 'bg-surface-100-800-token';
 
-	const activityBackground = context === 'edit' ? 'bg-white' : 'bg-surface-100-900';
-
-	let activeActivity: string | null = $state(null);
-	page.url.searchParams.forEach((value, key) => {
+	let activeActivity: string | null = null;
+	$page.url.searchParams.forEach((value, key) => {
 		if (key === 'activity' && value === 'one') {
 			activeActivity = 'one';
 		} else if (key === 'activity' && value === 'two') {
@@ -47,14 +36,6 @@
 	bind:cachedValue={formDataCache['ebios_rm_study']}
 	label={m.ebiosRmStudy()}
 	hidden={initialData.ebios_rm_study}
-/>
-<AutocompleteSelect
-	{form}
-	field="folder"
-	cacheLock={cacheLocks['folder']}
-	bind:cachedValue={formDataCache['folder']}
-	label={m.folder()}
-	hidden
 />
 <div
 	class="relative p-2 space-y-2 rounded-md {activeActivity === 'one'
@@ -120,7 +101,7 @@
 		{form}
 		options={model.selectOptions['activity']}
 		field="activity"
-		label={m.ro_activity()}
+		label={m.activity()}
 		cacheLock={cacheLocks['activity']}
 		bind:cachedValue={formDataCache['activity']}
 		helpText={m.activityHelpText()}

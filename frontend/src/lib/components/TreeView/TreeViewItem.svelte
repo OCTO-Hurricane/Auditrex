@@ -1,111 +1,54 @@
-<svelte:options />
+<svelte:options accessors />
 
 <script lang="ts">
-	import TreeViewItem from './TreeViewItem.svelte';
+	import { getContext, createEventDispatcher, onMount } from 'svelte';
 
-	import { run } from 'svelte/legacy';
+	// Types
+	import type { CssClasses, SvelteEvent, TreeViewItem } from '@skeletonlabs/skeleton';
 
-	import { createEventDispatcher, getContext, mount } from 'svelte';
-	import RecursiveTreeViewItem from './RecursiveTreeViewItem.svelte';
+	// Props (state)
+	export let group: unknown = undefined;
+	export let name: string | undefined = undefined;
+	export let value: unknown = undefined;
+	export let checked = false;
+	export let children: TreeViewItem[] = [];
+	export let mappingInference: unknown = undefined;
 
-	interface Props {
-		// Props (state)
-		group?: unknown;
-		name?: string | undefined;
-		value?: unknown;
-		checked?: boolean;
-		childrenProp?: any;
-		mappingInference?: unknown;
-		// Props (styles)
-		spacing?: string;
-		// Context API
-		open?: boolean;
-		selection?: boolean;
-		multiple?: boolean;
-		disabled?: boolean;
-		indeterminate?: boolean;
-		padding?: string;
-		indent?: string;
-		hover?: string;
-		rounded?: string;
-		caretOpen?: string;
-		caretClosed?: string;
-		hyphenOpacity?: string;
-		regionSummary?: string;
-		regionSymbol?: string;
-		regionChildren?: string;
-		// Props (work-around)
-		alwaysDisplayCaret?: boolean;
-		hideLead?: boolean;
-		hideChildren?: boolean;
-		classProp?: string; // Replacing $$props.class
-		onToggle?: (isOpened: boolean) => void;
-		children?: import('svelte').Snippet;
-		lead?: import('svelte').Snippet;
-		childrenSlot?: import('svelte').Snippet;
-	}
+	// Props (styles)
+	export let spacing: CssClasses = 'space-x-4';
 
-	let {
-		group = $bindable(undefined),
-		name = $bindable(undefined),
-		value = $bindable(undefined),
-		checked = $bindable(false),
-		childrenProp = $bindable(),
-		mappingInference = undefined,
-		spacing = 'space-x-4',
-		open = $bindable(getContext('open')),
-		selection = getContext('selection'),
-		multiple = getContext('multiple'),
-		disabled = getContext('disabled'),
-		indeterminate = $bindable(false),
-		padding = getContext('padding'),
-		indent = getContext('indent'),
-		hover = getContext('hover'),
-		rounded = getContext('rounded-sm'),
-		caretOpen = getContext('caretOpen'),
-		caretClosed = getContext('caretClosed'),
-		hyphenOpacity = getContext('hyphenOpacity'),
-		regionSummary = getContext('regionSummary'),
-		regionSymbol = getContext('regionSymbol'),
-		regionChildren = getContext('regionChildren'),
-		alwaysDisplayCaret = false,
-		hideLead = false,
-		hideChildren = false,
-		onToggle = () => {},
-		children,
-		classProp = '',
-		lead,
-		childrenSlot
-	}: Props = $props();
+	// Context API
+	export let open: boolean = getContext('open');
+	export let selection: boolean = getContext('selection');
+	export let multiple: boolean = getContext('multiple');
+	export let disabled: boolean = getContext('disabled');
+	export let indeterminate = false;
+	export let padding: CssClasses = getContext('padding');
+	export let indent: CssClasses = getContext('indent');
+	export let hover: CssClasses = getContext('hover');
+	export let rounded: CssClasses = getContext('rounded');
+	export let caretOpen: CssClasses = getContext('caretOpen');
+	export let caretClosed: CssClasses = getContext('caretClosed');
+	export let hyphenOpacity: CssClasses = getContext('hyphenOpacity');
+	export let regionSummary: CssClasses = getContext('regionSummary');
+	export let regionSymbol: CssClasses = getContext('regionSymbol');
+	export let regionChildren: CssClasses = getContext('regionChildren');
+
+	// Props (work-around)
+	export let hideLead = false;
+	export let hideChildren = false;
 
 	// Locals
-	let treeItem: HTMLDetailsElement = $state();
-	let childrenDiv: HTMLDivElement = $state();
-
-	const cBase = 'space-y-1';
-	const cSummary = 'list-none [&::-webkit-details-marker]:hidden items-center cursor-pointer flex';
-	const cSymbol = 'fill-current w-3 text-center transition-transform duration-200';
-	const cChildren = 'space-y-1';
-	const cDisabled = 'opacity-50 cursor-not-allowed!';
-
-	let classesCaretState = $derived(
-		open && ((childrenProp && !hideChildren) || alwaysDisplayCaret) ? caretOpen : caretClosed
-	);
-	let classesDisabled = $derived(disabled ? cDisabled : '');
-	let classesBase = $derived(`${cBase} ${classProp}`);
-	let classesSummary = $derived(
-		`${cSummary} ${classesDisabled} ${spacing} ${rounded} ${padding} ${hover} ${regionSummary}`
-	);
-	let classesCaret = $derived(`${classesCaretState}`);
-	let classesSymbol = $derived(`${cSymbol} ${classesCaret} ${regionSymbol}`);
-	let classesHyphen = $derived(`${hyphenOpacity}`);
-	let classesChildren = $derived(`${cChildren} ${indent} ${regionChildren}`);
+	let treeItem: HTMLDetailsElement;
+	let childrenDiv: HTMLDivElement;
 
 	// Functionality
 	function onSummaryClick(event: MouseEvent) {
 		if (disabled) event.preventDefault();
 	}
 
+	$: if (multiple) updateCheckbox(group, indeterminate);
+	$: if (multiple) updateGroup(checked, indeterminate);
 	function updateCheckbox(group: unknown, indeterminate: boolean) {
 		if (!Array.isArray(group)) return;
 		checked = group.indexOf(value) >= 0;
@@ -129,6 +72,8 @@
 		if (!indeterminate) onParentChange();
 	}
 
+	$: if (!multiple) updateRadio(group);
+	$: if (!multiple) updateRadioGroup(checked);
 	function updateRadio(group: unknown) {
 		checked = group === value;
 		dispatch('groupChange', { checked, indeterminate: false });
@@ -142,10 +87,10 @@
 	function onChildValueChange() {
 		if (multiple) {
 			if (!Array.isArray(group)) return;
-			const childrenValues = childrenProp.map((c) => c.value);
-			const childrenGroup = childrenProp ? childrenProp[0].group : '';
+			const childrenValues = children.map((c) => c.value);
+			const childrenGroup = children[0].group;
 			const index = group.indexOf(value);
-			if (childrenProp.some((c) => c.indeterminate)) {
+			if (children.some((c) => c.indeterminate)) {
 				indeterminate = true;
 				if (index >= 0) {
 					group.splice(index, 1);
@@ -175,9 +120,9 @@
 				}
 			}
 		} else {
-			if (group !== value && childrenProp.some((c) => c.checked)) {
+			if (group !== value && children.some((c) => c.checked)) {
 				group = value;
-			} else if (group === value && !childrenProp.some((c) => c.checked)) {
+			} else if (group === value && !children.some((c) => c.checked)) {
 				group = '';
 			}
 		}
@@ -185,7 +130,7 @@
 	}
 
 	export function onParentChange() {
-		if (!multiple || !childrenProp || childrenProp.length === 0) return;
+		if (!multiple || !children || children.length === 0) return;
 		if (!Array.isArray(group)) return;
 		const index = group.indexOf(value);
 
@@ -205,16 +150,29 @@
 			}
 		};
 
-		childrenProp.forEach((child) => {
+		children.forEach((child) => {
 			if (!child) return;
 			index >= 0 ? checkChild(child) : uncheckChild(child);
 			child.onParentChange();
 		});
 	}
 
-	const dispatch = createEventDispatcher();
+	$: if (!multiple && group !== undefined) {
+		if (group !== value) {
+			children.forEach((child) => {
+				if (child) child.group = '';
+			});
+		}
+	}
 
-	function onKeyDown(event: KeyboardEvent | HTMLDivElement): void {
+	const dispatch = createEventDispatcher();
+	$: dispatch('toggle', { open });
+
+	$: children.forEach((child) => {
+		if (child) child.$on('childChange', onChildValueChange);
+	});
+
+	function onKeyDown(event: SvelteEvent<KeyboardEvent, HTMLDivElement>): void {
 		function getRootTree(): HTMLDivElement | undefined {
 			let currentElement: HTMLElement | null = treeItem;
 			while (currentElement !== null) {
@@ -230,7 +188,7 @@
 		switch (event.code) {
 			case 'ArrowRight':
 				if (!open) open = true;
-				else if (children && !hideChildren) {
+				else if ($$slots.children && !hideChildren) {
 					const child = childrenDiv.querySelector<HTMLElement>('details>summary');
 					if (child) child.focus();
 				}
@@ -276,58 +234,21 @@
 		}
 	}
 
-	run(() => {
-		if (multiple) updateCheckbox(group, indeterminate);
-	});
-	run(() => {
-		if (multiple) updateGroup(checked, indeterminate);
-	});
-	run(() => {
-		if (!multiple) updateRadio(group);
-	});
-	run(() => {
-		if (!multiple) updateRadioGroup(checked);
-	});
-	run(() => {
-		if (!multiple && group !== undefined && childrenProp) {
-			if (group !== value) {
-				childrenProp.forEach((child) => {
-					if (child) child.group = '';
-				});
-			}
-		}
-	});
+	const cBase = 'space-y-1';
+	const cSummary = 'list-none [&::-webkit-details-marker]:hidden items-center cursor-pointer flex';
+	const cSymbol = 'fill-current w-3 text-center transition-transform duration-[200ms]';
+	const cChildren = 'space-y-1';
+	const cDisabled = 'opacity-50 !cursor-not-allowed';
 
-	$effect(() => onToggle(open));
-	run(() => {
-		childrenProp?.forEach((child) => {
-			if (child)
-				mount(RecursiveTreeViewItem, {
-					target: treeItem,
-					events: { childChange: () => onChildValueChange() }
-				});
-		});
-	});
-
-	export {
-		mappingInference,
-		spacing,
-		multiple,
-		disabled,
-		padding,
-		indent,
-		hover,
-		rounded,
-		caretOpen,
-		caretClosed,
-		hyphenOpacity,
-		regionSummary,
-		regionSymbol,
-		regionChildren,
-		hideLead,
-		hideChildren,
-		classProp
-	};
+	$: classesCaretState = open && $$slots.children && !hideChildren ? caretOpen : caretClosed;
+	$: classesDisabled = disabled ? cDisabled : '';
+	export let classProp = ''; // Replacing $$props.class
+	$: classesBase = `${cBase} ${classProp}`;
+	$: classesSummary = `${cSummary} ${classesDisabled} ${spacing} ${rounded} ${padding} ${hover} ${regionSummary}`;
+	$: classesSymbol = `${cSymbol} ${classesCaret} ${regionSymbol}`;
+	$: classesCaret = `${classesCaretState}`;
+	$: classesHyphen = `${hyphenOpacity}`;
+	$: classesChildren = `${cChildren} ${indent} ${regionChildren}`;
 </script>
 
 <details
@@ -341,13 +262,13 @@
 		class="tree-item-summary {classesSummary}"
 		role="treeitem"
 		aria-selected={selection ? checked : undefined}
-		aria-expanded={childrenProp ? open : undefined}
-		onclick={onSummaryClick}
-		onkeydown={onKeyDown}
+		aria-expanded={$$slots.children ? open : undefined}
+		on:click={onSummaryClick}
+		on:keydown={onKeyDown}
 	>
 		<!-- Symbol -->
 		<div class="tree-summary-symbol {classesSymbol}">
-			{#if (childrenProp && !hideChildren) || alwaysDisplayCaret}
+			{#if $$slots.children && !hideChildren}
 				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 					<path
 						d="M201.4 374.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 306.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
@@ -372,7 +293,7 @@
 					{value}
 					bind:checked
 					bind:indeterminate
-					onchange={onParentChange}
+					on:change={onParentChange}
 				/>
 			{:else}
 				<input class="radio tree-item-radio" type="radio" bind:group {name} {value} />
@@ -381,21 +302,21 @@
 
 		<!-- Slot: Content -->
 		<div class="tree-item-content w-full" data-testid="tree-item-content">
-			{@render children?.()}
+			<slot />
 		</div>
 
 		<!-- Slot: Lead -->
-		{#if lead && !hideLead}
+		{#if $$slots.lead && !hideLead}
 			<div class="tree-item-lead flex flex-row items-center space-x-2" data-testid="tree-item-lead">
 				{#if mappingInference}
-					<i class="fa-solid fa-diagram-project"></i>
+					<i class="fa-solid fa-diagram-project" />
 				{/if}
-				{@render lead?.()}
+				<slot name="lead" />
 			</div>
 		{/if}
 	</summary>
 
 	<div bind:this={childrenDiv} class="tree-item-children {classesChildren}" role="group">
-		{@render childrenSlot?.()}
+		<slot name="children" />
 	</div>
 </details>

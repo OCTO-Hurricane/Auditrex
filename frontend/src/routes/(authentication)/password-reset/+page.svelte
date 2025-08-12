@@ -4,15 +4,11 @@
 	import TextField from '$lib/components/Forms/TextField.svelte';
 	import SuperForm from '$lib/components/Forms/Form.svelte';
 
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 	import { zod } from 'sveltekit-superforms/adapters';
 	import Logo from '$lib/components/Logo/Logo.svelte';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 </script>
 
 <div class="flex mx-auto justify-center items-center h-screen w-screen bg-slate-200">
@@ -25,7 +21,7 @@
 		<div class="lg:w-1/4 p-6 shadow-lg rounded-lg bg-white">
 			<div id="password_reset" class="flex flex-col items-center space-y-4">
 				<div class="bg-primary-300 px-6 py-5 rounded-full text-3xl">
-					<i class="fa-solid fa-lock"></i>
+					<i class="fa-solid fa-lock" />
 				</div>
 				<h3 class="font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
 					{m.forgtPassword()}
@@ -39,25 +35,24 @@
 						class="flex flex-col space-y-3"
 						data={data?.form}
 						dataType="form"
+						let:form
 						validators={zod(emailSchema)}
 					>
-						{#snippet children({ form })}
-							<TextField type="email" {form} field="email" label={m.email()} />
-							<p class="pt-3">
-								<button
-									class="btn preset-filled-primary-500 font-semibold w-full"
-									data-testid="send-btn"
-									type="submit">{m.send()}</button
-								>
-							</p>
-						{/snippet}
+						<TextField type="email" {form} field="email" label={m.email()} />
+						<p class="pt-3">
+							<button
+								class="btn variant-filled-primary font-semibold w-full"
+								data-testid="send-btn"
+								type="submit">{m.send()}</button
+							>
+						</p>
 					</SuperForm>
 				</div>
 				<a
 					href="/login"
 					class="flex items-center space-x-2 text-primary-800 hover:text-primary-600"
 				>
-					<i class="fa-solid fa-arrow-left"></i>
+					<i class="fa-solid fa-arrow-left" />
 					<p class="">{m.goBackToLogin()}</p>
 				</a>
 			</div>

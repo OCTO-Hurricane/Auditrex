@@ -14,8 +14,6 @@
 	"urdu": "उर्दू",
 	"czech": "चेक",
 	"swedish": "स्वीडिश",
-	"indonesian": "इन्डोनेशियाई",
-	"danish": "डेनिश",
 	"addThreat": "खतरा जोड़ें",
 	"addVulnerability": "भेद्यता जोड़ें",
 	"addReferenceControl": "संदर्भ नियंत्रण जोड़ें",
@@ -38,8 +36,6 @@
 	"associatedRiskScenarios": "संबंधित जोखिम परिदृश्य",
 	"associatedRiskAcceptances": "संबंधित जोखिम स्वीकृतियाँ",
 	"associatedComplianceAssessments": "संबंधित ऑडिट",
-	"associatedRequirementAssessments": "संबद्ध आवश्यकताएँ",
-	"associatedVulnerabilities": "संबंधित कमज़ोरियाँ",
 	"associatedEvidences": "संबंधित साक्ष्य",
 	"associatedDomains": "संबंधित डोमेन",
 	"associatedPerimeters": "संबंधित परिधि",
@@ -64,8 +60,6 @@
 	"referenceControls": "संदर्भ नियंत्रण",
 	"referenceControlsColon": "संदर्भ नियंत्रण:",
 	"appliedControls": "लागू किए गए नियंत्रण",
-	"existingAppliedControls": "मौजूदा नियंत्रण",
-	"extraAppliedControls": "अतिरिक्त नियंत्रण",
 	"assets": "संपत्तियाँ",
 	"asset": "संपत्ति",
 	"policy": "नीति",
@@ -115,7 +109,6 @@
 	"provider": "प्रदाता",
 	"providerColon": "प्रदाता:",
 	"domain": "डोमेन",
-	"domainSemiColon": "डोमेन:",
 	"urn": "URN",
 	"treatmentStatus": "उपचार स्थिति",
 	"qualification": "योग्यता",
@@ -151,7 +144,6 @@
 	"acceptedAt": "स्वीकृत",
 	"rejectedAt": "अस्वीकृत",
 	"revokedAt": "रद्द",
-	"created": "बनाया था",
 	"submitted": "प्रस्तुत किया गया",
 	"rejected": "अस्वीकृत",
 	"revoked": "रद्द",
@@ -162,7 +154,6 @@
 	"typicalEvidence": "सामान्य साक्ष्य",
 	"parentAsset": "अभिभावक संपत्ति",
 	"parentAssets": "अभिभावक संपत्तियाँ",
-	"childrenAssets": "अंतर्निहित परिसंपत्तियां",
 	"approver": "स्वीकर्ता",
 	"state": "स्थिति",
 	"justification": "औचित्य",
@@ -274,6 +265,7 @@
 	"cancel": "रद्द करें",
 	"save": "सहेजें",
 	"assetsImpactedByTheRiskScenario": "जोखिम परिदृश्य द्वारा प्रभावित संपत्तियाँ",
+	"ecistingMeasures": "मौजूदा नियंत्रण",
 	"theExistingAppliedControlsToManageThisRisk": "इस जोखिम को प्रबंधित करने के लिए मौजूदा लागू नियंत्रण",
 	"currentRiskLevelGivenCurrentMeasures": "वर्तमान लागू नियंत्रणों के अनुसार वर्तमान जोखिम स्तर",
 	"riskLevelWhenAllExtraMeasuresDone": "सभी अतिरिक्त उपाय किए जाने पर जोखिम स्तर",
@@ -436,7 +428,7 @@
 	"etaHelpText": "आगमन का अनुमानित समय",
 	"dueDateHelpText": "जिस तिथि तक आकलन पूरा करना है",
 	"expiryDateHelpText": "जिस तिथि तक वस्तु मान्य नहीं होगी",
-	"linkHelpText": "ट्रैकिंग या संदर्भ के लिए बाहरी URL (जैसे शेयरपॉइंट, जीरा, आदि)",
+	"linkHelpText": "कार्रवाई फॉलो-अप के लिए बाहरी यूआरएल (उदा. जिरा टिकट)",
 	"effortHelpText": "लागू किए गए नियंत्रण को लागू करने के लिए आवश्यक प्रयास",
 	"costHelpText": "लागू नियंत्रण को लागू करने के लिए आवश्यक लागत",
 	"riskAcceptanceJusitficationHelpText": "जोखिम स्वीकृति के लिए औचित्य। केवल स्वीकर्ता ही इस फ़ील्ड को संपादित कर सकता है।",
@@ -450,6 +442,7 @@
 	"yourStreamlined": "आपका सुव्यवस्थित",
 	"oneStopShop": "एक-स्टॉप शॉप",
 	"forComplianceRiskManagement": "अनुपालन और जोखिम प्रबंधन के लिए।",
+	"youCanSetPAsswordHere": "आप यहाँ अपना पासवर्ड सेट कर सकते हैं",
 	"setPassword": "पासवर्ड सेट करें",
 	"logIntoYourAccount": "अपने खाते में लॉग इन करें",
 	"youNeedToLogIn": "आपको सभी सुविधाओं तक पहुँच प्राप्त करने के लिए लॉग इन करना होगा",
@@ -717,7 +710,7 @@
 	"addRepresentative": "प्रतिनिधि जोड़ें",
 	"phone": "फ़ोन",
 	"role": "भूमिका",
-	"questions": "सवाल",
+	"question": "सवाल",
 	"recipientEntity": "प्राप्तकर्ता इकाई",
 	"financial": "वित्तीय",
 	"legal": "कानूनी",
@@ -772,7 +765,6 @@
 	"licenseExpiredMessage": "आपका लाइसेंस समाप्त हो गया है। लिखने के कार्य अक्षम हैं। कृपया इसे नवीनीकृत करने के लिए अपने व्यवस्थापक से संपर्क करें।",
 	"experimental": "प्रयोगात्मक",
 	"timeline": "समय",
-	"timelineEntries": "समय",
 	"graph": "ग्राफ़",
 	"startDate": "आरंभ करने की तिथि",
 	"startDateHelpText": "आरंभ तिथि (समयरेखा के लिए उपयोगी)",
@@ -872,61 +864,8 @@
 	"mappingInferenceHelpText": "ये चर निश्चित हैं और स्रोत के आधार पर परिवर्तित नहीं होंगे।",
 	"bringTheEvidences": "सबूत लाओ",
 	"bringTheEvidencesHelpText": "यदि अक्षम किया गया है, तो ऑब्जेक्ट को उसके साक्ष्य के बिना डुप्लिकेट किया जाएगा",
-	"publicationDate": "प्रकाशन की तिथि",
 	"documentationScore": "दस्तावेज़ीकरण स्कोर",
 	"useDocumentationScore": "दस्तावेज़ स्कोर का उपयोग करें",
 	"useDocumentationScoreHelpText": "आवश्यकताओं का आकलन करने के लिए दूसरी रेटिंग (दस्तावेज़ीकरण स्कोर) उपलब्ध होगी।",
-	"finding": "खोज",
-	"findings": "खोजें",
-	"associatedFindings": "संबद्ध खोजें",
-	"findings_count": "खोजों की संख्या",
-	"addFinding": "खोज जोड़ें",
-	"failedToContactProvider": "प्रदाता से संपर्क करने में विफल",
-	"userIsNotSSO": "आपके खाते के लिए SSO लॉगिन वर्तमान में अक्षम है।",
-	"enableSSOHelpText": "सभी उपयोगकर्ताओं के लिए SSO को लॉगिन विकल्प के रूप में सक्षम करें।",
-	"keepLocalLogin": "मजबूर SSO से बाहर रखें",
-	"keepLocalLoginHelpText": "जब वैश्विक 'मजबूर SSO' सक्षम होता है, तो यह उपयोगकर्ता को इसे बायपास करने और आवश्यकता होने पर स्थानीय रूप से प्रबंधित पासवर्ड का उपयोग करके लॉगिन करने की अनुमति देता है।",
-	"forceSSOLogin": "SSO लॉगिन को मजबूर करें",
-	"forceSSOLoginHelpText": "सभी उपयोगकर्ताओं के लिए SSO की आवश्यकता होती है और किसी भी सहेजे गए पासवर्ड को रीसेट करता है। जिन उपयोगकर्ताओं के लिए 'मजबूर SSO से बाहर रखें' सक्षम है, वे पासवर्ड-आधारित बैकअप एक्सेस बनाए रखेंगे।",
-	"forceSSOLoginHelpText2": "इस विकल्प को सक्षम करने से पहले सुनिश्चित करें कि आपका SSO कार्यात्मक है या आपके पास एक बैकअप खाता है।",
-	"youCanSetPasswordHere": "आप यहाँ अपना पासवर्ड सेट कर सकते हैं",
-	"taskScheduleWarning": "नए अनुसूची का हिस्सा न होने वाले किसी भी कार्य को स्थायी रूप से हटा दिया जाएगा।",
-	"mappingSuggested": "मैपिंग सुझाई गई",
-	"mappingSuggestedHelpText": "लोड किए गए फ्रेमवर्कों के आधार पर मैपिंग सुझाव",
-	"mappingSuggestionTeasing": "अब मैपिंग सुझाई जाती है! आप लोड किए गए फ्रेमवर्कों के आधार पर सुझावों को खोजने के लिए फ़िल्टर का उपयोग कर सकते हैं।",
-	"associatedFindingsAssessments": "संबद्ध फॉलो-अप",
-	"hourCount": [
-		{
-			"declarations": ["input count", "local countPlural = count: plural"],
-			"selectors": ["count", "countPlural"],
-			"match": {
-				"countPlural=one": "{count} घंटा",
-				"countPlural=other": "{count} घंटे"
-			}
-		}
-	],
-	"minuteCount": [
-		{
-			"declarations": ["input count", "local countPlural = count: plural"],
-			"selectors": ["countPlural"],
-			"match": {
-				"countPlural=one": "{count} मिनट",
-				"countPlural=other": "{count} मिनट"
-			}
-		}
-	],
-	"dayCount": [
-		{
-			"declarations": ["input count", "local countPlural = count: plural"],
-			"selectors": ["countPlural"],
-			"match": {
-				"countPlural=one": "{count} दिन",
-				"countPlural=other": "{count} दिन"
-			}
-		}
-	],
-	"matchingScenarios": "मैचिंग परिदृश्य",
-	"select": "चुनें",
-	"deselect": "चयन रद्द करें",
-	"fearedEventAssetHelpText": "डरने वाले घटनाएँ आमतौर पर व्यवसाय मूल्यों (प्राथमिक संपत्तियों) से जुड़ी होती हैं। लचीलापन के लिए यहाँ सहायक संपत्तियों की अनुमति है।"
+	"publicationDate": "प्रकाशन की तिथि"
 }

@@ -1,24 +1,16 @@
 <script lang="ts">
-	import { run } from 'svelte/legacy';
-
 	import { createEventDispatcher } from 'svelte';
 	import { safeTranslate } from '$lib/utils/i18n';
 
-	interface Props {
-		text: string;
-		id: string;
-		choices: (string | null)[];
-		disabled?: boolean;
-	}
-
-	let { text, id, choices, disabled = false }: Props = $props();
+	export let text: string;
+	export let id: string;
+	export let choices: (string | null)[];
+	export let disabled = false;
 
 	const dispatch = createEventDispatcher();
 
-	let value = $state(0);
-	run(() => {
-		dispatch('change', value);
-	});
+	let value = 0;
+	$: dispatch('change', value);
 </script>
 
 <div>{safeTranslate(text)}</div>

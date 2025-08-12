@@ -4,23 +4,13 @@
 	import TextField from '$lib/components/Forms/TextField.svelte';
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { ModelInfo, CacheLock } from '$lib/utils/types';
-	import { m } from '$paraglide/messages';
+	import * as m from '$paraglide/messages.js';
 
-	interface Props {
-		form: SuperValidated<any>;
-		model: ModelInfo;
-		cacheLocks?: Record<string, CacheLock>;
-		formDataCache?: Record<string, any>;
-		initialData?: Record<string, any>;
-	}
-
-	let {
-		form,
-		model,
-		cacheLocks = {},
-		formDataCache = $bindable({}),
-		initialData = {}
-	}: Props = $props();
+	export let form: SuperValidated<any>;
+	export let model: ModelInfo;
+	export let cacheLocks: Record<string, CacheLock> = {};
+	export let formDataCache: Record<string, any> = {};
+	export let initialData: Record<string, any> = {};
 </script>
 
 <AutocompleteSelect
@@ -44,27 +34,17 @@
 
 <Select
 	{form}
-	options={model.selectOptions['severity']}
+	options={[
+		{ label: '--', value: -1 },
+		{ label: m.low(), value: 0 },
+		{ label: m.medium(), value: 1 },
+		{ label: m.high(), value: 2 },
+		{ label: m.critical(), value: 3 }
+	]}
 	field="severity"
 	label={m.severity()}
 	cacheLock={cacheLocks['severity']}
 	bind:cachedValue={formDataCache['severity']}
-/>
-<AutocompleteSelect
-	multiple
-	{form}
-	optionsEndpoint="assets"
-	optionsExtraFields={[['folder', 'str']]}
-	optionsInfoFields={{
-		fields: [
-			{
-				field: 'type'
-			}
-		],
-		classes: 'text-blue-500'
-	}}
-	field="assets"
-	label={m.assets()}
 />
 <AutocompleteSelect
 	multiple
@@ -96,7 +76,6 @@
 	{form}
 	createFromSelection={true}
 	optionsEndpoint="filtering-labels"
-	translateOptions={false}
 	optionsLabelField="label"
 	field="filtering_labels"
 	helpText={m.labelsHelpText()}

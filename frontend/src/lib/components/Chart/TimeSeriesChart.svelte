@@ -1,14 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	interface Props {
-		width?: string;
-		height?: string;
-		classesContainer?: string;
-		name?: string;
-	}
-
-	let { width = 'w-auto', height = 'h-full', classesContainer = '', name = '' }: Props = $props();
+	export let width = 'w-auto';
+	export let height = 'h-full';
+	export let classesContainer = '';
+	export let name = '';
 	const chart_id = `${name}_div`;
 	onMount(async () => {
 		const echarts = await import('echarts');
@@ -81,4 +77,4 @@
 	id={chart_id}
 	class="{height} {width} {classesContainer}"
 	style="width: 400px; height:400px;"
-></div>
+/>

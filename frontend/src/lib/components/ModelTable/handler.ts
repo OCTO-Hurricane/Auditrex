@@ -1,5 +1,6 @@
-import { getListViewFields, tableSourceMapper } from '$lib/utils/table';
+import { listViewFields } from '$lib/utils/table';
 import type { urlModel } from '$lib/utils/types';
+import { tableSourceMapper } from '@skeletonlabs/skeleton';
 import type { State } from '@vincjo/datatables/remote';
 import type { TableSource } from './types';
 
@@ -7,17 +8,10 @@ export interface LoadTableDataParams {
 	state: State;
 	URLModel: urlModel;
 	endpoint: string;
-	fields?: { head: string[]; body: string[] };
-	featureFlags?: Record<string, boolean>;
+	fields?: string[];
 }
 
-export const loadTableData = async ({
-	state,
-	URLModel,
-	endpoint,
-	fields,
-	featureFlags = {}
-}: LoadTableDataParams) => {
+export const loadTableData = async ({ state, URLModel, endpoint, fields }: LoadTableDataParams) => {
 	const url = new URL(endpoint, window.location.origin);
 	const params = new URLSearchParams(url.search);
 	const newParams = getParams(state);
@@ -28,17 +22,10 @@ export const loadTableData = async ({
 	const response = await fetch(url.toString()).then((res) => res.json());
 	state.setTotalRows(response.count);
 
-	const baseFields = getListViewFields({ key: URLModel, featureFlags });
-
 	const fieldsToUse =
-		fields?.head && fields.head.length > 0 && fields.head.toString() !== baseFields.head.toString()
-			? {
-					...baseFields,
-					head: fields.head,
-					body: fields.body.length > 0 ? fields.body : fields.head
-				}
-			: baseFields;
-
+		fields.length > 0
+			? { ...listViewFields[URLModel as urlModel], head: fields, body: fields }
+			: listViewFields[URLModel as urlModel];
 	const bodyData = tableSourceMapper(response.results, fieldsToUse.body);
 
 	const headData: Record<string, string> = fieldsToUse.body.reduce((obj, key, index) => {

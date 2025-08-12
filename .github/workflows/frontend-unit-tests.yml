@@ -1,6 +1,4 @@
-name: Unit tests on CISO Assistant frontend
-permissions:
-  contents: read
+name: Unit tests on Auditrex frontend
 
 on:
   push:

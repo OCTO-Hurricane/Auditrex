@@ -369,8 +369,8 @@ msgid "user groups"
 msgstr ""
 
 #: iam/models.py:299
-msgid "Welcome to Ciso Assistant!"
-msgstr "Bienvenue sur CISO Assistant !"
+msgid "Welcome to Auditrex!"
+msgstr "Bienvenue sur Auditrex !"
 
 #: iam/models.py:346
 msgid "last name"
@@ -475,8 +475,8 @@ msgid "Key"
 msgstr ""
 
 #: iam/views.py:128
-msgid "CISO Assistant: Password Reset"
-msgstr "CISO Assistant : réinitialisation de mot de passe"
+msgid "Auditrex: Password Reset"
+msgstr "Auditrex : réinitialisation de mot de passe"
 
 #: tprm/models.py:20
 msgid "Owned folders"
@@ -558,5 +558,5 @@ msgstr ""
 msgid "Framework required"
 msgstr ""
 
-#~ msgid "CISO Assistant: A questionnaire has been assigned to you"
-#~ msgstr "CISO Assistant: Un questionnaire vous a été assigné"
+#~ msgid "Auditrex: A questionnaire has been assigned to you"
+#~ msgstr "Auditrex: Un questionnaire vous a été assigné"

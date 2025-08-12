@@ -1,16 +1,12 @@
 <script lang="ts">
 	import type { DataHandler } from '@vincjo/datatables/remote';
-	import { m } from '$paraglide/messages';
-	interface Props {
-		handler: DataHandler;
-	}
-
-	let { handler }: Props = $props();
+	import * as m from '$paraglide/messages';
+	export let handler: DataHandler;
 	const rowCount = handler.getRowCount();
 </script>
 
 {#if $rowCount === undefined}
-	<div></div>
+	<div />
 {:else}
 	<aside class="text-sm" data-testid="row-count">
 		{#if $rowCount?.total > 0}

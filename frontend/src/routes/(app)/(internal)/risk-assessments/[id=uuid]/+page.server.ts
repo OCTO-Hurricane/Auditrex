@@ -2,7 +2,7 @@ import { BASE_API_URL } from '$lib/utils/constants';
 import { urlParamModelVerboseName } from '$lib/utils/crud';
 import { safeTranslate } from '$lib/utils/i18n';
 
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
 
 import {
 	handleErrorResponse,

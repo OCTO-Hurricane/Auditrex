@@ -1,4 +1,4 @@
-# CISO Assistant Data Model
+# Auditrex Data Model
 
 ## Entity-relationship diagram
 
@@ -22,7 +22,7 @@ erDiagram
 
     USER {
         string  email
-        boolean keep_local_login
+        boolean is_sso
     }
 
     USER_GROUP {
@@ -71,8 +71,6 @@ erDiagram
     ROOT_FOLDER_OR_DOMAIN ||--o{ VULNERABILITY               : contains
     ROOT_FOLDER_OR_DOMAIN ||--o{ COMPLIANCE_ASSESSMENT       : contains
     ROOT_FOLDER_OR_DOMAIN ||--o{ RISK_ASSESSMENT             : contains
-    ROOT_FOLDER_OR_DOMAIN ||--o{ INCIDENT                    : contains
-    ROOT_FOLDER_OR_DOMAIN ||--o{ TIMELINE_ENTRY              : contains
 
     DOMAIN {
         string ref_id
@@ -92,7 +90,7 @@ erDiagram
     LOADED_LIBRARY      |o--o{ THREAT                   : contains
     LOADED_LIBRARY      ||--o{ FRAMEWORK                : contains
     LOADED_LIBRARY      ||--o{ RISK_MATRIX              : contains
-    LOADED_LIBRARY      ||--o{ REQUIREMENT_MAPPING_SET : contains
+    LOADED_LIBRARY      ||--o{ REQUIREMMENT_MAPPING_SET : contains
     LOADED_LIBRARY2     }o--o{ LOADED_LIBRARY           : depends_on
 
 ```
@@ -127,7 +125,6 @@ erDiagram
     COMPLIANCE_ASSESSMENT        }o--|| FRAMEWORK             : is_based_on
     COMPLIANCE_ASSESSMENT        ||--o{ REQUIREMENT_ASSESSMENT: contains
     COMPLIANCE_ASSESSMENT        }o--o{ ASSET                 : relates_to
-    COMPLIANCE_ASSESSMENT        }o--o{ EVIDENCE              : contains
     APPLIED_CONTROL              }o--o{ EVIDENCE              : is_proved_by
     FRAMEWORK                    ||--o{ REQUIREMENT_NODE      : contains
     REQUIREMENT_ASSESSMENT       }o--|| REQUIREMENT_NODE      : implements
@@ -148,7 +145,6 @@ erDiagram
     USER                         }o--o{ RISK_SCENARIO         : owns
     USER                         }o--o{ APPLIED_CONTROL       : owns
     USER                         }o--o{ ASSET                 : owns
-    USER                         }o--o{ INCIDENT              : owns
     ASSET                        ||--o{ SECURITY_OBJECTIVE    : has
     SECURITY_OBJECTIVE           }o--|| QUALIFICATION         : implements
     PERIMETER                    |o--o{ COMPLIANCE_ASSESSMENT : contains
@@ -166,11 +162,6 @@ erDiagram
     FINDING                      }o--o{ REFERENCE_CONTROL     : is_mitigated_by
     FINDING                      }o--o{ APPLIED_CONTROL       : is_mitigated_by
     USER                         }o--o{ FINDING               : owns
-    INCIDENT                     ||--o{ TIMELINE_ENTRY        : contains
-    INCIDENT                     }o--o{ ASSET                 : impacts
-    INCIDENT                     }o--o{ THREATS               : relates
-    INCIDENT                     }o--|| QUALIFICATION         : impacts
-
 
     FRAMEWORK {
         string  urn
@@ -433,22 +424,6 @@ erDiagram
         string status
     }
 
-    INCIDENT {
-        string ref_id
-        string name
-        string description
-        int    severity
-        string status
-    }
-
-    TIMELINE_ENTRY {
-        string   entry
-        string   entry_type
-        string   observation
-        datetime timestamp
-    }
-
-
 ```
 
 ### Requirement mappings
@@ -527,7 +502,7 @@ Note: perimeters were previously named "projects", but this was misleading.
 
 ### Project objects
 
-Project objects are defined by the entity using CISO Assistant. Assessments can be attached to a project object, though this is optional. Project objects are organized hierarchically, each project object can have a parent, but loops are not allowed.
+Project objects are defined by the entity using Auditrex. Assessments can be attached to a project object, though this is optional. Project objects are organized hierarchically, each project object can have a parent, but loops are not allowed.
 
 Projects objects have the following fields:
 
@@ -585,7 +560,7 @@ Note: the order can be changed in a translation. This makes easy to transform CI
 
 ## Assets, security and disaster recovery objectives
 
-Assets are context objects defined by the entity using CISO Assistant. They are optional, assessments can be done without using them.
+Assets are context objects defined by the entity using Auditrex. They are optional, assessments can be done without using them.
 
 Assets are of type primary or supporting. A primary asset has no parent, a supporting asset can have parent assets (primary or supporting), but not itself.
 
@@ -603,11 +578,9 @@ Security objectives are measured using a specifc scale. For now, the following s
 
 - 0-3: coded as 0-3
 - 1-4: coded as 0-3
-- 0-4: coded as 0-4
-- 1-5: coded as 0-4
 - FIPS-199: coded as 0-3
 
-There is a correspondance between the 0-3, 1-4, 0,4, 1-5 and FIPS-199 scales (called "discrete scales"):
+There is a correspondance between the 0-3, 1-4 and FIPS-199 scales (called "discrete scales"):
 
 | scale    | internal value | scale value |
 | -------- | -------------- | ----------- |
@@ -615,33 +588,20 @@ There is a correspondance between the 0-3, 1-4, 0,4, 1-5 and FIPS-199 scales (ca
 | 0-3      | 1              | 1           |
 | 0-3      | 2              | 2           |
 | 0-3      | 3              | 3           |
-| 0-3      | 4              | 3           |
 | 1-4      | 0              | 1           |
 | 1-4      | 1              | 2           |
 | 1-4      | 2              | 3           |
 | 1-4      | 3              | 4           |
-| 1-4      | 4              | 4           |
 | FIPS-199 | 0              | low         |
 | FIPS-199 | 1              | moderate    |
 | FIPS-199 | 2              | moderate    |
 | FIPS-199 | 3              | high        |
-| FIPS-199 | 4              | high        |
-| 0-4      | 0              | 0           |
-| 0-4      | 1              | 1           |
-| 0-4      | 2              | 2           |
-| 0-4      | 3              | 3           |
-| 0-4      | 4              | 4           |
-| 1-5      | 0              | 1           |
-| 1-5      | 1              | 2           |
-| 1-5      | 2              | 3           |
-| 1-5      | 3              | 4           |
-| 1-5      | 4              | 5           |
 
 THe scale to use is a global parameter. It has no impact on the encoding in the database, which always uses the internal value.
 
 ## Frameworks
 
-The fundamental object of CISO Assistant for compliance is the framework. It corresponds to a given standard, e.g. ISO27001:2013. It mainly contains requirements nodes. A requirement node can be assessable or not (e.g. title or informational elements are not assessable). Assessable requirement nodes can be simply called "requirements".
+The fundamental object of Auditrex for compliance is the framework. It corresponds to a given standard, e.g. ISO27001:2013. It mainly contains requirements nodes. A requirement node can be assessable or not (e.g. title or informational elements are not assessable). Assessable requirement nodes can be simply called "requirements".
 The structure (tree) of requirements is defined by the requirement node objects. The _parent_urn_ of a requirement node can either be the URN of another requirement node or null for top-level objects. This allows to simply define the structure of a framework. An assessable requirement node can be the child of another assessable requirement node, which is very convenient for frameworks that have lists of conditions attached to a requirement.
 
 The implementation_groups field contains a comma-separated list of implementation groups where the requirement node is found, when this is relevant (e.g. for CMMC or CIS). Implementation groups are identified by their ref_id string. Implementation groups are independent, a requirement can be member of any implementation group. Implementation groups are defined in the implementation_groups_definition json field (None by default), that contains a list of objects containing the following fields (example for CMMC):
@@ -654,7 +614,7 @@ The implementation_groups field contains a comma-separated list of implementatio
 }
 ```
 
-A requirement node can be covered by typical reference controls. A requirement node can cover typical threats. This information is provided in the form of optional links between requirement nodes and reference controls/threats. This is only informative, but is an important added value of CISO Assistant.
+A requirement node can be covered by typical reference controls. A requirement node can cover typical threats. This information is provided in the form of optional links between requirement nodes and reference controls/threats. This is only informative, but is an important added value of Auditrex.
 
 The order_id variable allows to sort the requirements nodes, it starts at 0 and is incremented automatically in a given group at import.
 
@@ -904,28 +864,6 @@ Security exceptions are located in the governance menu.
 
 The performance of the UX shall be optimized, by avoiding to preload all possible targets for the security exception.
 
-## Incidents
-
-Significant security incidents can be traced in CISO Assistant. An incident object has the following fields:
-- ref_id/name/description
-- qualifications
-- severity (like security exceptions)
-- status: new/in progress/solved/closed/rejected
-
-Incidents can be linked to threats, assets, owners.
-
-Incidents contain a table of timeline_entry objects.
-
-Timeline_entry objects have the following fields:
-- entry (a string to describe the entry)
-- entry_type within detection/mitigation/observation/status_changed/severity_changed
-- observation
-- timestamp (we can report an event that has occured in the past)
-
-status_changed and severity_changed entries are automatically generated.
-
-Entry type cannot be updated.
-
 ## Libraries
 
 Libraries can contain:
@@ -951,7 +889,7 @@ Libraries have an integer version that completes the URN. The highest version fo
 
 Libraries have a provider (which entity produced the original content), and a packager (which entity did the library). Objects in the library inherit their provider from the library's.
 
-Libraries can depend on other libraries, thanks to the "dependencies" section, that contains a list of URNs. When loading a library, CISO Assistant first loads the dependent libraries. If a dependency is missing, the loading is cancelled.
+Libraries can depend on other libraries, thanks to the "dependencies" section, that contains a list of URNs. When loading a library, Auditrex first loads the dependent libraries. If a dependency is missing, the loading is cancelled.
 
 When a library is loaded, this loading is stored in the database, and the corresponding objects keep a link to the library. This allows removing all objects from a library in a single action.
 
@@ -987,7 +925,7 @@ Framework and risk matrix objects can only come from a library.
 
 The URN allows in particular having a threat or reference control used in several frameworks.
 
-It is possible to mix global and local referential objects. For example, a client can use threats coming from the MITRE referential and also define custom threats directly in CISO Assistant.
+It is possible to mix global and local referential objects. For example, a client can use threats coming from the MITRE referential and also define custom threats directly in Auditrex.
 
 Note: links to URN occur only in libraries, links in the database shall always use the UUID of the object.
 
@@ -1051,7 +989,7 @@ Note: generated documents (pdf, excel, word) are currently translated in the bac
 
 ## Access control model
 
-All objects in CISO Assistant follow a simple and consistent RBAC IAM model, including IAM objects themselves.
+All objects in Auditrex follow a simple and consistent RBAC IAM model, including IAM objects themselves.
 
 ### Granularity
 
@@ -1077,7 +1015,7 @@ Practically, the perimeter is either:
 
 ### Folder organization
 
-For Access Control purpose, CISO Assistant data is organized in a tree of folders, starting from a root folder. The organization of the tree is not hardcoded, it is entirely determined by configuration. Any object in CISO Assistant is attached to a folder (including folders), either directly or indirectly through a parent object that is attached to a folder. The root folder is attached to None.
+For Access Control purpose, Auditrex data is organized in a tree of folders, starting from a root folder. The organization of the tree is not hardcoded, it is entirely determined by configuration. Any object in Auditrex is attached to a folder (including folders), either directly or indirectly through a parent object that is attached to a folder. The root folder is attached to None.
 
 A folder contains the following attributes:
 
@@ -1122,7 +1060,7 @@ Role assignements are described as a table containing the following attributes:
 - folders: list of folders that form the perimeter of the assignment.
 - is_recursive: a boolean indicating if the perimeter includes the subfolders
 
-This table is the golden source of all access management in CISO Assistant, no additional information is necessary to know who has access to what.
+This table is the golden source of all access management in Auditrex, no additional information is necessary to know who has access to what.
 
 ### Published global objects
 
@@ -1130,23 +1068,16 @@ All objects have a boolean attribute is_published, that specifies if the object 
 
 ### Built-in objects
 
-Built-in objects are predefined in CISO Assistant. They can be viewed following the general IAM model, but they cannot be deleted nor changed. A built-in object is characterized by the "builtin=True" attribute.
+Built-in objects are predefined in Auditrex. They can be viewed following the general IAM model, but they cannot be deleted nor changed. A built-in object is characterized by the "builtin=True" attribute.
 Types that can be built-in are: folders, roles, role assignments and groups.
 
 Names of built-in objects can be internationalized.
 
 ## SSO
 
-Global SSO settings for the instance are defined in a dedicated object SSO_SETTINGS.
+A user can be authenticated either locally or with SSO. A boolean is_sso indicates if the user is local or SSO.
 
-A user can be authenticated either locally or with SSO.
-
-When SSO is activated, all users can use SSO.
-
-When the force_sso global flag is set, all users without keep_local_login:
-- have their password disabled, 
-- cannot ask for a password reset,
-- cannot have their password changed by an administrator.
+SSO Settings are defined in a dedicated object SSO_SETTINGS.
 
 ## TPRM evolution
 
@@ -1159,13 +1090,13 @@ The goal of Third-Party Risk Management is to manage the risk incurred by a prov
 The following approach has been retained:
 
 - An "entity" model is added to modelize third parties in a generic way.
-- A third party is an entity that is provider of the entity representing the client using CISO Assistant.
+- A third party is an entity that is provider of the entity representing the client using Auditrex.
 - An evaluation of a third party is based on a compliance assessment, to leverage a huge amount of existing models and code.
 - This compliance assessment is done by the third party.
 - This compliance assessment is reviewed by the client, requirement by requirement.
 - An import/export functionality for compliance assessments shall be available to transmit a filled questionnaire from the third-party to the client.
 - Review features are added to compliance assessment to enable this workflow in a generic way.
-- A requirement node can include questions (which is a generic improvement, as many frameworks have questions), as a JSON form. This will correspond to a JSON answer in the corresponding requirement assessment.
+- A requirement node can include a question (which is a generic improvement, as many frameworks have questions), as a JSON form. This will correspond to a JSON answer in the corresponding requirement assessment.
 
 ### Entity-relationship diagram
 
@@ -1261,13 +1192,13 @@ erDiagram
 
 An entity represents a legal entity, a corporate body, an administrative body, an association. An entity can be:
 
-- the main subject for the current CISO Assistant instance ("main entity").
+- the main subject for the current Auditrex instance ("main entity").
 - a subisdiary of another entity.
 - a provider of another entity.
 - a threat actor.
 - ...
 
-An entity can own a domain. The entity that owns the global domain is the main subject for the current CISO Assistant instance.
+An entity can own a domain. The entity that owns the global domain is the main subject for the current Auditrex instance.
 
 An entity can provides a solution to another entity (see solution model). TPRM is done mainly for providers of the main entity, but nothing prevents doing an entity evaluation for any entity.
 
@@ -1305,22 +1236,22 @@ There is no link between representatives (modeling of the ecosystem) and users o
 
 - add field observation
 
-### Requirement assessment
+#### Requirement assessment
 
 - add the following fields:
-  - answers: a json corresponding to the answers of the requirement node questions.
+  - answer: a json corresponding to the optional question of the requirement node.
 
-### Compliance assessment
+#### Compliance assessment
 
 - add the following fields:
   - implementation_group_selector: a json describing a form that allows the selection of relevant implementation groups by answering simple questions.
 
-### Requirement node
+#### Requirement node
 
 - Add the following fields:
-  - questions: a json corresponding to the optional questions of the requirement node.
+  - question: a json field describing a form.
 
-### Applied control
+#### Applied control
 
 - Add a "contract" category
 - Add a foreign key "contract" to point to a contract
@@ -1331,46 +1262,16 @@ Note: in the future, we will use the same approach for policies.
 
 ### Question and answer format
 
-The format for questions and answers json fields will evolve over time. The initial format is the following:
+The format for question and answer json fields will evolve over time. The initial format is the following:
 
-- questions:
+- question:
 
 ```json
 {
-    "urn:intuitem:risk:req_node:example:a.1:question:1": {
-        "type": "unique_choice",
-        "choices": [
-            {
-                "urn": "urn:intuitem:risk:framework:example:answer01:choice:1",
-                "value": "yes"
-            },
-            {
-                "urn": "urn:intuitem:risk:framework:example:answer01:choice:2",
-                "value": "no"
-            },
-            {
-                "urn": "urn:intuitem:risk:framework:example:answer01:choice:3",
-                "value": "n/a"
-            }
-        ],
-        "text": "Question title",
-    },
-    "urn:intuitem:risk:req_node:example:a.1:question:2": {
-    ...
+    "question": {
+        "version": 1
+        "schema": {...}
     }
-}
-```
-
-- answers:
-
-```json
-{
-    "urn:intuitem:risk:req_node:example:a.1:question:1": [
-        "urn:intuitem:risk:framework:example:answer01:choice:1",
-        "urn:intuitem:risk:framework:example:answer01:choice:2"
-    ],
-    "urn:intuitem:risk:req_node:example:a.1:question:2": "yes",
-    ...
 }
 ```
 
@@ -1389,11 +1290,23 @@ The objects manipulated by the third party (compliance assessment and evidences)
 - implementation_group_selector is not retained.
 - ebios-RM parameters are not retained.
 
+## Near-term evolutions
+
+We need to add in the near term the follwoing objects:
+
+- EBIOS-RM study
+- Audit campaign
+- Third-party campaign
+- Pentest follow-up
+- Incident follow-up
+
+Each of these objects will have its specific datamodel. Factoring will be done ad-hoc.
+
 ## EBIOS-RM evolution
 
 ### Mapping of essential concepts
 
-| EBIOS-RM (english)    | EBIOS-RM (french)         | CISO Assistant                                            |
+| EBIOS-RM (english)    | EBIOS-RM (french)         | Auditrex                                            |
 | --------------------- | ------------------------- | --------------------------------------------------------- |
 | Study                 | Etude                     | Study                                                     |
 | Studied object        | Objet de l'étude         | Description of the Study                                  |
@@ -1613,6 +1526,7 @@ erDiagram
 ### Implementation
 
 - EBIOS-RM objects are defined within a dedicated Django "application" ebios_rm.
+- There is no object for "strategic scenarios", as they result directly from attack paths and corresponding feared event (which is the title of the strategic scenario).
 - the current and residual "criticity" are calculated on stakeholders, so they are not seen as fields.
 
 ## Domain import/export
@@ -1628,7 +1542,7 @@ erDiagram
 - The export is a zip file containing a json dump of concerned objects and attached evidences.
 - The import is atomic, any error provokes a rollback.
 - The export function is only available in the PRO version.
-- The version of CISO Assistant is published in the export. The version at import shall be identical.
+- The version of Auditrex is published in the export. The version at import shall be identical.
 
 ### Additional features
 
@@ -1638,172 +1552,38 @@ erDiagram
 
 ## Findings assessments
 
-This new type of assessments is intended to gather and manage findings. The section is present in governance with the name "follow-up"/"Suivi".
+This new type of assessments is intended to gather and manage findinds. The section is present in governance with the name "follow-up"/"Suivi".
 
 A findings assessment has the following specific fields:
 - category: --/pentest/audit/internal
 
-A finding ("constat") has the following fields:
+A finding ("constat" has the following fields:
 - ref_id/name/description
 - severity, like for vulnerabilities
 - a status among: --/draft/Identified/Confirmed/Dismissed/Assigned/In Progress/Mitigated/Resolved/Deprecated
 
 A finding can have related reference controls, applied controls, vulnerabilities.
 
-## Tasks
+
+## Asset compliance (draft)
 
 ```mermaid
 erDiagram
 
-ROOT_FOLDER_OR_DOMAIN ||--o{ TASK_TEMPLATE         : contains
-ROOT_FOLDER_OR_DOMAIN ||--o{ TASK_NODE             : contains
-TASK_TEMPLATE         |o--o{ TASK_NODE             : generates
-USER                  }o--o{ TASK_TEMPLATE         : owns
-TASK_TEMPLATE         }o--o| TASK_TEMPLATE         : is_subtask_of
-TASK_TEMPLATE         }o--o{ ASSET                 : relates_to
-TASK_TEMPLATE         }o--o{ APPLIED_CONTROL       : relates_to
-TASK_TEMPLATE         }o--o{ COMPLIANCE_ASSESSMENT : relates_to
-TASK_TEMPLATE         }o--o{ RISK_ASSESSMENT       : relates_to
-TASK_NODE             }o--o{ EVIDENCE              : contains
+    COMPLIANCE_INDICATOR          }o--o{ ASSET                : applies_to
+    OBSERVATION                   }o--|| ASSET                : applies_to
+    OBSERVATION                   }o--|| COMPLIANCE_INDICATOR : corresponds_to
+ 
+    COMPLIANCE_INDICATOR {
+        string ref_id
+        string name
+        string description
+        json   tracker_metadata
+    }
 
-TASK_TEMPLATE {
-    string ref_id
-    string name
-    string description
-
-    date   task_date
-    json   schedule_definition
-    bool   enabled
-}
-
-TASK_NODE {
-    date   due_date
-    enum   status "pending, in progress, completed, cancelled"
-    string observation
-}
+    OBSERVATION {
+        datetime when
+        json     tracked_data
+        boolean  compliance_status
+    }
 ```
-
-The schedule_definition contains the following fields:
-
-```json
-SCHEDULE_JSONSCHEMA = {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "Schedule Definition",
-    "type": "object",
-    "properties": {
-        "interval": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Number of periods to wait before repeating (e.g., every 2 days, 3 weeks).",
-        },
-        "frequency": {
-            "type": "string",
-            "enum": ["DAILY", "WEEKLY", "MONTHLY", "YEARLY"],
-        },
-        "days_of_week": {
-            "type": "array",
-            "items": {"type": "integer", "minimum": 1, "maximum": 7},
-            "description": "Optional. Days of the week (0=Sunday, 6=Saturday)",
-        },
-        "weeks_of_month": {
-            "type": "array",
-            "items": {
-                "type": "integer",
-                "minimum": -1,
-                "maximum": 4,
-            },
-            "description": "Optional. for a given weekday, which one in the month (1 for first, -1 for last)",
-        },
-        "months_of_year": {
-            "type": "array",
-            "items": {"type": "integer", "minimum": 1, "maximum": 12},
-            "description": "Optional. Months of the year (1=January, 12=December)",
-        },
-        "start_date": {
-            "type": ["string"],
-            "format": "date",
-            "description": "Date when recurrence begins.",
-        },
-        "end_date": {
-            "type": ["string"],
-            "format": "date",
-            "description": "Date when recurrence ends.",
-        },
-        "occurrences": {
-            "type": ["integer", "null"],
-            "minimum": 1,
-            "description": "Optional. Number of occurrences before recurrence stops.",
-        },
-        "overdue_behavior": {
-            "type": "string",
-            "enum": ["DELAY_NEXT", "NO_IMPACT"],
-            "default": "NO_IMPACT",
-            "description": "Optional. Behavior when tasks become overdue.",
-        },
-    },
-    "required": ["interval", "frequency", "start_date", "end_date"],
-    "additionalProperties": False,
-}
-```
-
-The task_date is copied in the start_date of the schedule for recurring tasks.
-
-The task_date is copied in the due_date of the task_node for a non-recurring task.
-
-When enabled is set to False, the schedule is suspended (for recurring task), and generated tasks are hidden (past and future).
-
-The following concepts will not be included in the MVP:
-- subtasks
-- exceptions
-- overdue_behavior (will be NO_IMPACT)
-
-### Implementation
-
-Future task_nodes are generated partially in advance at creation/update of a task_template and with a daily refresh done with huey. This shall take in account end_date, and the following limits:
-- 5 years for yearly frequency
-- 24 months for monthly frequency
-- 53 weeks for weekly frequency
-- 63 days for daily frequency
-
-## Campaigns
-
-```mermaid
-erDiagram
-
-ROOT_FOLDER_OR_DOMAIN ||--o{ CAMPAIGN             : contains
-CAMPAIGN              }o--o{ FRAMEWORK            : contains_for_internal_scope
-CAMPAIGN              }o--o{ FRAMEWORK            : contains_for_tprm_scope
-CAMPAIGN              }o--o| MATRIX               : contains
-CAMPAIGN              }o--o{ COMPLIANCE_ASSESSMENT: contains
-CAMPAIGN              }o--o{ RISK_ASSESSMENT      : contains
-CAMPAIGN              }o--o{ ENTITY_ASSESSMENT    : contains
-CAMPAIGN              }o--o{ PERIMETER            : contains
-
-CAMPAIGN {
-    string      ref_id
-    string      name
-    string      description
-
-    date        eta
-    date        due_date
-    string      status
-    principal[] author
-    principal[] reviewer
-    string      observation
-}
-
-```
-
-The domain cannot be changed. All other parameters can change.
-
-A campaign covers 0 to several perimeters, that must be in the subtree of the campaign's domain. Perimeters can be added or removed at any time.
-
-When a perimeter is removed from a campaign, the corresponding assessments are either deleted or detached, as decided by the user. Detached assessments cannot be reattached.
-
-The person in charge of each assessment is determined by metadata on the perimeter (assigned_to).
-
-If a non-empty list of frameworks is set for TPRM scope, an entity assessment is generated for each (framework, perimeter) couple. Frameworks can be added or removed at any time. If a framework is removed, the corresponding entity assessments are either deleted or detached, as decided by the user. A detached assessment cannot be reattached.
-
-If a non-empty list of frameworks is set for internal scope, a compliance assessment is generated for each (framework, perimeter) couple. Frameworks can be added or removed at any time. If a framework is removed, the corresponding assessments are either deleted or detached, as decided by the user. A detached assessment cannot be reattached.
-
-If a matrix is set for a campaign, a risk analysis is generated for each perimeter. This can be added or removed at any time. If a matrix is removed, the corresponding risk assessments are either deleted or detached, as decided by the user. A detached risk assessment cannot be reattached.

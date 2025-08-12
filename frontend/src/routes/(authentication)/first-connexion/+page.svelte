@@ -3,17 +3,13 @@
 	import SuperForm from '$lib/components/Forms/Form.svelte';
 	import TextField from '$lib/components/Forms/TextField.svelte';
 	import { ResetPasswordSchema } from '$lib/utils/schemas';
-	import Typewriter from 'sv-typewriter';
+	import Typewriter from 'svelte-typewriter';
 
-	import { m } from '$paraglide/messages.js';
+	import * as m from '$paraglide/messages.js';
 	import { zod } from 'sveltekit-superforms/adapters';
 	import Logo from '$lib/components/Logo/Logo.svelte';
 
-	interface Props {
-		data: PageData;
-	}
-
-	let { data }: Props = $props();
+	export let data: PageData;
 </script>
 
 <div class="flex mx-auto justify-center items-center h-screen w-screen bg-slate-200">
@@ -40,10 +36,10 @@
 		</div>
 		<div class="flex flex-col bg-white p-12 rounded-lg shadow-lg items-center space-y-4">
 			<div class="bg-primary-300 px-6 py-5 rounded-full text-3xl">
-				<i class="fa-solid fa-key"></i>
+				<i class="fa-solid fa-key" />
 			</div>
 			<p class="text-gray-600 text-sm text-center">
-				{m.youCanSetPasswordHere()}<br />
+				{m.youCanSetPAsswordHere()}<br />
 			</p>
 			<!-- SuperForm with dataType 'form' -->
 			<div class="flex w-full">
@@ -51,24 +47,23 @@
 					class="flex flex-col space-y-3 w-full"
 					data={data?.form}
 					dataType="form"
+					let:form
 					validators={zod(ResetPasswordSchema)}
 				>
-					{#snippet children({ form })}
-						<TextField type="password" {form} field="new_password" label={m.newPassword()} />
-						<TextField
-							type="password"
-							{form}
-							field="confirm_new_password"
-							label={m.confirmNewPassword()}
-						/>
-						<p class="pt-3">
-							<button
-								class="btn preset-filled-primary-500 font-semibold w-full"
-								type="submit"
-								data-testid="set-password-btn">{m.setPassword()}</button
-							>
-						</p>
-					{/snippet}
+					<TextField type="password" {form} field="new_password" label={m.newPassword()} />
+					<TextField
+						type="password"
+						{form}
+						field="confirm_new_password"
+						label={m.confirmNewPassword()}
+					/>
+					<p class="pt-3">
+						<button
+							class="btn variant-filled-primary font-semibold w-full"
+							type="submit"
+							data-testid="set-password-btn">{m.setPassword()}</button
+						>
+					</p>
 				</SuperForm>
 			</div>
 		</div>

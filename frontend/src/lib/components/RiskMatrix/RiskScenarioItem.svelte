@@ -1,9 +1,5 @@
 <script lang="ts">
-	interface Props {
-		data: any;
-	}
-
-	let { data }: Props = $props();
+	export let data: any;
 </script>
 
 <p class="whitespace-nowrap">

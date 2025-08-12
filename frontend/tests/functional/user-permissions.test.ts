@@ -1,6 +1,6 @@
 import { LoginPage } from '../utils/login-page.js';
 import { SideBar } from '../utils/sidebar.js';
-import { m } from '$paraglide/messages';
+import * as m from '$paraglide/messages';
 
 import {
 	test,
@@ -68,17 +68,10 @@ Object.entries(userGroups).forEach(([userGroup, userGroupData]) => {
 			const setLoginPage = new LoginPage(setPasswordPage);
 			await setLoginPage.newPasswordInput.fill(vars.user.password);
 			await setLoginPage.confirmPasswordInput.fill(vars.user.password);
-			if (
-				setLoginPage.newPasswordInput.inputValue() !== vars.user.password ||
-				setLoginPage.confirmPasswordInput.inputValue() !== vars.user.password
-			) {
-				await setLoginPage.newPasswordInput.fill(vars.user.password);
-				await setLoginPage.confirmPasswordInput.fill(vars.user.password);
-			}
 			await setLoginPage.setPasswordButton.click();
 
 			await setLoginPage.isToastVisible(
-				'Your password has been successfully set. Welcome to CISO Assistant!'
+				'Your password has been successfully set. Welcome to Auditrex!'
 			);
 
 			await setLoginPage.login(vars.user.email, vars.user.password);
@@ -112,22 +105,22 @@ Object.entries(userGroups).forEach(([userGroup, userGroupData]) => {
 					const userCanView = userFromUserGroupHasPermission(
 						userGroup,
 						'view',
-						objectData.modelName ?? objectData.displayName
+						objectData.permName ?? objectData.displayName
 					);
 					const userCanCreate = userFromUserGroupHasPermission(
 						userGroup,
 						'add',
-						objectData.modelName ?? objectData.displayName
+						objectData.permName ?? objectData.displayName
 					);
 					const userCanUpdate = userFromUserGroupHasPermission(
 						userGroup,
 						'change',
-						objectData.modelName ?? objectData.displayName
+						objectData.permName ?? objectData.displayName
 					);
 					const userCanDelete = userFromUserGroupHasPermission(
 						userGroup,
 						'delete',
-						objectData.modelName ?? objectData.displayName
+						objectData.permName ?? objectData.displayName
 					);
 
 					test.beforeAll(async ({ pages }) => {
@@ -140,25 +133,21 @@ Object.entries(userGroups).forEach(([userGroup, userGroupData]) => {
 					} view ${objectData.displayName.toLowerCase()}`, async ({ pages }) => {
 						if (
 							await pages[objectPage]
-								.getRow(objectData.build.name || objectData.build.email || objectData.build.str)
+								.getRow(objectData.build.name || objectData.build.email)
 								.isHidden()
 						) {
 							await pages[objectPage].searchInput.fill(
-								objectData.build.name || objectData.build.email || objectData.build.str
+								objectData.build.name || objectData.build.email
 							);
 						}
 
 						if (userCanView) {
 							await expect(
-								pages[objectPage].getRow(
-									objectData.build.name || objectData.build.email || objectData.build.str
-								)
+								pages[objectPage].getRow(objectData.build.name || objectData.build.email)
 							).toBeVisible();
 						} else {
 							await expect(
-								pages[objectPage].getRow(
-									objectData.build.name || objectData.build.email || objectData.build.str
-								)
+								pages[objectPage].getRow(objectData.build.name || objectData.build.email)
 							).toBeHidden();
 						}
 					});
@@ -178,25 +167,21 @@ Object.entries(userGroups).forEach(([userGroup, userGroupData]) => {
 					} update ${objectData.displayName.toLowerCase()}`, async ({ pages }) => {
 						if (
 							await pages[objectPage]
-								.getRow(objectData.build.name || objectData.build.email || objectData.build.str)
+								.getRow(objectData.build.name || objectData.build.email)
 								.isHidden()
 						) {
 							await pages[objectPage].searchInput.fill(
-								objectData.build.name || objectData.build.email || objectData.build.str
+								objectData.build.name || objectData.build.email
 							);
 						}
 
 						if (userCanUpdate) {
 							await expect(
-								pages[objectPage].editItemButton(
-									objectData.build.name || objectData.build.email || objectData.build.str
-								)
+								pages[objectPage].editItemButton(objectData.build.name || objectData.build.email)
 							).toBeVisible();
 						} else {
 							await expect(
-								pages[objectPage].editItemButton(
-									objectData.build.name || objectData.build.email || objectData.build.str
-								)
+								pages[objectPage].editItemButton(objectData.build.name || objectData.build.email)
 							).toBeHidden();
 						}
 					});
@@ -206,25 +191,21 @@ Object.entries(userGroups).forEach(([userGroup, userGroupData]) => {
 					} delete ${objectData.displayName.toLowerCase()}`, async ({ pages }) => {
 						if (
 							await pages[objectPage]
-								.getRow(objectData.build.name || objectData.build.email || objectData.build.str)
+								.getRow(objectData.build.name || objectData.build.email)
 								.isHidden()
 						) {
 							await pages[objectPage].searchInput.fill(
-								objectData.build.name || objectData.build.email || objectData.build.str
+								objectData.build.name || objectData.build.email
 							);
 						}
 
 						if (userCanDelete) {
 							await expect(
-								pages[objectPage].deleteItemButton(
-									objectData.build.name || objectData.build.email || objectData.build.str
-								)
+								pages[objectPage].deleteItemButton(objectData.build.name || objectData.build.email)
 							).toBeVisible();
 						} else {
 							await expect(
-								pages[objectPage].deleteItemButton(
-									objectData.build.name || objectData.build.email || objectData.build.str
-								)
+								pages[objectPage].deleteItemButton(objectData.build.name || objectData.build.email)
 							).toBeHidden();
 						}
 					});

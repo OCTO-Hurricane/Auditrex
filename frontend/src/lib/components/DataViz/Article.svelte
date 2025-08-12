@@ -1,22 +1,18 @@
 <script lang="ts">
 	import Anchor from '$lib/components/Anchor/Anchor.svelte';
 
-	interface Props {
-		title: any;
-		desc: any;
-		link: any;
-		tags?: string[];
-	}
-
-	let { title, desc, link, tags = [] }: Props = $props();
+	export let title;
+	export let desc;
+	export let link;
+	export let tags: string[] = [];
 </script>
 
 <article
-	class="hover:animate-background rounded-xl bg-linear-to-r from-green-300 via-blue-500 to-purple-600 p-0.5 shadow-xl transition hover:bg-size-[400%_400%] hover:shadow-xs hover:[animation-duration:4s]"
+	class="hover:animate-background rounded-xl bg-gradient-to-r from-green-300 via-blue-500 to-purple-600 p-0.5 shadow-xl transition hover:bg-[length:400%_400%] hover:shadow-sm hover:[animation-duration:_4s]"
 >
 	<Anchor href={link}>
-		<div class="rounded-[10px] bg-white p-4 pt-20! sm:p-6 h-full">
-			<div class="block text-xs text-gray-500 min-h-10 flex items-end">{desc}</div>
+		<div class="rounded-[10px] bg-white p-4 !pt-20 sm:p-6 h-full">
+			<div class="block text-xs text-gray-500 min-h-[2.5rem] flex items-end">{desc}</div>
 
 			<h3 class="mt-0.5 text-lg font-medium text-gray-900">
 				{title}

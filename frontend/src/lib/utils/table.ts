@@ -2,21 +2,6 @@ import AutocompleteSelect from '$lib/components/Forms/AutocompleteSelect.svelte'
 import type { ComponentType } from 'svelte';
 import type { Option } from 'svelte-multiselect';
 
-import ChangeStatus from '$lib/components/ContextMenu/applied-controls/ChangeStatus.svelte';
-import ChangeImpact from '$lib/components/ContextMenu/applied-controls/ChangeImpact.svelte';
-import ChangeEffort from '$lib/components/ContextMenu/applied-controls/ChangeEffort.svelte';
-import { getModelInfo } from './crud';
-import SelectObject from '$lib/components/ContextMenu/ebios-rm/SelectObject.svelte';
-import ChangePriority from '$lib/components/ContextMenu/applied-controls/ChangePriority.svelte';
-
-export function tableSourceMapper(source: any[], keys: string[]): any[] {
-	return source.map((row) => {
-		const mappedRow: any = {};
-		keys.forEach((key) => (mappedRow[key] = row[key]));
-		return mappedRow;
-	});
-}
-
 interface ListViewFilterConfig {
 	component: ComponentType;
 	props?: { label: string; optionsEndpoint?: string; multiple?: boolean; options?: Option[] };
@@ -40,18 +25,6 @@ const YES_NO_OPTIONS = [
 	{ label: 'no', value: 'false' }
 ];
 
-const SOLUTION_CRITICALITY_OPTIONS = [
-	{ label: '1', value: '1' },
-	{ label: '2', value: '2' },
-	{ label: '3', value: '3' },
-	{ label: '4', value: '4' }
-];
-
-const YES_NO_UNSET_OPTIONS = [
-	{ label: 'YES', value: 'YES' },
-	{ label: 'NO', value: 'NO' },
-	{ label: '--', value: '--' }
-];
 const PERIMETER_STATUS_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
@@ -140,17 +113,6 @@ const COMPLIANCE_ASSESSMENT_STATUS_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const REQUIREMENT_ASSESSMENT_RESULT_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'requirement-assessments/result',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'result',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
 const APPLIED_CONTROL_STATUS_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
@@ -163,151 +125,6 @@ const APPLIED_CONTROL_STATUS_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const APPLIED_CONTROL_IMPACT_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'applied-controls/control_impact',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'controlImpact',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-
-const APPLIED_CONTROL_EFFORT_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'applied-controls/effort',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'effort',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-
-const RISK_TOLERANCE_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'withinTolerance',
-		options: YES_NO_UNSET_OPTIONS,
-		multiple: true
-	}
-};
-const TASK_STATUS_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'task-nodes/status',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'status',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-
-const INCIDENT_STATUS_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'incidents/status',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'status',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-
-const CAMPAIGN_STATUS_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'campaigns/status',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'status',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-
-const INCIDENT_DETECTION_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'incidents/detection',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'detection',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-const INCIDENT_SEVERITY_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'incidents/severity',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'severity',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-const EXCEPTION_SEVERITY_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'security-exceptions/severity',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'severity',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-const EXCEPTION_STATUS_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'security-exceptions/status',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'status',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-const PROCESSING_STATUS_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'processings/status',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'status',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-const PROCESSING_LEGAL_BASIS_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'processings/legal_basis',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'legalBasis',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-const PROCESSING_NATURE_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'processing-natures',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'nature',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
 const TREATMENT_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
@@ -351,24 +168,6 @@ const RISK_ASSESSMENT_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const REFERENCE_CONTROL_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'referenceControl',
-		optionsEndpoint: 'reference-controls',
-		multiple: true
-	}
-};
-
-const COMPLIANCE_ASSESSMENT_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'complianceAssessment',
-		optionsEndpoint: 'compliance-assessments',
-		multiple: true
-	}
-};
-
 const PROVIDER_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
@@ -398,41 +197,11 @@ const ASSET_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const PROCESSING_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'processings',
-		label: 'processing',
-		multiple: true
-	}
-};
-
 const QUALIFICATION_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
 		label: 'qualification',
 		optionsEndpoint: 'qualifications',
-		multiple: true
-	}
-};
-
-const PERSONAL_DATA_CATEGORY_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		optionsEndpoint: 'personal-data/category',
-		optionsLabelField: 'label',
-		optionsValueField: 'value',
-		label: 'category',
-		browserCache: 'force-cache',
-		multiple: true
-	}
-};
-
-const SOLUTION_CRITICALITY_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'criticality',
-		options: SOLUTION_CRITICALITY_OPTIONS,
 		multiple: true
 	}
 };
@@ -463,41 +232,6 @@ const IS_SELECTED_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
 		label: 'is_selected',
-		options: YES_NO_OPTIONS,
-		multiple: true
-	}
-};
-
-const IS_RECURRENT_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'is_recurrent',
-		options: YES_NO_OPTIONS,
-		multiple: true
-	}
-};
-const USER_IS_ACTIVE_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'is_active',
-		options: YES_NO_OPTIONS,
-		multiple: true
-	}
-};
-
-const USER_IS_THIRD_PARTY_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'is_third_party',
-		options: YES_NO_OPTIONS,
-		multiple: true
-	}
-};
-
-const IS_ASSESSABLE_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'assessable',
 		options: YES_NO_OPTIONS,
 		multiple: true
 	}
@@ -545,7 +279,7 @@ const ENTITY_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const CURRENT_RISK_LEVEL_FILTER: ListViewFilterConfig = {
+const RISK_LEVEL_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
 		label: 'current_level',
@@ -553,22 +287,6 @@ const CURRENT_RISK_LEVEL_FILTER: ListViewFilterConfig = {
 		optionsLabelField: 'label',
 		optionsValueField: 'value',
 		multiple: true
-	}
-};
-
-const RESIDUAL_RISK_LEVEL_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		...CURRENT_RISK_LEVEL_FILTER.props,
-		label: 'residual_level'
-	}
-};
-
-const INHERENT_RISK_LEVEL_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		...CURRENT_RISK_LEVEL_FILTER.props,
-		label: 'inherent_level'
 	}
 };
 
@@ -588,8 +306,11 @@ const CURRENT_CRITICALITY_FILTER: ListViewFilterConfig = {
 const RESIDUAL_CRITICALITY_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
-		...CURRENT_CRITICALITY_FILTER.props,
-		label: 'residual_criticality'
+		label: 'residual_criticality',
+		options: [1, 2, 3, 4],
+		optionsLabelField: 'label',
+		optionsValueField: 'value',
+		multiple: true
 	}
 };
 
@@ -636,17 +357,6 @@ const ASSET_TYPE_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const ASSET_CLASS_FILTER: ListViewFilterConfig = {
-	//still broken
-	component: AutocompleteSelect,
-	props: {
-		label: 'assetClass',
-		optionsEndpoint: 'asset-class',
-		optionsLabelField: 'full_path',
-		optionsValueField: 'id',
-		multiple: false
-	}
-};
 const REFERENCE_CONTROL_CATEGORY_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
@@ -658,17 +368,7 @@ const REFERENCE_CONTROL_CATEGORY_FILTER: ListViewFilterConfig = {
 		optionsValueField: 'value'
 	}
 };
-const FINDINGS_ASSESSMENTS_CATEGORY_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'category',
-		optionsEndpoint: 'findings-assessments/category',
-		multiple: true,
-		optionsLabelField: 'label',
-		browserCache: 'force-cache',
-		optionsValueField: 'value'
-	}
-};
+
 const STAKEHOLDER_CATEGORY_FILTER: ListViewFilterConfig = {
 	component: AutocompleteSelect,
 	props: {
@@ -713,15 +413,6 @@ const HAS_UPDATE_FILTER: ListViewFilterConfig = {
 	}
 };
 
-const MAPPING_SUGGESTED_FILTER: ListViewFilterConfig = {
-	component: AutocompleteSelect,
-	props: {
-		label: 'mappingSuggested',
-		options: YES_NO_OPTIONS,
-		multiple: true
-	}
-};
-
 const LIBRARY_TYPE_FILTER = {
 	component: AutocompleteSelect,
 	props: {
@@ -740,8 +431,8 @@ export const listViewFields = {
 		body: ['name', 'description', 'parent_folder']
 	},
 	perimeters: {
-		head: ['ref_id', 'name', 'description', 'defaultAssignee', 'domain'],
-		body: ['ref_id', 'name', 'description', 'default_assignee', 'folder'],
+		head: ['ref_id', 'name', 'description', 'domain'],
+		body: ['ref_id', 'name', 'description', 'folder'],
 		filters: {
 			folder: DOMAIN_FILTER,
 			lc_status: PERIMETER_STATUS_FILTER
@@ -764,10 +455,20 @@ export const listViewFields = {
 		}
 	},
 	vulnerabilities: {
-		head: ['ref_id', 'name', 'status', 'severity', 'applied_controls', 'folder', 'labels'],
+		head: [
+			'ref_id',
+			'name',
+			'description',
+			'status',
+			'severity',
+			'applied_controls',
+			'folder',
+			'labels'
+		],
 		body: [
 			'ref_id',
 			'name',
+			'description',
 			'status',
 			'severity',
 			'applied_controls',
@@ -789,16 +490,15 @@ export const listViewFields = {
 		}
 	},
 	threats: {
-		head: ['ref_id', 'name', 'description', 'provider', 'domain', 'labels'],
-		body: ['ref_id', 'name', 'description', 'provider', 'folder', 'filtering_labels'],
+		head: ['ref_id', 'name', 'description', 'provider', 'domain'],
+		body: ['ref_id', 'name', 'description', 'provider', 'folder'],
 		meta: ['id', 'urn'],
 		filters: {
 			folder: DOMAIN_FILTER,
 			provider: {
 				...PROVIDER_FILTER,
 				props: { ...PROVIDER_FILTER.props, optionsEndpoint: 'threats/provider' }
-			},
-			filtering_labels: LABELS_FILTER
+			}
 		}
 	},
 	'risk-scenarios': {
@@ -806,31 +506,23 @@ export const listViewFields = {
 			'ref_id',
 			'threats',
 			'name',
-			'inherentLevel',
 			'existingAppliedControls',
 			'currentLevel',
-			'withinTolerance',
 			'extraAppliedControls',
 			'residualLevel',
 			'treatment',
-			'riskAssessment',
-			'control_impact',
-			'effort'
+			'riskAssessment'
 		],
 		body: [
 			'ref_id',
 			'threats',
 			'name',
-			'inherent_level',
 			'existing_applied_controls',
 			'current_level',
-			'within_tolerance',
 			'applied_controls',
 			'residual_level',
 			'treatment',
-			'risk_assessment',
-			'control_impact',
-			'effort'
+			'risk_assessment'
 		],
 		filters: {
 			folder: DOMAIN_FILTER,
@@ -839,16 +531,13 @@ export const listViewFields = {
 			risk_assessment: RISK_ASSESSMENT_FILTER,
 			threats: THREAT_FILTER,
 			assets: ASSET_FILTER,
-			current_level: CURRENT_RISK_LEVEL_FILTER,
-			residual_level: RESIDUAL_RISK_LEVEL_FILTER,
-			within_tolerance: RISK_TOLERANCE_FILTER,
-			control_impact: APPLIED_CONTROL_IMPACT_FILTER,
-			effort: APPLIED_CONTROL_EFFORT_FILTER
+			current_level: RISK_LEVEL_FILTER,
+			residual_level: RISK_LEVEL_FILTER
 		}
 	},
 	'risk-acceptances': {
-		head: ['name', 'description', 'riskScenarios', 'state'],
-		body: ['name', 'description', 'risk_scenarios', 'state'],
+		head: ['name', 'description', 'riskScenarios'],
+		body: ['name', 'description', 'risk_scenarios'],
 		filters: {
 			folder: DOMAIN_FILTER,
 			state: STATE_FILTER,
@@ -856,19 +545,38 @@ export const listViewFields = {
 		}
 	},
 	'applied-controls': {
-		head: ['ref_id', 'name', 'priority', 'status', 'category', 'eta', 'domain', 'labels'],
-		body: ['ref_id', 'name', 'priority', 'status', 'category', 'eta', 'folder', 'filtering_labels'],
+		head: [
+			'ref_id',
+			'name',
+			'priority',
+			'status',
+			'category',
+			'csfFunction',
+			'eta',
+			'owner',
+			'domain',
+			'referenceControl'
+		],
+		body: [
+			'ref_id',
+			'name',
+			'priority',
+			'status',
+			'category',
+			'csf_function',
+			'eta',
+			'owner',
+			'folder',
+			'reference_control'
+		],
 		filters: {
 			folder: DOMAIN_FILTER,
 			status: APPLIED_CONTROL_STATUS_FILTER,
 			category: REFERENCE_CONTROL_CATEGORY_FILTER,
 			csf_function: CSF_FUNCTION_FILTER,
+			owner: OWNER_FILTER,
 			priority: PRIORITY_FILTER,
-			effort: EFFORT_FILTER,
-			control_impact: APPLIED_CONTROL_IMPACT_FILTER,
-			filtering_labels: LABELS_FILTER,
-			reference_control: REFERENCE_CONTROL_FILTER,
-			eta__lte: undefined
+			effort: EFFORT_FILTER
 		}
 	},
 	policies: {
@@ -903,26 +611,8 @@ export const listViewFields = {
 		}
 	},
 	'reference-controls': {
-		head: [
-			'ref_id',
-			'name',
-			'description',
-			'category',
-			'csfFunction',
-			'provider',
-			'domain',
-			'labels'
-		],
-		body: [
-			'ref_id',
-			'name',
-			'description',
-			'category',
-			'csf_function',
-			'provider',
-			'folder',
-			'filtering_labels'
-		],
+		head: ['ref_id', 'name', 'description', 'category', 'csfFunction', 'provider', 'domain'],
+		body: ['ref_id', 'name', 'description', 'category', 'csf_function', 'provider', 'folder'],
 		meta: ['id', 'urn'],
 		filters: {
 			folder: DOMAIN_FILTER,
@@ -931,8 +621,7 @@ export const listViewFields = {
 				...PROVIDER_FILTER,
 				props: { ...PROVIDER_FILTER.props, optionsEndpoint: 'reference-controls/provider' }
 			},
-			csf_function: CSF_FUNCTION_FILTER,
-			filtering_labels: LABELS_FILTER
+			csf_function: CSF_FUNCTION_FILTER
 		}
 	},
 	assets: {
@@ -940,8 +629,10 @@ export const listViewFields = {
 			'ref_id',
 			'name',
 			'type',
+			'description',
 			'securityObjectives',
 			'disasterRecoveryObjectives',
+			'owner',
 			'domain',
 			'labels'
 		],
@@ -949,8 +640,10 @@ export const listViewFields = {
 			'ref_id',
 			'name',
 			'type',
+			'description',
 			'security_objectives',
 			'disaster_recovery_objectives',
+			'owner',
 			'folder',
 			'filtering_labels'
 		],
@@ -960,33 +653,9 @@ export const listViewFields = {
 			filtering_labels: LABELS_FILTER
 		}
 	},
-	'asset-class': {
-		head: ['name', 'description'],
-		body: ['name', 'description']
-	},
 	users: {
-		head: [
-			'email',
-			'firstName',
-			'lastName',
-			'userGroups',
-			'isActive',
-			'keep_local_login',
-			'is_third_party'
-		],
-		body: [
-			'email',
-			'first_name',
-			'last_name',
-			'user_groups',
-			'is_active',
-			'keep_local_login',
-			'is_third_party'
-		],
-		filters: {
-			is_active: USER_IS_ACTIVE_FILTER,
-			is_third_party: USER_IS_THIRD_PARTY_FILTER
-		}
+		head: ['email', 'firstName', 'lastName', 'is_sso', 'is_third_party'],
+		body: ['email', 'first_name', 'last_name', 'is_sso', 'is_third_party']
 	},
 	'user-groups': {
 		head: ['name'],
@@ -1014,8 +683,8 @@ export const listViewFields = {
 		}
 	},
 	'compliance-assessments': {
-		head: ['ref_id', 'name', 'framework', 'perimeter', 'reviewProgress', 'createdAt', 'updatedAt'],
-		body: ['ref_id', 'name', 'framework', 'perimeter', 'progress', 'created_at', 'updated_at'],
+		head: ['ref_id', 'name', 'framework', 'assets', 'description', 'perimeter', 'reviewProgress'],
+		body: ['ref_id', 'name', 'framework', 'assets', 'description', 'perimeter', 'progress'],
 		filters: {
 			folder: DOMAIN_FILTER,
 			perimeter: PERIMETER_FILTER,
@@ -1024,22 +693,15 @@ export const listViewFields = {
 		}
 	},
 	'requirement-assessments': {
-		head: ['assessable', 'name', 'description', 'complianceAssessment', 'perimeter', 'result'],
-		body: ['assessable', 'name', 'description', 'compliance_assessment', 'perimeter', 'result'],
-		breadcrumb_link_disabled: true,
-		filters: {
-			compliance_assessment: COMPLIANCE_ASSESSMENT_FILTER,
-			requirement__assessable: IS_ASSESSABLE_FILTER,
-			result: REQUIREMENT_ASSESSMENT_RESULT_FILTER,
-			compliance_assessment__perimeter: PERIMETER_FILTER
-		}
+		head: ['name', 'description', 'complianceAssessment'],
+		body: ['name', 'description', 'compliance_assessment'],
+		breadcrumb_link_disabled: true
 	},
 	evidences: {
-		head: ['name', 'file', 'size', 'description', 'folder', 'labels'],
-		body: ['name', 'attachment', 'size', 'description', 'folder', 'filtering_labels'],
+		head: ['name', 'file', 'size', 'description', 'folder'],
+		body: ['name', 'attachment', 'size', 'description', 'folder'],
 		filters: {
-			folder: DOMAIN_FILTER,
-			filtering_labels: LABELS_FILTER
+			folder: DOMAIN_FILTER
 		}
 	},
 	requirements: {
@@ -1057,8 +719,7 @@ export const listViewFields = {
 		filters: {
 			locale: LANGUAGE_FILTER,
 			provider: PROVIDER_FILTER,
-			object_type: LIBRARY_TYPE_FILTER,
-			mapping_suggested: MAPPING_SUGGESTED_FILTER
+			object_type: LIBRARY_TYPE_FILTER
 		}
 	},
 	'loaded-libraries': {
@@ -1102,111 +763,15 @@ export const listViewFields = {
 	},
 	solutions: {
 		head: ['name', 'description', 'providerEntity', 'recipientEntity', 'criticality'],
-		body: ['name', 'description', 'provider_entity', 'recipient_entity', 'criticality'],
-		filters: {
-			provider_entity: ENTITY_FILTER,
-			criticality: SOLUTION_CRITICALITY_FILTER
-		}
+		body: ['name', 'description', 'provider_entity', 'recipient_entity', 'criticality']
 	},
 	representatives: {
 		head: ['email', 'entity', 'role'],
-		body: ['email', 'entity', 'role'],
-		filters: {
-			entity: ENTITY_FILTER
-		}
-	},
-	'business-impact-analysis': {
-		head: ['name', 'perimeter', 'status'],
-		body: ['name', 'perimeter', 'status']
-	},
-	'asset-assessments': {
-		head: [
-			'asset',
-			'folder',
-			'bia',
-			'dependencies',
-			'associatedControls',
-			'recoveryDocumented',
-			'recoveryTested',
-			'recoveryTargetsMet'
-		],
-		body: [
-			'asset',
-			'asset_folder',
-			'bia',
-			'dependencies',
-			'associated_controls',
-			'recovery_documented',
-			'recovery_tested',
-			'recovery_targets_met'
-		]
-	},
-	'escalation-thresholds': {
-		head: ['pointInTime', 'assetAssessment', 'qualiImpact', 'impactOn', 'justification'],
-		body: ['get_human_pit', 'asset_assessment', 'quali_impact', 'qualifications', 'justification']
-	},
-	processings: {
-		head: ['name', 'description', 'status', 'legalBasis', 'processingNature', 'folder'],
-		body: ['name', 'description', 'status', 'legal_basis', 'nature', 'folder'],
-		filters: {
-			folder: DOMAIN_FILTER,
-			status: PROCESSING_STATUS_FILTER,
-			legal_basis: PROCESSING_LEGAL_BASIS_FILTER
-		}
-	},
-	purposes: {
-		head: ['name', 'description', 'processing'],
-		body: ['name', 'description', 'processing'],
-		filters: {
-			processing: PROCESSING_FILTER
-		}
-	},
-	'personal-data': {
-		head: [
-			'processing',
-			'name',
-			'description',
-			'category',
-			'isSensitive',
-			'retention',
-			'deletionPolicy'
-		],
-		body: [
-			'processing',
-			'name',
-			'description',
-			'category',
-			'is_sensitive',
-			'retention',
-			'deletion_policy'
-		],
-		filters: {
-			processing: PROCESSING_FILTER,
-			category: PERSONAL_DATA_CATEGORY_FILTER
-		}
-	},
-	'data-subjects': {
-		head: ['name', 'description', 'category'],
-		body: ['name', 'description', 'category']
-	},
-	'data-recipients': {
-		head: ['name', 'description', 'category'],
-		body: ['name', 'description', 'category']
-	},
-	'data-contractors': {
-		head: ['name', 'description', 'entity', 'relationshipType', 'country', 'documentationLink'],
-		body: ['name', 'description', 'entity', 'relationship_type', 'country', 'documentation_link']
-	},
-	'data-transfers': {
-		head: ['name', 'description', 'entity', 'country', 'legalBasis', 'documentationLink'],
-		body: ['name', 'description', 'entity', 'country', 'legal_basis', 'documentation_link']
+		body: ['email', 'entity', 'role']
 	},
 	'ebios-rm': {
-		head: ['name', 'description', 'domain', 'quotationMethod'],
-		body: ['name', 'description', 'folder', 'quotation_method'],
-		filters: {
-			folder: DOMAIN_FILTER
-		}
+		head: ['name', 'description'],
+		body: ['name', 'description']
 	},
 	'feared-events': {
 		head: ['selected', 'name', 'assets', 'description', 'qualifications', 'gravity'],
@@ -1268,7 +833,7 @@ export const listViewFields = {
 			'risk_origin',
 			'target_objective',
 			'stakeholders',
-			'description'
+			'attackPath'
 		],
 		body: [
 			'is_selected',
@@ -1285,142 +850,25 @@ export const listViewFields = {
 		}
 	},
 	'operational-scenarios': {
-		head: ['is_selected', 'attackPath', 'operatingModesDescription', 'threats', 'likelihood'],
-		body: ['is_selected', 'attack_path', 'operating_modes_description', 'threats', 'likelihood'],
+		head: ['is_selected', 'operatingModesDescription', 'threats', 'likelihood'],
+		body: ['is_selected', 'operating_modes_description', 'threats', 'likelihood'],
 		filters: {
 			threats: THREAT_FILTER,
 			likelihood: RISK_PROBABILITY_FILTER,
 			is_selected: IS_SELECTED_FILTER
 		}
 	},
-	'elementary-actions': {
-		head: ['ref_id', 'domain', '', 'name', 'attack_stage', 'threat'],
-		body: ['ref_id', 'domain', 'icon_fa_class', 'name', 'attack_stage', 'threat']
-	},
-	'operating-modes': {
-		head: ['ref_id', 'name', 'likelihood'],
-		body: ['ref_id', 'name', 'likelihood']
-	},
-	'kill-chains': {
-		head: ['elementary_action', 'attack_stage', 'antecedents', 'logic_operator'],
-		body: ['elementary_action', 'attack_stage', 'antecedents', 'logic_operator']
-	},
 	'security-exceptions': {
 		head: ['ref_id', 'name', 'severity', 'status', 'expiration_date', 'domain'],
-		body: ['ref_id', 'name', 'severity', 'status', 'expiration_date', 'folder'],
-		filters: {
-			folder: DOMAIN_FILTER,
-			severity: EXCEPTION_SEVERITY_FILTER,
-			status: EXCEPTION_STATUS_FILTER
-		}
+		body: ['ref_id', 'name', 'severity', 'status', 'expiration_date', 'folder']
 	},
 	'findings-assessments': {
-		head: ['ref_id', 'name', 'description', 'category', 'evidences', 'findings', 'perimeter'],
-		body: ['ref_id', 'name', 'description', 'category', 'evidences', 'findings_count', 'perimeter'],
-		filters: {
-			folder: DOMAIN_FILTER,
-			perimeter: PERIMETER_FILTER,
-			category: FINDINGS_ASSESSMENTS_CATEGORY_FILTER
-		}
+		head: ['ref_id', 'name', 'description', 'category', 'findings', 'perimeter'],
+		body: ['ref_id', 'str', 'description', 'category', 'findings_count', 'perimeter']
 	},
 	findings: {
-		head: [
-			'ref_id',
-			'name',
-			'findings_assessment',
-			'severity',
-			'owner',
-			'status',
-			'applied_controls',
-			'labels'
-		],
-		body: [
-			'ref_id',
-			'name',
-			'findings_assessment',
-			'severity',
-			'owner',
-			'status',
-			'applied_controls',
-			'filtering_labels'
-		],
-		filters: { filtering_labels: LABELS_FILTER }
-	},
-	incidents: {
-		head: [
-			'ref_id',
-			'name',
-			'status',
-			'severity',
-			'detection',
-			'folder',
-			'qualifications',
-			'updated_at'
-		],
-		body: [
-			'ref_id',
-			'name',
-			'status',
-			'severity',
-			'detection',
-			'folder',
-			'qualifications',
-			'updated_at'
-		],
-		filters: {
-			folder: DOMAIN_FILTER,
-			qualifications: QUALIFICATION_FILTER,
-			status: INCIDENT_STATUS_FILTER,
-			detection: INCIDENT_DETECTION_FILTER,
-			severity: INCIDENT_SEVERITY_FILTER
-		}
-	},
-	'timeline-entries': {
-		head: ['entry_type', 'entry', 'author', 'created_at', 'updated_at', 'timestamp'],
-		body: ['entry_type', 'entry', 'author', 'created_at', 'updated_at', 'timestamp']
-	},
-	campaigns: {
-		head: ['name', 'description', 'frameworks', 'status'],
-		body: ['name', 'description', 'frameworks', 'status'],
-		filters: {
-			status: CAMPAIGN_STATUS_FILTER,
-			frameworks: FRAMEWORK_FILTER
-		}
-	},
-	'task-templates': {
-		head: [
-			'name',
-			'description',
-			'is_recurrent',
-			'assigned_to',
-			'lastOccurrenceStatus',
-			'nextOccurrence',
-			'folder'
-		],
-		body: [
-			'name',
-			'description',
-			'is_recurrent',
-			'assigned_to',
-			'last_occurrence_status',
-			'next_occurrence',
-			'folder'
-		],
-		filters: {
-			folder: DOMAIN_FILTER,
-			is_recurrent: IS_RECURRENT_FILTER
-		}
-	},
-	'task-nodes': {
-		head: ['due_date', 'status', 'evidences'],
-		body: ['due_date', 'status', 'evidences'],
-		filters: {
-			status: TASK_STATUS_FILTER
-		}
-	},
-	qualifications: {
-		head: ['name', 'abbreviation'],
-		body: ['name', 'abbreviation']
+		head: ['ref_id', 'name', 'description', 'findings_assessment', 'status', 'labels'],
+		body: ['ref_id', 'str', 'description', 'findings_assessment', 'status', 'filtering_labels']
 	},
 	extra: {
 		filters: {
@@ -1438,62 +886,3 @@ export type FilterKeys = {
 		? keyof F
 		: never;
 }[keyof typeof listViewFields];
-
-export const contextMenuActions = {
-	'applied-controls': [
-		{ component: ChangeStatus, props: {} },
-		{ component: ChangeImpact, props: {} },
-		{ component: ChangeEffort, props: {} },
-		{ component: ChangePriority, props: {} }
-	],
-	'feared-events': [{ component: SelectObject, props: {} }],
-	'ro-to': [{ component: SelectObject, props: {} }],
-	stakeholders: [{ component: SelectObject, props: {} }],
-	'attack-paths': [{ component: SelectObject, props: {} }],
-	'operational-scenarios': [{ component: SelectObject, props: {} }]
-};
-
-export const getListViewFields = ({
-	key,
-	featureFlags = {}
-}: {
-	key: string;
-	featureFlags: Record<string, boolean>;
-}) => {
-	if (!Object.keys(listViewFields).includes(key)) {
-		return { head: [], body: [] };
-	}
-
-	const baseEntry = listViewFields[key];
-	const model = getModelInfo(key);
-
-	let head = [...baseEntry.head];
-	let body = [...baseEntry.body];
-
-	if (model?.flaggedFields) {
-		const indicesToPop = body
-			.map((field: string, index: number) => {
-				const flag = model.flaggedFields?.[field];
-				// instead of includes, check if featureFlags[flag] is truthy
-				return flag && !featureFlags[flag] ? index : -1;
-			})
-			.filter((i) => i !== -1);
-
-		head = head.filter((_, index) => !indicesToPop.includes(index));
-		body = body.filter((_, index) => !indicesToPop.includes(index));
-	}
-
-	return {
-		...baseEntry,
-		head,
-		body
-	};
-};
-
-function insertField(fields: string[], fieldToInsert: string, afterField: string): string[] {
-	const index = fields.indexOf(afterField);
-	if (index === -1) return fields;
-	const clone = [...fields];
-	clone.splice(index + 1, 0, fieldToInsert);
-	return clone;
-}

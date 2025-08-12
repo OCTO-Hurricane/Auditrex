@@ -18,7 +18,7 @@ from allauth.socialaccount.providers.saml.views import (
     httpkit,
     render_authentication_error,
 )
-from allauth.socialaccount.providers.saml.provider import SAMLProvider
+from allauth.socialaccount.providers.saml.views import AuthError as AllauthAuthError
 from allauth.utils import ValidationError
 from django.http import HttpRequest, HttpResponseRedirect
 from django.http.response import Http404
@@ -28,13 +28,18 @@ from django.views import View
 from rest_framework.views import csrf_exempt
 
 from iam.models import User
-from iam.sso.errors import AuthError
 from iam.sso.models import SSOSettings
 from iam.utils import generate_token
 
-DEFAULT_SAML_ATTRIBUTE_MAPPING_EMAIL = SAMLProvider.default_attribute_mapping["email"]
-
 logger = structlog.get_logger(__name__)
+
+
+class AuthError(AllauthAuthError):
+    IDP_INITIATED_SSO_REJECTED = "idpInitiatedSSORejected"
+    SIGNUP_CLOSED = "signupClosed"
+    PERMISSION_DENIED = "permissionDenied"
+    FAILED_SSO = "failedSSO"
+    USER_DOES_NOT_EXIST = "UserDoesNotExist"
 
 
 @method_decorator(csrf_exempt, name="dispatch")
@@ -61,9 +66,7 @@ class FinishACSView(SAMLViewMixin, View):
             provider = self.get_provider(organization_slug)
         except:
             logger.error("Could not get provider")
-            return render_authentication_error(
-                request, None, error=AuthError.FAILED_TO_CONTACT_PROVIDER
-            )
+            return render_authentication_error(request, None)
         acs_session = LoginSession(request, "saml_acs_session", "saml-acs-session")
         acs_request = None
         acs_request_data = acs_session.store.get("request")
@@ -131,33 +134,26 @@ class FinishACSView(SAMLViewMixin, View):
             login.state["process"] = AuthProcess.LOGIN
             login.state["next"] = next_url
         try:
-            attribute_mapping = provider.app.settings.get("attribute_mapping", {})
-            # our parameter is either:
-            #   - a list with attributes (normal case)
-            #   - a list with a comma-separated string of attributes (frontend non-optimal behavior)
-            email_attributes_string = attribute_mapping.get("email", [])
-            email_attributes = [
-                item.strip() for y in email_attributes_string for item in y.split(",")
-            ] or DEFAULT_SAML_ATTRIBUTE_MAPPING_EMAIL
-            emails = [auth.get_attribute(x) or [] for x in email_attributes]
-            emails = [x for xs in emails for x in xs]  # flatten
-            emails.append(auth.get_nameid())  # default behavior
-            user = User.objects.get(email__in=emails)
-            idp_first_names = auth.get_attribute(
-                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
-            )
-            idp_last_names = auth.get_attribute(
-                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname"
-            )
-            user.first_name = idp_first_names[0] if idp_first_names else user.first_name
-            user.last_name = idp_last_names[0] if idp_last_names else user.last_name
+            email = auth._nameid
+            user = User.objects.get(email=email)
+            idp_first_name = auth._attributes.get(
+                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname", [""]
+            )[0]
+            idp_last_name = auth._attributes.get(
+                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname", [""]
+            )[0]
+            if idp_first_name and user.first_name != idp_first_name:
+                user.first_name = idp_first_name
+            if idp_last_name and user.last_name != idp_last_name:
+                user.last_name = idp_last_name
+            user.is_sso = True
             user.save()
             token = generate_token(user)
             login.state["next"] += f"sso/authenticate/{token}"
             pre_social_login(request, login)
             if request.user.is_authenticated:
                 get_account_adapter(request).logout(request)
-            login._accept_login(request)  # complete_social_login not working
+            login._accept_login(request)
             record_authentication(request, login)
         except User.DoesNotExist as e:
             # NOTE: We might want to allow signup some day
@@ -172,9 +168,6 @@ class FinishACSView(SAMLViewMixin, View):
         except ValidationError as e:
             error = e.code
             logger.error("Validation error", exc_info=e)
-        except NotImplementedError as e:
-            error = AuthError.USER_IS_NOT_SSO
-            logger.error("SSO not permitted error", exc_info=e)
         except Exception as e:
             error = AuthError.FAILED_SSO
             logger.error("SSO failed", exc_info=e)

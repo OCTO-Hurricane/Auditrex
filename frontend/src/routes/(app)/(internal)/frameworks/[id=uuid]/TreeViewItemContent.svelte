@@ -2,29 +2,13 @@
 	import { getRequirementTitle } from '$lib/utils/helpers';
 	import { getOptions } from '$lib/utils/crud';
 
-	interface Props {
-		ref_id: string;
-		name: string;
-		description: string;
-		threats?: Record<string, unknown>[];
-		reference_controls?: Record<string, unknown>[];
-		children: Record<string, unknown>[];
-		assessable: boolean;
-		questions?: Record<string, { text: string }>;
-		[key: string]: any;
-	}
-
-	let {
-		ref_id,
-		name,
-		description,
-		threats = [],
-		reference_controls = [],
-		children,
-		assessable,
-		questions = {},
-		...rest
-	}: Props = $props();
+	export let ref_id: string;
+	export let name: string;
+	export let description: string;
+	export let threats: Record<string, unknown>[] = [];
+	export let reference_controls: Record<string, unknown>[] = [];
+	export let children: Record<string, unknown>[];
+	export let assessable: boolean;
 
 	const node = {
 		ref_id,
@@ -34,9 +18,8 @@
 		reference_controls,
 		children,
 		assessable,
-		questions,
-		...rest
-	};
+		...$$restProps
+	} as const;
 
 	type TreeViewItemNode = typeof node;
 
@@ -57,15 +40,15 @@
 
 	const title: string = getRequirementTitle(ref_id, name);
 
-	let showInfo = $state(false);
+	let showInfo = false;
 
-	let classesShowInfo = $derived((show: boolean) => (!show ? 'hidden' : ''));
-	let classesShowInfoText = $derived((show: boolean) => (show ? 'text-primary-500' : ''));
+	$: classesShowInfo = (show: boolean) => (!show ? 'hidden' : '');
+	$: classesShowInfoText = (show: boolean) => (show ? 'text-primary-500' : '');
 </script>
 
 <div>
 	<span class="whitespace-pre-line" style="font-weight: 300;">
-		<span class="max-w-[80ch]">
+		<p class="max-w-[80ch]">
 			{#if title || description}
 				{#if title}
 					<span style="font-weight: 600;">{title}</span>
@@ -73,38 +56,38 @@
 				{#if description}
 					<p>{description}</p>
 				{/if}
-			{:else if node?.questions && Object.keys(node.questions).length > 0}
-				<!-- This displays the first question's text -->
-				{Object.entries(node?.questions)[0][1].text}
+			{:else if node.question && node.question.questions && node.question.questions[0]}
+				<!-- This only displays the first question -->
+				{node.question.questions[0].text}
 			{/if}
-		</span>
+		</p>
 	</span>
 	{#if (threats && threats.length > 0) || (reference_controls && reference_controls.length > 0)}
 		<div
 			role="button"
 			tabindex="0"
 			class="underline text-sm hover:text-primary-400 {classesShowInfoText(showInfo)}"
-			onclick={(e) => {
+			on:click={(e) => {
 				e.preventDefault();
 				showInfo = !showInfo;
 			}}
-			onkeydown={(e) => {
+			on:keydown={(e) => {
 				if (e.key === 'Enter') {
 					e.preventDefault();
 					showInfo = !showInfo;
 				}
 			}}
 		>
-			<i class="text-xs fa-solid fa-info-circle"></i> Learn more
+			<i class="text-xs fa-solid fa-info-circle" /> Learn more
 		</div>
 		<div
-			class="card p-2 preset-tonal-primary border border-primary-500 text-sm flex flex-row cursor-auto {classesShowInfo(
+			class="card p-2 variant-ghost-primary text-sm flex flex-row cursor-auto {classesShowInfo(
 				showInfo
 			)}"
 		>
 			<div class="flex-1">
 				<p class="font-medium">
-					<i class="fa-solid fa-gears"></i>
+					<i class="fa-solid fa-gears" />
 					Suggested reference controls
 				</p>
 				{#if reference_controls.length === 0}
@@ -112,6 +95,7 @@
 				{:else}
 					<ul class="list-disc ml-4">
 						{#each getOptions( { objects: reference_controls, extra_fields: [['folder', 'str']], label: 'auto' } ) as func}
+							// convention for automatic label calculation
 							<li>
 								<p>{func.label}</p>
 							</li>
@@ -121,7 +105,7 @@
 			</div>
 			<div class="flex-1">
 				<p class="font-medium">
-					<i class="fa-solid fa-gears"></i>
+					<i class="fa-solid fa-gears" />
 					Threats covered
 				</p>
 				{#if threats.length === 0}
